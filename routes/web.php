@@ -35,7 +35,7 @@ Route::get('/', function (Request $request) {
 Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middleware' => ['setlocale']], function () {
     Route::view('/', 'home')->name('localized.home');
 
-    Route::view('dashboard', 'dashboard')
+    Route::view('dashboard', 'dashboard-livewire')
         ->middleware(['auth', 'verified'])
         ->name('localized.dashboard');
 
@@ -43,11 +43,26 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
         ->middleware(['auth'])
         ->name('localized.profile');
     
+    // Sfide localizzate (area riservata)
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/challenges', function () {
+            return view('challenges.index');
+        })->name('localized.challenges.index');
+        
+        Route::get('/challenges/{challenge}/play', function ($challengeId) {
+            return view('challenges.play', ['challengeId' => $challengeId]);
+        })->name('localized.challenges.play');
+        
+        Route::get('/leaderboard', function () {
+            return view('leaderboard.index');
+        })->name('localized.leaderboard.index');
+    });
+    
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';
 });
 
-Route::view('dashboard', 'dashboard')
+Route::view('dashboard', 'dashboard-livewire')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -60,6 +75,31 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [App\Http\Controllers\Admin\AdminController::class, 'users'])->name('users');
 });
+
+// Route demo Sudoku (accessibili a tutti)
+Route::get('/sudoku/demo', [App\Http\Controllers\SudokuDemoController::class, 'index'])->name('sudoku.demo');
+Route::get('/sudoku/play', [App\Http\Controllers\SudokuDemoController::class, 'play'])->name('sudoku.play');
+
+// Route area riservata (con auth)
+Route::middleware(['auth'])->group(function () {
+    // Sfide
+    Route::get('/challenges', function () {
+        return view('challenges.index');
+    })->name('challenges.index');
+    
+    Route::get('/challenges/{challenge}/play', function ($challengeId) {
+        return view('challenges.play', ['challengeId' => $challengeId]);
+    })->name('challenges.play');
+    
+    // Classifiche
+    Route::get('/leaderboard', function () {
+        return view('leaderboard.index');
+    })->name('leaderboard.index');
+});
+
+// Route di test
+Route::get('/test-basic', [App\Http\Controllers\SimpleTestController::class, 'test']);
+Route::get('/test-livewire', [App\Http\Controllers\SimpleTestController::class, 'livewireTest']);
 
 // Include auth routes for non-localized fallback
 require __DIR__.'/auth.php';

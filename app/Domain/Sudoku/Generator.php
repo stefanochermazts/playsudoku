@@ -6,6 +6,7 @@ namespace App\Domain\Sudoku;
 use App\Domain\Sudoku\Contracts\GeneratorInterface;
 use App\Domain\Sudoku\Contracts\ValidatorInterface;
 use App\Domain\Sudoku\Exceptions\InvalidGridException;
+use App\Domain\Sudoku\ValueObjects\Cell;
 
 
 /**
@@ -74,6 +75,9 @@ final class Generator implements GeneratorInterface
         
         // Rimuovi celle mantenendo la soluzione unica
         $puzzle = $this->removeCells($completeGrid, 81 - $givens);
+        
+        // Marca le celle rimanenti come "given"
+        $puzzle = $this->markRemainingCellsAsGiven($puzzle);
         
         if (!$this->validator->hasUniqueSolution($puzzle)) {
             throw new InvalidGridException("Generated puzzle does not have unique solution");
@@ -432,6 +436,31 @@ final class Generator implements GeneratorInterface
         
         // Rimuovi celle mantenendo il pattern
         return $this->removeCells($completeGrid, 56); // 25 givens
+    }
+
+    /**
+     * Marca tutte le celle con valore come "given" per il puzzle finale
+     */
+    private function markRemainingCellsAsGiven(Grid $puzzle): Grid
+    {
+        // Approccio più semplice: crea una nuova griglia con solo le celle given
+        $givenValues = [];
+        
+        for ($row = 0; $row < 9; $row++) {
+            for ($col = 0; $col < 9; $col++) {
+                $cell = $puzzle->getCell($row, $col);
+                if ($cell->hasValue()) {
+                    $givenValues[$row][$col] = $cell->value;
+                } else {
+                    $givenValues[$row][$col] = null;
+                }
+            }
+        }
+        
+        // Crea una nuova griglia e imposta i valori come given
+        $newGrid = Grid::fromArray($givenValues);
+        
+        return $newGrid;
     }
 
 }

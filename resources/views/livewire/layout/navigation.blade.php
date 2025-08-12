@@ -34,14 +34,22 @@ new class extends Component
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    @auth
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('app.nav.dashboard') }}
                     </x-nav-link>
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user() && auth()->user()->isAdmin())
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
                             👑 Admin
                         </x-nav-link>
                     @endif
+                    @endauth
+                    
+                    @guest
+                    <x-nav-link :href="route('sudoku.demo')" :active="request()->routeIs('sudoku.*')" wire:navigate>
+                        🎮 Demo Sudoku
+                    </x-nav-link>
+                    @endguest
                 </div>
             </div>
 
@@ -71,6 +79,7 @@ new class extends Component
                     </x-slot>
                 </x-dropdown>
 
+                @auth
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
@@ -97,6 +106,18 @@ new class extends Component
                         </button>
                     </x-slot>
                 </x-dropdown>
+                @endauth
+
+                @guest
+                <div class="flex items-center space-x-4">
+                    <a href="{{ route('login') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium">
+                        Login
+                    </a>
+                    <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Register
+                    </a>
+                </div>
+                @endguest
             </div>
 
             <!-- Hamburger -->
@@ -113,6 +134,7 @@ new class extends Component
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        @auth
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
@@ -139,5 +161,17 @@ new class extends Component
                 </button>
             </div>
         </div>
+        @endauth
+
+        @guest
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('login')">
+                Login
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('register')">
+                Register
+            </x-responsive-nav-link>
+        </div>
+        @endguest
     </div>
 </nav>

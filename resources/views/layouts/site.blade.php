@@ -120,7 +120,7 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md overflow-hidden shadow-lg z-50 border border-neutral-200 dark:border-neutral-700">
                                 
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user() && auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                         👑 Dashboard Admin

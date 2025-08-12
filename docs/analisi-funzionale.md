@@ -6,7 +6,7 @@
 
 ## 1) Scope & Obiettivi
 
-* **Scope iniziale (MVP)**: Sudoku 9×9 classico, single‑player cronometrato, sfide asincrone con più giocatori sulla stessa griglia (seed condiviso), classifica a tempo, salvataggio progressi, replay base, **solver integrato**.
+* **Scope iniziale (MVP)**: Sudoku 9×9 classico, livelli da easy a crazy(5 livelli), single‑player cronometrato, sfide asincrone con più giocatori sulla stessa griglia (seed condiviso), classifica a tempo, salvataggio progressi, replay base, **solver integrato**.
 
   * **Solver (single‑player)**: risolutore logico con spiegazioni passo‑passo (tecniche: single/hidden/locked candidates, pointing, naked/hidden pairs/triples, X‑Wing, Swordfish, ecc.), utilizzabile come hint avanzato o auto‑risoluzione didattica.
   * **Risolvi schema esistente**: pagina per inserire/incollare una griglia (o import JSON/CSV), avviare il solver, report tecniche e verifica unicità soluzione.
