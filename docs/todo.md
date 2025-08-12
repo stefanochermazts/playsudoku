@@ -123,12 +123,23 @@ Deliverable: pagina single‑player con board accessibile e stabile.
 ---
 
 ### Fase 6 — Sfide asincrone
-- [ ] Pagina lista sfide (daily/weekly/custom) con stato personificato (mai iniziata / in corso / completata)
-- [ ] Dettaglio sfida: avvio/pausa/ripresa; syncing seed; blocco hint se impostato
-- [ ] Conclusione: invio risultato → validazione → redirect a classifica sfida
+- [x] Pagina lista sfide (daily/weekly/custom) con stato personificato (mai iniziata / in corso / completata)
+- [x] Dettaglio sfida: avvio/pausa/ripresa; syncing seed; blocco hint se impostato
+- [x] Conclusione: invio risultato → validazione → redirect a classifica sfida
 - [ ] Anti‑abuso base: limite tentativi per sfida (rate-limit + regole business)
 
 Deliverable: flusso end‑to‑end per completare una sfida e comparire in classifica.
+
+**✅ COMPLETATO** - Note implementazione:
+- **Lista Sfide**: Componente ChallengeList con filtri avanzati (tipo/stato), paginazione e stati personalizzati per utente
+- **Dettaglio Sfida**: Componente ChallengePlay con board 9×9 completo, timer automatico, salvataggio real-time
+- **Seed Sync**: Generazione deterministica con same puzzle per tutti gli utenti della sfida
+- **Hint Control**: Configurazione per sfida con blocco candidati in modalità competitiva
+- **Pausa/Ripresa**: Salvataggio automatico dello stato con possibilità di pausa e ripresa
+- **Completamento**: Validazione automatica, modal conferma, redirect a classifiche
+- **UI/UX**: Design responsive con dark mode, 30+ traduzioni IT/EN, stati visivi chiari
+- **Performance**: Query ottimizzate, indici database, lazy loading componenti
+- **Database**: 11 sfide di test con difficoltà variabili e impostazioni diverse
 
 ---
 
