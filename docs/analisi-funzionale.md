@@ -106,6 +106,7 @@
 * Architettura stateless con Redis.
 * Accessibilità WCAG 2.2 AA (pattern W3C APG, tema chiaro/scuro).
 * Compatibilità: Chrome/Edge/Firefox/Safari, mobile responsive.
+* Multilingua: italiano, inglese con predisposizione per l'aggiunta di altre lingue
 
 ---
 
@@ -127,3 +128,10 @@
 * Con finestra scaduta, nessun nuovo tentativo risulta **valido**; il profilo mostra il **best time** personale.
 * Accessibilità: la board è **completamente navigabile da tastiera**; lo screen reader **annuncia** celle, candidati, conflitti.
 
+13) Layout del sito
+Stile generale: pulito, ordinato, colorato ma non eccessivo, con palette armoniosa ispirata a tonalità pastello o colori caldi/freschi ben bilanciati.
+Impostazione: layout centrato, full width su desktop con margini generosi, responsive su mobile (colonne verticali).
+Griglia di gioco: in evidenza, grande e ben leggibile, con bordi spessi per le sezioni 3×3, sfondi leggermente differenti per box alternati, e numeri ad alto contrasto.
+Tipografia: font moderno e leggibile (es. Inter, Nunito, Lato), titoli chiari e testi di supporto leggibili anche su schermi piccoli.
+Temi: supporto chiaro e scuro con contrasti conformi a WCAG 2.2 AA; colori degli stati (selezione, evidenziazione, errori) distinti ma coerenti.
+Decorazioni: elementi grafici leggeri (pattern geometrici o icone sottili) per dare personalità, ma senza animazioni e senza distrarre dal gioco.

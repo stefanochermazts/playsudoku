@@ -17,6 +17,19 @@ return [
     'Resend Verification Email' => 'Resend Verification Email',
     'Log Out' => 'Log Out',
     'This is a secure area of the application. Please confirm your password before continuing.' => 'This is a secure area of the application. Please confirm your password before continuing.',
+    // Auth pages
+    'Welcome back' => 'Welcome back',
+    'Sign in to your account' => 'Sign in to your account',
+    'Enter your email' => 'Enter your email',
+    'Enter your password' => 'Enter your password',
+    'Sign in' => 'Sign in',
+    'Don\'t have an account?' => 'Don\'t have an account?',
+    'Sign up' => 'Sign up',
+    'Create account' => 'Create account',
+    'Join the Sudoku community' => 'Join the Sudoku community',
+    'Enter your name' => 'Enter your name',
+    'Confirm your password' => 'Confirm your password',
+    'Already have an account?' => 'Already have an account?',
 ];
 
 

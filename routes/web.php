@@ -42,6 +42,9 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
     Route::view('profile', 'profile')
         ->middleware(['auth'])
         ->name('localized.profile');
+    
+    // Include auth routes with locale prefix
+    require __DIR__.'/auth.php';
 });
 
 Route::view('dashboard', 'dashboard')
@@ -52,4 +55,11 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+// Admin routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/users', [App\Http\Controllers\Admin\AdminController::class, 'users'])->name('users');
+});
+
+// Include auth routes for non-localized fallback
 require __DIR__.'/auth.php';

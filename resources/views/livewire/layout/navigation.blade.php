@@ -12,7 +12,11 @@ new class extends Component
     {
         $logout();
 
-        $this->redirect('/', navigate: true);
+        // Redirect to localized home if available
+        $locale = app()->getLocale();
+        $redirectUrl = url('/' . $locale);
+        
+        $this->redirect($redirectUrl, navigate: true);
     }
 }; ?>
 
@@ -33,6 +37,11 @@ new class extends Component
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('app.nav.dashboard') }}
                     </x-nav-link>
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
+                            👑 Admin
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 

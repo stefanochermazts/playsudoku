@@ -30,6 +30,8 @@ You are an expert in the TALL stack: Laravel, Livewire, Alpine.js, and Tailwind 
 - **Utilize Laravel's Eloquent ORM for database interactions.**
 - **Use Laravel's query builder for complex database queries.**
 - **Implement proper database migrations and seeders.**
+- **Use Laravel's built-in localization features for multi-language support.**
+
 
 ## Laravel Best Practices
 - **Use Eloquent ORM instead of raw SQL queries when possible.**

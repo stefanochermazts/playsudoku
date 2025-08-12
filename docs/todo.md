@@ -7,18 +7,29 @@ Nota: le attività sono ordinate per fasi incrementali. Ogni task è pensato per
 ---
 
 ### Fase 0 — Infrastruttura & Setup
-- [ ] **Bootstrap progetto**: creare app Laravel 12 con PHP 8.2+, `declare(strict_types=1);`, PSR-12.
-- [ ] **Stack TALL**: installare Tailwind, Alpine.js, Livewire, Luvi UI; configurare `vite` e build prod con purge.
+- [x] **Bootstrap progetto**: creare app Laravel 12 con PHP 8.2+, `declare(strict_types=1);`, PSR-12.
+- [x] **Stack TALL**: installare Tailwind, Alpine.js, Livewire, Luvi UI; configurare `vite` e build prod con purge.
 - [ ] **Octane (facoltativo per MVP)**: predisporre config per Swoole/RoadRunner.
-- [ ] **DB**: PostgreSQL locale; `.env.example` aggiornato; migrare su `uuid` come chiavi primarie dove opportuno.
-- [ ] **Code style**: PHP-CS-Fixer/laravel pint; CI con lint/test su GitHub Actions.
-- [ ] **Auth**: scaffolding Laravel Breeze (Blade + Livewire), login OAuth (facoltativo v2), policy/guard di base.
+- [x] **DB**: PostgreSQL locale; `.env.example` aggiornato; migrare su `uuid` come chiavi primarie dove opportuno.
+- [x] **Code style**: PHP-CS-Fixer/laravel pint; CI con lint/test su GitHub Actions.
+- [x] **Auth**: scaffolding Laravel Breeze (Blade + Livewire), login OAuth (facoltativo v2), policy/guard di base.
 
-Deliverable: progetto avviabile, login registrazione pronte, build CSS/JS ok, CI che esegue lint e test vuoti.
+Deliverable: progetto avviabile, login registrazione pronte, build CSS/JS ok, CI che esegue lint e test.
 
 ---
 
-### Fase 1 — Dominio Sudoku (Engine)
+### Fase 1 — Home page (IT/EN)
+- [x] Layout hero e sezioni informative (responsive, WCAG AA) seguendo `docs/analisi-funzionale.md` §13
+- [x] Contenuti localizzati (IT/EN) in `lang/*/app.php` con CTA chiare (Registrati/Accedi)
+- [x] Spiegazione feature dopo registrazione: board 9×9, sfide asincrone, classifiche, profilo, replay, solver, anti‑cheat
+- [x] Link interni a `dashboard`, `register`, `login`; routing con prefisso locale
+- [x] SEO avanzata per home (title/description locali già presenti) e test snapshot contenuti
+
+Deliverable: home accessibile con copy coerente (IT/EN) e CTA funzionanti.
+
+---
+
+### Fase 2 — Dominio Sudoku (Engine)
 - [ ] **Namespace** `App\Domain\Sudoku` con componenti puri PHP:
   - [ ] `Grid`, `Cell`, `CandidateSet`
   - [ ] `Move` (input utente), `MoveLog`
@@ -32,7 +43,7 @@ Deliverable: API PHP stabili per generare/validare/risolvere griglie; 95%+ cover
 
 ---
 
-### Fase 2 — Modello Dati & Migrazioni
+### Fase 3 — Modello Dati & Migrazioni
 - [ ] Tabelle principali:
   - [ ] `puzzles` (id, seed, givens, solution, difficulty, created_at)
   - [ ] `challenges` (id, puzzle_id, type: daily|weekly|custom, starts_at, ends_at, visibility, status, created_by)
@@ -46,7 +57,7 @@ Deliverable: migrazioni, factory e seeders di base.
 
 ---
 
-### Fase 3 — Servizi di Dominio (Application Layer)
+### Fase 4 — Servizi di Dominio (Application Layer)
 - [ ] `App\Services\ChallengeService`:
   - [ ] creare/schedulare sfide (daily/weekly/custom) con puzzle by seed/difficulty
   - [ ] policy: solo admin può creare custom pubbliche
@@ -61,7 +72,7 @@ Deliverable: servizi testati con feature tests su DB in memoria.
 
 ---
 
-### Fase 4 — UI Board (Blade + Livewire + Alpine + Tailwind)
+### Fase 5 — UI Board (Blade + Livewire + Alpine + Tailwind)
 - [ ] Componente `livewire/board`:
   - [ ] rendering griglia 9×9, evidenziazione riga/colonna/box
   - [ ] input da tastiera/mouse/touch, modalità numeri definitivi vs candidati
@@ -75,7 +86,7 @@ Deliverable: pagina single‑player con board accessibile e stabile.
 
 ---
 
-### Fase 5 — Sfide asincrone
+### Fase 6 — Sfide asincrone
 - [ ] Pagina lista sfide (daily/weekly/custom) con stato personificato (mai iniziata / in corso / completata)
 - [ ] Dettaglio sfida: avvio/pausa/ripresa; syncing seed; blocco hint se impostato
 - [ ] Conclusione: invio risultato → validazione → redirect a classifica sfida
@@ -85,7 +96,7 @@ Deliverable: flusso end‑to‑end per completare una sfida e comparire in class
 
 ---
 
-### Fase 6 — Classifiche
+### Fase 7 — Classifiche
 - [ ] Vista classifica per sfida con filtri (globale, difficoltà)
 - [ ] Board del giorno/settimana con archivio e trend semplici
 - [ ] Profili utente: best times per difficoltà, percentuali completati
@@ -96,7 +107,7 @@ Deliverable: leaderboard performanti con caching e UX reattiva.
 
 ---
 
-### Fase 7 — Solver & Hinting
+### Fase 8 — Solver & Hinting
 - [ ] Endpoint/azione Livewire per "risolvi passo" che espone la prossima tecnica applicata
 - [ ] Report finale tecniche utilizzate su un puzzle importato
 - [ ] Pagina "Risolvi schema esistente" con import manuale/JSON e verifica unicità
@@ -106,7 +117,7 @@ Deliverable: solver integrato alla UI e usabile come hint didattico.
 
 ---
 
-### Fase 8 — Anti‑cheat & Validazione server‑side
+### Fase 9 — Anti‑cheat & Validazione server‑side
 - [ ] Validazione mossa lato server su tentativi competitivi (sampling o completa a fine partita)
 - [ ] Analisi tempi anomali (z-score semplice su distribuzione sfida)
 - [ ] Flag moderazione per risultati sospetti, annullamento risultati, riapertura sfide
@@ -116,7 +127,7 @@ Deliverable: regole minime di fair‑play con strumenti admin.
 
 ---
 
-### Fase 9 — Accessibilità (WCAG 2.2 AA)
+### Fase 10 — Accessibilità (WCAG 2.2 AA)
 - [ ] Navigazione completa da tastiera (Tab/Shift+Tab, frecce, 1–9, Backspace)
 - [ ] Ruoli/ARIA per griglia, region landmark, annunci dinamici via `aria-live`
 - [ ] Focus management visibile (outline sufficient contrast); skip link
@@ -127,7 +138,7 @@ Deliverable: audit AA superato per le schermate MVP.
 
 ---
 
-### Fase 10 — Performance & Scalabilità
+### Fase 11 — Performance & Scalabilità
 - [ ] Query ottimizzate con eager loading e indici
 - [ ] Cache: leaderboard e dettagli sfida; invalidazione su eventi
 - [ ] Octane (se abilitato): compatibilità sessioni, warmup engine
@@ -137,7 +148,21 @@ Deliverable: tempi di risposta sub‑200ms su operazioni principali in ambiente 
 
 ---
 
-### Fase 11 — Scheduling & Automazioni
+### Fase 12 — Localizzazione (i18n) IT/EN
+- [x] Struttura locale: `lang/it/` e `lang/en/` con file `auth.php`, `pagination.php`, `passwords.php`, `validation.php`, `app.php`
+- [x] Traduzione Blade/Livewire: testi UI, messaggi di stato, componenti (`resources/views/...`)
+- [x] Validazione: messaggi locali per Form Requests e Livewire validation
+- [ ] Email/notifiche: template multi-lingua
+- [x] Switcher lingua accessibile (header/footer), salvato in sessione e rispettato via middleware
+- [x] Middleware locale (es. `SetLocale`) e rilevamento da URL (`/it`, `/en`) o preferenze utente
+- [x] SEO: `hreflang`, `<html lang>` dinamico, metadati localizzati
+- [x] Policy contenuti: fallback a EN se chiave mancante; predisposizione per nuove lingue
+
+Deliverable: app completamente fruibile in IT/EN con predisposizione per ulteriori lingue.
+
+---
+
+### Fase 13 — Scheduling & Automazioni
 - [ ] Scheduler: generazione sfida `daily` h00:00 e `weekly` lunedì h00:00 con seed/difficoltà predefiniti
 - [ ] Cleanup: rimozione tentativi incompleti oltre soglia, compattazione log mosse
 - [ ] Notifiche opzionali (email) per risultati e aperture sfide
@@ -146,7 +171,7 @@ Deliverable: routine giornaliere e settimanali affidabili.
 
 ---
 
-### Fase 12 — Sicurezza & Compliance
+### Fase 14 — Sicurezza & Compliance
 - [ ] CSRF su tutte le form; rate limiting per endpoint sensibili Livewire
 - [ ] Policy/authorization per admin (crea/sospendi sfide, modera risultati)
 - [ ] Log eventi sicurezza e audit trail su azioni admin
@@ -156,7 +181,7 @@ Deliverable: baseline sicurezza conforme alle best practice Laravel.
 
 ---
 
-### Fase 13 — Test & Qualità
+### Fase 15 — Test & Qualità
 - [ ] Unit test: engine Sudoku (copertura alta)
 - [ ] Feature test: flusso sfida → classifica (criteri di tie‑break)
 - [ ] Test accessibilità automatizzati (axe) e manuali
@@ -167,7 +192,7 @@ Deliverable: pipeline verde e copertura >80% su domini critici.
 
 ---
 
-### Fase 14 — Deploy & Observability
+### Fase 16 — Deploy & Observability
 - [ ] Env staging e production (Laravel Forge o analogo); Postgres gestito, Redis, storage S3
 - [ ] Config logging strutturato, error tracking (Sentry) e metrics (Prometheus/Grafana o Laravel Telescope in staging)
 - [ ] Script deploy zero‑downtime, migrazioni sicure

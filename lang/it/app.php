@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 return [
     'app_name' => 'PlaySudoku',
-    'welcome_title' => 'Benvenuto in PlaySudoku',
-    'welcome_subtitle' => 'Sudoku competitivo con sfide condivise, classifiche e solver logico.',
+    'welcome_title' => 'Sudoku Online Gratis - Sfide sudoku con altri appassionati!',
+    'welcome_subtitle' => 'Gioca a sudoku online gratis con sfide quotidiane, classifiche competitive e solver intelligente. Il miglior gioco sudoku per appassionati di puzzle.',
     'home' => [
         'after_signup' => 'Cosa troverai dopo la registrazione',
         'daily_weekly' => 'Sfide quotidiane e settimanali',
@@ -22,9 +22,12 @@ return [
         'register' => 'Registrati',
         'logout' => 'Esci',
         'language' => 'Lingua',
+        'features' => 'Caratteristiche',
+        'how_it_works' => 'Come funziona',
     ],
     'meta' => [
-        'description' => 'PlaySudoku è una piattaforma Sudoku competitiva con sfide condivise (seed), classifiche, replay e solver logico. Basata sullo stack TALL (Tailwind, Alpine, Laravel, Livewire).',
+        'description' => 'Sudoku online gratis con sfide quotidiane competitive. Gioco sudoku avanzato con classifiche, solver intelligente e replay. La migliore piattaforma per giocare a sudoku.',
+        'keywords' => 'sudoku, sudoku online, sudoku gratis, gioco sudoku, puzzle sudoku, sudoku competitivo, sudoku difficile, sudoku giornaliero',
     ],
     'welcome' => [
         'documentation' => [
@@ -40,31 +43,84 @@ return [
             'body_html' => "Le suite first‑party di Laravel — <a href='https://forge.laravel.com'>Forge</a>, <a href='https://vapor.laravel.com'>Vapor</a>, <a href='https://nova.laravel.com'>Nova</a>, <a href='https://envoyer.io'>Envoyer</a>, <a href='https://herd.laravel.com'>Herd</a> — si integrano con potenti librerie open source come <a href='https://laravel.com/docs/billing'>Cashier</a>, <a href='https://laravel.com/docs/dusk'>Dusk</a>, <a href='https://laravel.com/docs/broadcasting'>Echo</a>, <a href='https://laravel.com/docs/horizon'>Horizon</a>, <a href='https://laravel.com/docs/sanctum'>Sanctum</a>, <a href='https://laravel.com/docs/telescope'>Telescope</a> e altre.",
         ],
     ],
-    'features' => [
+    'cta' => [
+        'start_playing' => 'Inizia a giocare',
+        'join_now' => 'Unisciti ora',
+        'login_now' => 'Accedi ora',
+        'ready_title' => 'Pronto per la sfida?',
+        'ready_subtitle' => 'Unisciti a migliaia di giocatori nella community Sudoku più competitiva.',
+    ],
+    'sections' => [
         'board' => [
-            'title' => 'Board 9×9',
-            'desc' => 'Interazioni da tastiera, mouse e touch, candidati (pencil marks), evidenziazione riga/colonna/box, undo/redo illimitato e timer.'
+            'title' => 'Sudoku Online con Funzioni Avanzate',
+            'description' => 'Gioca a sudoku gratis con il board più avanzato: candidati automatici, undo/redo illimitato, timer preciso e validazione intelligente. Il miglior gioco sudoku per ogni livello.',
         ],
-        'challenges' => [
-            'title' => 'Sfide asincrone',
-            'desc' => 'Seed condiviso, finestre daily/weekly/custom, ranking a miglior tempo con tie‑break per errori, timestamp e hint usati.'
+        'competition' => [
+            'title' => 'Sfide Sudoku Competitive Online',
+            'description' => 'Partecipa alle sfide sudoku quotidiane e settimanali. Competi con giocatori di tutto il mondo nelle classifiche ufficiali del nostro gioco sudoku online.',
         ],
-        'leaderboards' => [
-            'title' => 'Classifiche',
-            'desc' => 'Per sfida e board periodiche, filtri per difficoltà e profili con statistiche personali.'
+    ],
+    'features' => [
+        'sudoku_board' => [
+            'title' => 'Board Professionale',
+            'description' => 'Griglia 9×9 ottimizzata con candidati, evidenziazioni e controlli avanzati.',
+        ],
+        'competitions' => [
+            'title' => 'Competizioni Live',
+            'description' => 'Sfide quotidiane e settimanali con classifiche globali in tempo reale.',
         ],
         'solver' => [
-            'title' => 'Solver logico',
-            'desc' => 'Tecniche da base ad avanzate (X‑Wing, Swordfish, …) con spiegazioni passo‑passo e modalità hint.'
+            'title' => 'Solver Intelligente',
+            'description' => 'Analisi logica avanzata con tecniche spiegate passo dopo passo.',
+        ],
+        'anticheat' => [
+            'title' => 'Anti-Cheat & Fair Play',
+            'description' => 'Sistema avanzato di validazione server-side e analisi pattern per garantire competizioni eque.',
         ],
         'replay' => [
-            'title' => 'Replay',
-            'desc' => 'Cronologia mosse riproducibile per rivedere e condividere i propri progressi.'
+            'title' => 'Replay & Analisi',
+            'description' => 'Rivedi le tue partite, analizza le mosse e confronta le performance con i migliori giocatori.',
         ],
-        'fairplay' => [
-            'title' => 'Fair‑Play',
-            'desc' => 'Validazione risultati server‑side, analisi tempi anomali e strumenti di moderazione.'
+        'profile' => [
+            'title' => 'Profilo & Statistiche',
+            'description' => 'Traccia i tuoi progressi, best time per difficoltà e percentuali di completamento dettagliate.',
         ],
+        'board' => [
+            'candidates' => 'Candidati avanzati e modalità pencil marks',
+            'undo_redo' => 'Undo/Redo illimitato con cronologia completa',
+            'timer' => 'Timer di precisione e statistiche dettagliate',
+            'accessibility' => 'Pieno supporto per accessibilità e temi',
+        ],
+        'daily_challenges' => [
+            'title' => 'Sfide Quotidiane',
+            'description' => 'Nuovi puzzle ogni giorno con difficoltà progressive e obiettivi speciali.',
+        ],
+        'leaderboards' => [
+            'title' => 'Classifiche Globali',
+            'description' => 'Competi con giocatori di tutto il mondo e scala le classifiche.',
+        ],
+        'progress_tracking' => [
+            'title' => 'Tracciamento Progressi',
+            'description' => 'Statistiche dettagliate, analisi delle prestazioni e badge di achievements.',
+        ],
+    ],
+    'placeholders' => [
+        'sudoku_board' => 'Griglia Sudoku 9×9',
+        'sudoku_board_desc' => 'Board interattivo con evidenziazioni, candidati e timer integrato',
+        'leaderboard' => 'Classifica Competitiva',
+        'leaderboard_desc' => 'Ranking globale con tempi, statistiche e progressi dei giocatori',
+    ],
+    'footer' => [
+        'description' => 'La piattaforma Sudoku più avanzata per competizioni globali, sfide quotidiane e miglioramento continuo.',
+        'game' => 'Gioco',
+        'daily_challenges' => 'Sfide Quotidiane',
+        'leaderboards' => 'Classifiche',
+        'solver' => 'Solver',
+        'support' => 'Supporto',
+        'help' => 'Aiuto',
+        'contact' => 'Contatti',
+        'privacy' => 'Privacy',
+        'rights' => 'Tutti i diritti riservati.',
     ],
 ];
 
