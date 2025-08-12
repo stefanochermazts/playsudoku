@@ -17,9 +17,7 @@
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url()->current() }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <!-- Fonts: system-ui stack to avoid external font providers -->
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

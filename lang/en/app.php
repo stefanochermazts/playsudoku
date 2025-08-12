@@ -5,6 +5,15 @@ return [
     'app_name' => 'PlaySudoku',
     'welcome_title' => 'Welcome to PlaySudoku',
     'welcome_subtitle' => 'Competitive Sudoku with shared challenges, leaderboards and a logical solver.',
+    'home' => [
+        'after_signup' => 'What you will find after signing up',
+        'daily_weekly' => 'Daily and weekly challenges',
+        'daily_weekly_desc' => 'Join anytime within the window: we record your best time and update the leaderboard.',
+        'profile' => 'Profile and progress',
+        'profile_desc' => 'Personal statistics, best times by difficulty and results history.',
+        'solver' => 'Didactic solver',
+        'solver_desc' => 'Step‑by‑step techniques to improve your logic (can be disabled in competitive challenges).',
+    ],
     'nav' => [
         'home' => 'Home',
         'dashboard' => 'Dashboard',

@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
+Route::middleware('enforce-locale')->group(function () {
+    // All public pages should include the locale prefix; middleware enforces it.
+});
+
 Route::get('/', function (Request $request) {
     if (app()->environment('testing')) {
         return view('welcome');
@@ -29,7 +33,7 @@ Route::get('/', function (Request $request) {
 
 // Gruppo opzionale con prefisso locale per contenuti tradotti.
 Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middleware' => ['setlocale']], function () {
-    Route::view('/', 'welcome')->name('localized.welcome');
+    Route::view('/', 'home')->name('localized.home');
 
     Route::view('dashboard', 'dashboard')
         ->middleware(['auth', 'verified'])

@@ -5,6 +5,15 @@ return [
     'app_name' => 'PlaySudoku',
     'welcome_title' => 'Benvenuto in PlaySudoku',
     'welcome_subtitle' => 'Sudoku competitivo con sfide condivise, classifiche e solver logico.',
+    'home' => [
+        'after_signup' => 'Cosa troverai dopo la registrazione',
+        'daily_weekly' => 'Sfide quotidiane e settimanali',
+        'daily_weekly_desc' => 'Partecipa quando vuoi entro la finestra: registriamo il tuo miglior tempo e aggiorniamo la classifica.',
+        'profile' => 'Profilo e progressione',
+        'profile_desc' => 'Statistiche personali, best times per difficoltà e storico dei risultati.',
+        'solver' => 'Solver didattico',
+        'solver_desc' => 'Tecniche spiegate passo‑passo per migliorare la tua logica (disattivabile nelle sfide competitive).',
+    ],
     'nav' => [
         'home' => 'Home',
         'dashboard' => 'Bacheca',
