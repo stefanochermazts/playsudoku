@@ -5,7 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', __('app.app_name')) }}</title>
+        @php($supported = config('app.supported_locales', ['en','it']))
+        @foreach($supported as $loc)
+            <link rel="alternate" href="{{ url('/'.$loc) }}" hreflang="{{ $loc }}">
+        @endforeach
+        <link rel="alternate" href="{{ url('/') }}" hreflang="x-default">
+        <meta name="description" content="{{ __('app.meta.description') }}">
+        <meta property="og:title" content="{{ __('app.app_name') }}">
+        <meta property="og:description" content="{{ __('app.meta.description') }}">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
