@@ -40,6 +40,32 @@ return [
             'body_html' => "Laravel's robust first-party tools — <a href='https://forge.laravel.com'>Forge</a>, <a href='https://vapor.laravel.com'>Vapor</a>, <a href='https://nova.laravel.com'>Nova</a>, <a href='https://envoyer.io'>Envoyer</a>, <a href='https://herd.laravel.com'>Herd</a> — pair with powerful OSS libraries like <a href='https://laravel.com/docs/billing'>Cashier</a>, <a href='https://laravel.com/docs/dusk'>Dusk</a>, <a href='https://laravel.com/docs/broadcasting'>Echo</a>, <a href='https://laravel.com/docs/horizon'>Horizon</a>, <a href='https://laravel.com/docs/sanctum'>Sanctum</a>, <a href='https://laravel.com/docs/telescope'>Telescope</a>, and more.",
         ],
     ],
+    'features' => [
+        'board' => [
+            'title' => '9×9 Board',
+            'desc' => 'Keyboard, mouse and touch input, candidates (pencil marks), row/column/box highlighting, unlimited undo/redo and timer.'
+        ],
+        'challenges' => [
+            'title' => 'Asynchronous challenges',
+            'desc' => 'Shared seed, daily/weekly/custom windows, best-time ranking with tie‑break by errors, timestamp and hints used.'
+        ],
+        'leaderboards' => [
+            'title' => 'Leaderboards',
+            'desc' => 'Per-challenge and periodic boards, filters by difficulty, and profiles with personal statistics.'
+        ],
+        'solver' => [
+            'title' => 'Logical solver',
+            'desc' => 'From basic to advanced techniques (X‑Wing, Swordfish, …) with step‑by‑step explanations and hint mode.'
+        ],
+        'replay' => [
+            'title' => 'Replay',
+            'desc' => 'Reproducible move history to review and share your progress.'
+        ],
+        'fairplay' => [
+            'title' => 'Fair‑Play',
+            'desc' => 'Server‑side result validation, anomalous time analysis and moderation tools.'
+        ],
+    ],
 ];
 
 

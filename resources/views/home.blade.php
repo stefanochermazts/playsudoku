@@ -1,6 +1,6 @@
 @php($t = __('app'))
-<x-guest-layout>
-    <section class="relative overflow-hidden py-12 sm:py-20 bg-surface-50 dark:bg-gray-900">
+<x-site-layout>
+    <section class="relative overflow-hidden py-12 sm:py-20 bg-gradient-to-b from-surface-50 to-white dark:from-gray-900 dark:to-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-10 items-center">
                 <div>
@@ -19,7 +19,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white/60 dark:bg-gray-800">
+                <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white/70 dark:bg-gray-800">
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3">
                             <span class="mt-1 h-2 w-2 rounded-full bg-brand-600" aria-hidden="true"></span>
@@ -47,21 +47,33 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ __('app.home.after_signup') }}</h2>
             <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/70 dark:bg-gray-800">
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/80 dark:bg-gray-800">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('app.home.daily_weekly') }}</h3>
                     <p class="mt-2 text-gray-700 dark:text-gray-300">{{ __('app.home.daily_weekly_desc') }}</p>
                 </div>
-                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/70 dark:bg-gray-800">
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/80 dark:bg-gray-800">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('app.home.profile') }}</h3>
                     <p class="mt-2 text-gray-700 dark:text-gray-300">{{ __('app.home.profile_desc') }}</p>
                 </div>
-                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/70 dark:bg-gray-800">
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-5 bg-white/80 dark:bg-gray-800">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('app.home.solver') }}</h3>
                     <p class="mt-2 text-gray-700 dark:text-gray-300">{{ __('app.home.solver_desc') }}</p>
                 </div>
             </div>
         </div>
     </section>
-</x-guest-layout>
+
+    <!-- Placeholder immagini promozionali accessibili -->
+    <section class="py-12 sm:py-16 bg-surface-50 dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-6">
+            <figure class="aspect-[16/9] w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800 flex items-center justify-center">
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ __('Segnaposto immagine: schermata board 9×9') }}</span>
+            </figure>
+            <figure class="aspect-[16/9] w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800 flex items-center justify-center">
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ __('Segnaposto immagine: classifica sfida') }}</span>
+            </figure>
+        </div>
+    </section>
+</x-site-layout>
 
 
