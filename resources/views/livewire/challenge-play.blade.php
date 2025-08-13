@@ -4,7 +4,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <a href="{{ route('challenges.index') }}" 
+                    <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
                        class="p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700">
                         <svg class="w-5 h-5 text-neutral-600 dark:text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -73,7 +73,7 @@
                      tabindex="0">
                     
                     <!-- Sudoku Grid -->
-                    <div class="sudoku-grid">
+                    <div class="sudoku-grid" style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; background-color: #374151; padding: 4px; border-radius: 12px; max-width: 500px; aspect-ratio: 1; margin: 0 auto;">
                         @for($row = 0; $row < 9; $row++)
                             @for($col = 0; $col < 9; $col++)
                                 @php
@@ -88,6 +88,7 @@
                                 @endphp
                                 
                                 <div class="sudoku-cell {{ $isSelected ? 'selected' : '' }} {{ $isHighlighted ? 'highlighted' : '' }} {{ $hasConflict ? 'conflict' : '' }} {{ $isGiven ? 'given' : 'user-input' }}"
+                                     style="background-color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; font-weight: 600; min-height: 50px; position: relative; border-radius: 2px; transition: all 0.2s ease;"
                                      wire:click="selectCell({{ $row }}, {{ $col }})">
                                     
                                     @if($value !== null)
@@ -206,11 +207,11 @@
                         Errori: <strong>{{ $errorCount }}</strong>
                     </p>
                     <div class="flex space-x-3">
-                        <a href="{{ route('challenges.index') }}" 
+                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
                            class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
                             Torna alle Sfide
                         </a>
-                        <a href="{{ route('leaderboard.index') }}" 
+                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.leaderboard.index') : route('leaderboard.index') }}" 
                            class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
                             Vedi Classifica
                         </a>
@@ -349,18 +350,36 @@
 
 @push('scripts')
 <script>
-    setInterval(() => {
-        const component = @this;
-        if (component) {
-            component.call('tickTimer');
-        }
-    }, 1000);
+    let timerInterval;
     
-    // Focus the game area for keyboard input
     document.addEventListener('DOMContentLoaded', function() {
+        // Focus the game area for keyboard input
         const gameArea = document.querySelector('.sudoku-game');
         if (gameArea) {
             gameArea.focus();
+        }
+        
+        // Start timer interval
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        
+        timerInterval = setInterval(() => {
+            const component = @this;
+            if (component && typeof component.call === 'function') {
+                try {
+                    component.call('tickTimer');
+                } catch (error) {
+                    console.log('Timer tick error:', error);
+                }
+            }
+        }, 1000);
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
         }
     });
 </script>

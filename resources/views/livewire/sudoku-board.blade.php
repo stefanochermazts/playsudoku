@@ -42,7 +42,7 @@
     </div>
 
     {{-- Griglia principale --}}
-    <div class="sudoku-grid mx-auto rounded-lg overflow-hidden">
+    <div class="sudoku-grid mx-auto rounded-lg overflow-hidden" style="display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); width: 100%; max-width: 640px; aspect-ratio: 1; gap: 0; border: 4px solid #1f2937; background-color: #1f2937;">
         @for ($row = 0; $row < 9; $row++)
             @for ($col = 0; $col < 9; $col++)
                 @php
@@ -60,12 +60,26 @@
                     // Classi base
                     $classes = ['sudoku-cell', 'flex', 'items-center', 'justify-center', 'text-center', 'cursor-pointer', 'bg-white', 'dark:bg-gray-800'];
                     
+                    // Inizializza stili bordi prima di tutto
+                    $borderStyle = "width: 100%; height: 100%; min-height: 70px; aspect-ratio: 1; position: relative; border: 1px solid #d1d5db;";
+                    
+                    // Bordi spessi per separatori 3x3
+                    if ($row % 3 === 0 && $row > 0) {
+                        $borderStyle .= " border-top: 4px solid #1f2937;";
+                        $classes[] = 'thick-top';
+                    }
+                    if ($col % 3 === 0 && $col > 0) {
+                        $borderStyle .= " border-left: 4px solid #1f2937;";
+                        $classes[] = 'thick-left';
+                    }
+                    
                     // Evidenziazioni
                     if (!$isSelected && ($sameRow || $sameCol || $sameBox)) {
                         $classes[] = 'bg-blue-50/70';
                         $classes[] = 'dark:bg-blue-900/25';
                     }
                     if ($isSelected) {
+                        $borderStyle .= " background-color: #dbeafe !important; box-shadow: inset 0 0 0 3px #3b82f6;";
                         $classes[] = 'bg-blue-100';
                         $classes[] = 'dark:bg-blue-900'; 
                         $classes[] = 'ring-2';
@@ -79,14 +93,11 @@
                         $classes[] = 'bg-gray-100';
                         $classes[] = 'dark:bg-gray-700';
                     }
-                    
-                    // Bordi spessi per separatori 3x3
-                    if ($row % 3 === 0 && $row > 0) $classes[] = 'thick-top';
-                    if ($col % 3 === 0 && $col > 0) $classes[] = 'thick-left';
                 @endphp
                 
                 <div wire:click="selectCell({{ $row }}, {{ $col }})"
                      class="{{ implode(' ', $classes) }} hover:bg-gray-50 dark:hover:bg-gray-700"
+                     style="{{ $borderStyle }}"
                      role="gridcell" aria-selected="{{ $isSelected ? 'true' : 'false' }}">
                 
                     @if($value)
@@ -152,17 +163,89 @@
 
 @push('scripts')
 <script>
-document.addEventListener('livewire:init', () => {
-    // Timer tick ogni secondo
-    setInterval(() => {
-        // Trova tutti i componenti SudokuBoard e fa tick del timer
-        Livewire.all().forEach(component => {
-            if (component.name === 'sudoku-board') {
-                component.call('tickTimer');
+    let sudokuTimerInterval;
+    
+    // Usa livewire:init invece di DOMContentLoaded per garantire che @this sia disponibile
+    document.addEventListener('livewire:init', function() {
+        console.log('🚀 SudokuBoard: Livewire inizializzato');
+        
+        // Clear any existing interval
+        if (sudokuTimerInterval) {
+            clearInterval(sudokuTimerInterval);
+        }
+        
+        // Start timer interval
+        sudokuTimerInterval = setInterval(() => {
+            // Find this specific SudokuBoard component and call tickTimer
+            const component = @this;
+            if (component && typeof component.call === 'function') {
+                try {
+                    component.call('tickTimer');
+                } catch (error) {
+                    console.log('SudokuBoard timer tick error:', error);
+                }
             }
-        });
-    }, 1000);
-});
+        }, 1000);
+        
+        // Esponi una funzione globale per caricare puzzle
+        window.sudokuBoardLoadPuzzle = function(difficulty) {
+            console.log('🎯 Chiamata a window.sudokuBoardLoadPuzzle con difficoltà:', difficulty);
+            const component = @this;
+            if (component && typeof component.call === 'function') {
+                try {
+                    component.call('loadSamplePuzzle', difficulty);
+                    console.log('✅ Puzzle caricato dal componente! Difficoltà:', difficulty);
+                    return true;
+                } catch (error) {
+                    console.log('❌ Errore caricamento puzzle:', error);
+                    return false;
+                }
+            } else {
+                console.log('❌ Componente non disponibile:', component);
+                return false;
+            }
+        };
+        
+        console.log('✅ Funzione window.sudokuBoardLoadPuzzle creata');
+    });
+    
+    // Fallback con DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Se la funzione non esiste ancora, creala
+        if (typeof window.sudokuBoardLoadPuzzle === 'undefined') {
+            console.log('🔄 Fallback: creazione funzione sudokuBoardLoadPuzzle');
+            
+            setTimeout(() => {
+                window.sudokuBoardLoadPuzzle = function(difficulty) {
+                    console.log('🎯 Fallback: Chiamata con difficoltà:', difficulty);
+                    const component = @this;
+                    if (component && typeof component.call === 'function') {
+                        try {
+                            component.call('loadSamplePuzzle', difficulty);
+                            console.log('✅ Fallback: Puzzle caricato! Difficoltà:', difficulty);
+                            return true;
+                        } catch (error) {
+                            console.log('❌ Fallback: Errore caricamento puzzle:', error);
+                            return false;
+                        }
+                    } else {
+                        console.log('❌ Fallback: Componente non disponibile');
+                        return false;
+                    }
+                };
+                console.log('✅ Fallback: Funzione window.sudokuBoardLoadPuzzle creata');
+            }, 2000);
+        }
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (sudokuTimerInterval) {
+            clearInterval(sudokuTimerInterval);
+        }
+        // Cleanup global function
+        delete window.sudokuBoardLoadPuzzle;
+    });
 </script>
 @endpush
 

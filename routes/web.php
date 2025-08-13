@@ -33,27 +33,37 @@ Route::get('/', function (Request $request) {
 
 // Gruppo opzionale con prefisso locale per contenuti tradotti.
 Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middleware' => ['setlocale']], function () {
-    Route::view('/', 'home')->name('localized.home');
+    Route::get('/', function ($locale) {
+        return view('home');
+    })->name('localized.home');
 
-    Route::view('dashboard', 'dashboard-livewire')
-        ->middleware(['auth', 'verified'])
-        ->name('localized.dashboard');
+    Route::get('dashboard', function ($locale) {
+        return view('dashboard-livewire');
+    })->middleware(['auth', 'verified'])
+      ->name('localized.dashboard');
 
-    Route::view('profile', 'profile')
-        ->middleware(['auth'])
-        ->name('localized.profile');
+    Route::get('profile', function ($locale) {
+        return view('profile');
+    })->middleware(['auth'])
+      ->name('localized.profile');
     
     // Sfide localizzate (area riservata)
     Route::middleware(['auth'])->group(function () {
-        Route::get('/challenges', function () {
+        Route::get('/challenges', function ($locale) {
             return view('challenges.index');
         })->name('localized.challenges.index');
         
-        Route::get('/challenges/{challenge}/play', function ($challengeId) {
-            return view('challenges.play', ['challengeId' => $challengeId]);
+        Route::get('/challenges/{challenge}/play', function ($locale, $challenge) {
+            // Verifica che il challenge esista
+            $challengeModel = \App\Models\Challenge::find($challenge);
+            if (!$challengeModel) {
+                abort(404, 'Challenge not found');
+            }
+            
+            return view('challenges.play', ['challengeId' => $challenge]);
         })->name('localized.challenges.play');
         
-        Route::get('/leaderboard', function () {
+        Route::get('/leaderboard', function ($locale) {
             return view('leaderboard.index');
         })->name('localized.leaderboard.index');
     });
@@ -62,13 +72,53 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
     require __DIR__.'/auth.php';
 });
 
-Route::view('dashboard', 'dashboard-livewire')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// Redirect dashboard senza locale a dashboard localizzato
+Route::get('dashboard', function (Request $request) {
+    $supported = (array) config('app.supported_locales', ['en', 'it']);
+    
+    // Prova a ottenere locale dalla sessione
+    $sessionLocale = $request->session()->get('locale');
+    if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
+        return redirect()->to(url('/'.$sessionLocale.'/dashboard'));
+    }
+    
+    // Fallback su Accept-Language
+    $preferred = 'en';
+    $accept = (string) $request->header('Accept-Language', '');
+    if (preg_match('/\bit\b/i', $accept)) {
+        $preferred = 'it';
+    }
+    
+    if (! in_array($preferred, $supported, true)) {
+        $preferred = $supported[0] ?? 'en';
+    }
+    
+    return redirect()->to(url('/'.$preferred.'/dashboard'));
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+// Redirect profile senza locale a profile localizzato
+Route::get('profile', function (Request $request) {
+    $supported = (array) config('app.supported_locales', ['en', 'it']);
+    
+    // Prova a ottenere locale dalla sessione
+    $sessionLocale = $request->session()->get('locale');
+    if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
+        return redirect()->to(url('/'.$sessionLocale.'/profile'));
+    }
+    
+    // Fallback su Accept-Language
+    $preferred = 'en';
+    $accept = (string) $request->header('Accept-Language', '');
+    if (preg_match('/\bit\b/i', $accept)) {
+        $preferred = 'it';
+    }
+    
+    if (! in_array($preferred, $supported, true)) {
+        $preferred = $supported[0] ?? 'en';
+    }
+    
+    return redirect()->to(url('/'.$preferred.'/profile'));
+})->middleware(['auth'])->name('profile');
 
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
@@ -103,20 +153,71 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 Route::get('/sudoku/demo', [App\Http\Controllers\SudokuDemoController::class, 'index'])->name('sudoku.demo');
 Route::get('/sudoku/play', [App\Http\Controllers\SudokuDemoController::class, 'play'])->name('sudoku.play');
 
-// Route area riservata (con auth)
+// Redirect route area riservata senza locale a route localizzate
 Route::middleware(['auth'])->group(function () {
-    // Sfide
-    Route::get('/challenges', function () {
-        return view('challenges.index');
+    // Redirect challenges senza locale
+    Route::get('/challenges', function (Request $request) {
+        $supported = (array) config('app.supported_locales', ['en', 'it']);
+        
+        $sessionLocale = $request->session()->get('locale');
+        if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
+            return redirect()->to(url('/'.$sessionLocale.'/challenges'));
+        }
+        
+        $preferred = 'en';
+        $accept = (string) $request->header('Accept-Language', '');
+        if (preg_match('/\bit\b/i', $accept)) {
+            $preferred = 'it';
+        }
+        
+        if (! in_array($preferred, $supported, true)) {
+            $preferred = $supported[0] ?? 'en';
+        }
+        
+        return redirect()->to(url('/'.$preferred.'/challenges'));
     })->name('challenges.index');
     
-    Route::get('/challenges/{challenge}/play', function ($challengeId) {
-        return view('challenges.play', ['challengeId' => $challengeId]);
+    Route::get('/challenges/{challenge}/play', function (Request $request, $challenge) {
+        $supported = (array) config('app.supported_locales', ['en', 'it']);
+        
+        $sessionLocale = $request->session()->get('locale');
+        if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
+            return redirect()->to(url('/'.$sessionLocale.'/challenges/'.$challenge.'/play'));
+        }
+        
+        $preferred = 'en';
+        $accept = (string) $request->header('Accept-Language', '');
+        if (preg_match('/\bit\b/i', $accept)) {
+            $preferred = 'it';
+        }
+        
+        if (! in_array($preferred, $supported, true)) {
+            $preferred = $supported[0] ?? 'en';
+        }
+        
+        return redirect()->to(url('/'.$preferred.'/challenges/'.$challenge.'/play'));
     })->name('challenges.play');
     
-    // Classifiche
-    Route::get('/leaderboard', function () {
-        return view('leaderboard.index');
+    // Redirect leaderboard senza locale
+    Route::get('/leaderboard', function (Request $request) {
+        $supported = (array) config('app.supported_locales', ['en', 'it']);
+        
+        $sessionLocale = $request->session()->get('locale');
+        if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
+            return redirect()->to(url('/'.$sessionLocale.'/leaderboard'));
+        }
+        
+        $preferred = 'en';
+        $accept = (string) $request->header('Accept-Language', '');
+        if (preg_match('/\bit\b/i', $accept)) {
+            $preferred = 'it';
+        }
+        
+        if (! in_array($preferred, $supported, true)) {
+            $preferred = $supported[0] ?? 'en';
+        }
+        
+        return redirect()->to(url('/'.$preferred.'/leaderboard'));
     })->name('leaderboard.index');
 });
 

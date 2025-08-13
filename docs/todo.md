@@ -127,6 +127,11 @@ Deliverable: pagina single‑player con board accessibile e stabile.
 - [x] Dettaglio sfida: avvio/pausa/ripresa; syncing seed; blocco hint se impostato
 - [x] Conclusione: invio risultato → validazione → redirect a classifica sfida
 - [ ] Anti‑abuso base: limite tentativi per sfida (rate-limit + regole business)
+- [ ] Fix algoritmo Generator.fillGridRecursive 
+  - Aggiungere limite profondità ricorsiva
+  - Implementare timeout interno
+  - Ottimizzare strategia backtracking
+  - Aggiungere fallback deterministici
 
 Deliverable: flusso end‑to‑end per completare una sfida e comparire in classifica.
 

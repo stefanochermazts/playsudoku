@@ -34,20 +34,20 @@
                                    focus:outline-none focus:ring-2 focus:ring-green-500 font-medium text-sm">
                         🟢 Easy
                     </button>
-                    <button onclick="loadPuzzle('normal')" 
+                    <button onclick="loadPuzzle('medium')" 
                             class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm">
-                        🔵 Normal
-                    </button>
-                    <button onclick="loadPuzzle('medium')" 
-                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
-                                   focus:outline-none focus:ring-2 focus:ring-yellow-500 font-medium text-sm">
-                        🟡 Medium
+                        🔵 Medium
                     </button>
                     <button onclick="loadPuzzle('hard')" 
-                            class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 
-                                   focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium text-sm">
-                        🟠 Hard
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
+                                   focus:outline-none focus:ring-2 focus:ring-yellow-500 font-medium text-sm">
+                        🟡 Hard
+                    </button>
+                    <button onclick="loadPuzzle('expert')" 
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
+                                   focus:outline-none focus:ring-2 focus:ring-red-500 font-medium text-sm">
+                        🔴 Expert
                     </button>
                     <button onclick="loadPuzzle('crazy')" 
                             class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
@@ -94,7 +94,9 @@
 
         {{-- Board Demo --}}
         <div id="board-container">
-            @livewire('sudoku-board', ['readOnly' => false, 'startTimer' => false])
+            <div id="sudoku-board-wrapper">
+                @livewire('sudoku-board', ['readOnly' => false, 'startTimer' => false], key('sudoku-demo-board'))
+            </div>
         </div>
 
         {{-- Informazioni tecniche --}}
@@ -142,24 +144,88 @@ function loadEmptyBoard() {
 }
 
 function loadPuzzle(difficulty) {
-    // Trova il componente SudokuBoard cercando nella classe sudoku-game
-    const sudokuElement = document.querySelector('.sudoku-game[wire\\:id]');
-    if (sudokuElement) {
-        const wireId = sudokuElement.getAttribute('wire:id');
-        const component = Livewire.find(wireId);
-        if (component) {
-            component.call('loadSamplePuzzle', difficulty);
-        } else {
-            console.error('SudokuBoard component not found');
+    console.log('🎯 Tentativo di caricare puzzle con difficoltà:', difficulty);
+    
+    // Metodo 1: Usa la funzione globale esposta dal componente
+    if (typeof window.sudokuBoardLoadPuzzle === 'function') {
+        console.log('📞 Chiamata funzione globale...');
+        const success = window.sudokuBoardLoadPuzzle(difficulty);
+        if (success) {
+            console.log('✅ Puzzle caricato tramite funzione globale!');
+            return;
         }
-    } else {
-        console.error('Sudoku element not found');
     }
+
+    // Metodo 1-bis: Dispatch evento Livewire globale (v3)
+    try {
+        console.log('📡 Dispatch Livewire event load-sample-puzzle');
+        Livewire.dispatch('load-sample-puzzle', { difficulty });
+        // Diamo un feedback visivo/log
+        console.log('✅ Evento inviato a Livewire');
+        return;
+    } catch (e) {
+        console.log('❌ Dispatch fallito, passo al fallback manuale...', e);
+    }
+    
+    // Metodo 2: Fallback - cerca tramite Livewire con retry
+    const sudokuElements = document.querySelectorAll('[wire\\:id]');
+    console.log('🔍 Trovati', sudokuElements.length, 'elementi Livewire');
+    
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    function tryLoadPuzzle() {
+        attempts++;
+        console.log(`🔄 Tentativo ${attempts}/${maxAttempts}`);
+        
+        for (let element of sudokuElements) {
+            const wireId = element.getAttribute('wire:id');
+            console.log('🔍 Controllando elemento con wire:id:', wireId);
+            
+            const component = Livewire.find(wireId);
+            
+            if (component) {
+                console.log('✅ Componente trovato:', component);
+                console.log('🔍 Metodi disponibili:', Object.getOwnPropertyNames(component));
+                
+                if (typeof component.call === 'function') {
+                    try {
+                        console.log('📞 Chiamata loadSamplePuzzle...');
+                        component.call('loadSamplePuzzle', difficulty);
+                        console.log('✅ Puzzle caricato tramite fallback! Difficoltà:', difficulty);
+                        return true;
+                    } catch (error) {
+                        console.log('❌ Errore durante la chiamata:', error.message, error);
+                    }
+                } else {
+                    console.log('❌ Metodo call non disponibile');
+                }
+            } else {
+                console.log('❌ Componente non trovato per wireId:', wireId);
+            }
+        }
+        
+        // Retry se non è riuscito e non ha raggiunto il max attempts
+        if (attempts < maxAttempts) {
+            console.log('⏰ Retry tra 1 secondo...');
+            setTimeout(tryLoadPuzzle, 1000);
+        } else {
+            console.error('❌ Tutti i tentativi falliti - componente non trovato');
+            console.log('Debug info:');
+            console.log('- Funzione globale disponibile?', typeof window.sudokuBoardLoadPuzzle);
+            console.log('- Elementi Livewire:', sudokuElements.length);
+            console.log('- Livewire oggetto disponibile?', typeof Livewire);
+        }
+        return false;
+    }
+    
+    // Inizia i tentativi
+    tryLoadPuzzle();
 }
 
 // Backward compatibility
 function loadSamplePuzzle() {
-    loadPuzzle('normal');
+    loadPuzzle('medium');
 }
 </script>
 </x-site-layout>

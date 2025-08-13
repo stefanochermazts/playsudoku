@@ -85,9 +85,18 @@ class SudokuBoard extends Component
             $this->initialGrid = $initialGrid;
             $this->grid = $initialGrid;
         } else {
-            // Griglia vuota per test
-            $this->initialGrid = array_fill(0, 9, array_fill(0, 9, null));
-            $this->grid = array_fill(0, 9, array_fill(0, 9, null));
+            // Genera un puzzle di esempio per il demo invece di griglia vuota
+            try {
+                $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
+                $seed = 123456; // Seed fisso per il demo
+                $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'easy');
+                $this->initialGrid = $puzzle->toArray();
+                $this->grid = $puzzle->toArray();
+            } catch (\Exception $e) {
+                // Fallback a griglia vuota in caso di errore
+                $this->initialGrid = array_fill(0, 9, array_fill(0, 9, null));
+                $this->grid = array_fill(0, 9, array_fill(0, 9, null));
+            }
         }
 
         // Inizializza i candidati
@@ -123,8 +132,6 @@ class SudokuBoard extends Component
     public function selectCell(int $row, int $col): void
     {
         if ($this->readOnly) return;
-        
-        \Log::debug("selectCell called: row={$row}, col={$col}");
         
         $this->selectedRow = $row;
         $this->selectedCol = $col;
@@ -349,10 +356,10 @@ class SudokuBoard extends Component
     /**
      * Carica un puzzle di esempio
      */
-    public function loadSamplePuzzle(string $difficulty = 'normal'): void
+    public function loadSamplePuzzle(string $difficulty = 'medium'): void
     {
-        $validator = new \App\Domain\Sudoku\Validator();
-        $generator = new \App\Domain\Sudoku\Generator($validator);
+        // Usa il service container per dependency injection
+        $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
         
         $seed = random_int(1000, 999999);
         $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
@@ -376,6 +383,18 @@ class SudokuBoard extends Component
         $this->timerRunning = false;
         
         $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
+    }
+
+    #[On('load-sample-puzzle')]
+    public function loadSamplePuzzleEvent($payload = null): void
+    {
+        $difficulty = 'medium';
+        if (is_array($payload) && isset($payload['difficulty'])) {
+            $difficulty = (string) $payload['difficulty'];
+        } elseif (is_string($payload) && $payload !== '') {
+            $difficulty = $payload;
+        }
+        $this->loadSamplePuzzle($difficulty);
     }
 
     private function computeCompletion(): void

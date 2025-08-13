@@ -344,9 +344,19 @@ class AdminController extends Controller
         
         $generated = 0;
         $attempts = 0;
-        $maxAttempts = $count * 10; // Evita loop infiniti
+        $maxAttempts = min($count * 5, 20); // Limite molto più conservativo
+        $skipped = 0; // Contatore per puzzle scartati
+        
+        // Timeout di sicurezza
+        $startTime = time();
+        $maxExecutionTime = 30; // 30 secondi massimo
 
         while ($generated < $count && $attempts < $maxAttempts) {
+            // Controllo timeout
+            if (time() - $startTime > $maxExecutionTime) {
+                break;
+            }
+            
             $attempts++;
             $seed = $seedBase + $attempts;
             
@@ -356,47 +366,60 @@ class AdminController extends Controller
             }
 
             try {
-                // Genera puzzle con difficoltà target (include generazione griglia completa)
-                $puzzleGrid = $generator->generatePuzzleWithDifficulty($seed, $targetDifficulty);
-                
-                // Genera griglia completa separata per la soluzione
+                // Genera la griglia completa prima
                 $completeGrid = $generator->generateCompleteGrid($seed);
+                
+                // Poi genera il puzzle con difficoltà
+                $puzzleGrid = $generator->generatePuzzleWithDifficulty($seed, $targetDifficulty);
                 
                 // Verifica la difficoltà effettiva
                 $actualDifficulty = $difficultyRater->rateDifficulty($puzzleGrid);
+                $normalizedActual = strtolower($actualDifficulty);
                 
-                // Se la difficoltà non corrisponde, riprova (con una certa tolleranza)
-                $difficultyMap = ['easy' => 1, 'medium' => 2, 'hard' => 3, 'expert' => 4];
-                $targetLevel = $difficultyMap[$targetDifficulty];
-                $actualLevel = $difficultyMap[$actualDifficulty] ?? 0;
-                
-                // Tollera una differenza di 1 livello
-                if (abs($targetLevel - $actualLevel) > 1) {
-                    continue;
+                // Modalità permissiva dopo 70% dei tentativi
+                if ($attempts > $maxAttempts * 0.7) {
+                    // Accetta qualsiasi difficoltà
+                } else {
+                    // Controlla corrispondenza con tolleranza ±2 livelli
+                    $difficultyMap = ['easy' => 1, 'medium' => 2, 'hard' => 3, 'expert' => 4, 'master' => 5];
+                    $targetLevel = $difficultyMap[$targetDifficulty];
+                    $actualLevel = $difficultyMap[$normalizedActual] ?? 0;
+                    
+                    if (abs($targetLevel - $actualLevel) > 2) {
+                        $skipped++;
+                        continue;
+                    }
                 }
 
-                // Salva il puzzle
+                // Salva il puzzle generato
                 Puzzle::create([
                     'seed' => $seed,
                     'givens' => $puzzleGrid->toArray(),
                     'solution' => $completeGrid->toArray(),
-                    'difficulty' => $actualDifficulty,
+                    'difficulty' => $normalizedActual,
                 ]);
 
                 $generated++;
+                
             } catch (\Exception $e) {
-                // Se c'è un errore, continua con il prossimo seed
+                // Log dell'errore per debug
+                \Log::error("Errore generazione puzzle seed {$seed}: " . $e->getMessage());
                 continue;
             }
         }
 
         if ($generated === 0) {
             return redirect()->route('admin.puzzles.generate')
-                ->with('error', 'Impossibile generare puzzle con i parametri specificati. Riprova con seed o difficoltà diversa.');
+                ->with('error', "Impossibile generare puzzle. Tentativi: {$attempts}, Puzzle scartati: {$skipped}. Prova con difficoltà diversa o aumenta il numero di tentativi.");
+        }
+
+        $successMessage = "Generati {$generated}/{$count} puzzle di difficoltà {$targetDifficulty}!";
+        if ($generated < $count) {
+            $successMessage .= " (Tentativi: {$attempts}, Scartati: {$skipped})";
         }
 
         return redirect()->route('admin.puzzles')
-            ->with('success', "Generati con successo {$generated} puzzle di difficoltà {$targetDifficulty}!");
+            ->with('success', $successMessage);
     }
 
     /**

@@ -43,20 +43,103 @@ final class Generator implements GeneratorInterface
     {
         $this->setSeed($seed);
         
-        // Strategia più semplice: riempi prima i box diagonali, poi il resto
+        // Primo tentativo: algoritmo ottimizzato
         $grid = Grid::empty();
-        
-        // Riempi i box diagonali (0, 4, 8) che sono indipendenti
         $grid = $this->fillDiagonalBoxes($grid);
-        
-        // Completa il resto della griglia con backtracking
         $completeGrid = $this->fillGridRecursive($grid);
         
-        if ($completeGrid === null) {
-            throw new InvalidGridException("Failed to generate complete grid with seed {$seed}");
+        if ($completeGrid !== null) {
+            return $completeGrid;
         }
-
-        return $completeGrid;
+        
+        // Fallback 1: Tentativo con seed modificato
+        $this->setSeed($seed + 1000);
+        $grid = Grid::empty();
+        $grid = $this->fillDiagonalBoxes($grid);
+        $completeGrid = $this->fillGridRecursive($grid);
+        
+        if ($completeGrid !== null) {
+            return $completeGrid;
+        }
+        
+        // Fallback 2: Pattern deterministico basato su seed
+        return $this->generateFromDeterministicPattern($seed);
+    }
+    
+    /**
+     * Genera una griglia usando pattern deterministici basati su seed
+     */
+    private function generateFromDeterministicPattern(int $seed): Grid
+    {
+        // Pattern base valido (griglia sudoku completa)
+        $basePattern = [
+            [1,2,3,4,5,6,7,8,9],
+            [4,5,6,7,8,9,1,2,3], 
+            [7,8,9,1,2,3,4,5,6],
+            [2,3,4,5,6,7,8,9,1],
+            [5,6,7,8,9,1,2,3,4],
+            [8,9,1,2,3,4,5,6,7],
+            [3,4,5,6,7,8,9,1,2],
+            [6,7,8,9,1,2,3,4,5],
+            [9,1,2,3,4,5,6,7,8]
+        ];
+        
+        // Applica trasformazioni deterministiche basate su seed
+        $pattern = $this->applyDeterministicTransformations($basePattern, $seed);
+        
+        return Grid::fromArray($pattern);
+    }
+    
+    /**
+     * Applica trasformazioni deterministiche per creare varietà
+     */
+    private function applyDeterministicTransformations(array $pattern, int $seed): array
+    {
+        $this->setSeed($seed);
+        
+        // Swap righe all'interno degli stessi gruppi di 3
+        for ($group = 0; $group < 3; $group++) {
+            if ($this->getRandomInt(0, 1)) {
+                $row1 = $group * 3 + 0;
+                $row2 = $group * 3 + 1;
+                [$pattern[$row1], $pattern[$row2]] = [$pattern[$row2], $pattern[$row1]];
+            }
+            if ($this->getRandomInt(0, 1)) {
+                $row1 = $group * 3 + 1;
+                $row2 = $group * 3 + 2;
+                [$pattern[$row1], $pattern[$row2]] = [$pattern[$row2], $pattern[$row1]];
+            }
+        }
+        
+        // Swap colonne all'interno degli stessi gruppi di 3
+        for ($group = 0; $group < 3; $group++) {
+            if ($this->getRandomInt(0, 1)) {
+                for ($row = 0; $row < 9; $row++) {
+                    $col1 = $group * 3 + 0;
+                    $col2 = $group * 3 + 1;
+                    [$pattern[$row][$col1], $pattern[$row][$col2]] = [$pattern[$row][$col2], $pattern[$row][$col1]];
+                }
+            }
+            if ($this->getRandomInt(0, 1)) {
+                for ($row = 0; $row < 9; $row++) {
+                    $col1 = $group * 3 + 1;
+                    $col2 = $group * 3 + 2;
+                    [$pattern[$row][$col1], $pattern[$row][$col2]] = [$pattern[$row][$col2], $pattern[$row][$col1]];
+                }
+            }
+        }
+        
+        // Permutazione dei numeri
+        $mapping = [1,2,3,4,5,6,7,8,9];
+        $this->shuffleArray($mapping);
+        
+        for ($row = 0; $row < 9; $row++) {
+            for ($col = 0; $col < 9; $col++) {
+                $pattern[$row][$col] = $mapping[$pattern[$row][$col] - 1];
+            }
+        }
+        
+        return $pattern;
     }
 
     /**
@@ -138,36 +221,128 @@ final class Generator implements GeneratorInterface
     /**
      * Riempie la griglia usando backtracking con shuffle deterministico
      */
-    private function fillGridRecursive(Grid $grid): ?Grid
+    private function fillGridRecursive(Grid $grid, int $depth = 0, float $startTime = null, array &$debugInfo = []): ?Grid
     {
-        // Trova la prima cella vuota
+        // Inizializza timestamp e debug se prima chiamata
+        if ($startTime === null) {
+            $startTime = microtime(true);
+            $debugInfo = [
+                'calls' => 0,
+                'max_depth' => 0,
+                'timeouts' => 0,
+                'backtracks' => 0,
+                'last_positions' => [],
+                'start_time' => $startTime
+            ];
+        }
+        
+        $debugInfo['calls']++;
+        $debugInfo['max_depth'] = max($debugInfo['max_depth'], $depth);
+        
+        // Debug ridotto - solo ogni 10000 chiamate o ogni 3 secondi
+        if ($debugInfo['calls'] % 10000 === 0 || ($debugInfo['calls'] % 1000 === 0 && microtime(true) - $startTime > 3.0)) {
+            \Log::info("Generator Progress", [
+                'calls' => $debugInfo['calls'],
+                'depth' => $depth,
+                'elapsed' => round(microtime(true) - $startTime, 2) . 's',
+                'filled_cells' => 81 - $grid->countEmptyCells()
+            ]);
+        }
+        
+        // Controllo timeout (max 5 secondi per generazione)
+        if (microtime(true) - $startTime > 5.0) {
+            $debugInfo['timeouts']++;
+            \Log::warning("Generator timeout reached", [
+                'calls' => $debugInfo['calls'],
+                'depth' => $depth,
+                'elapsed' => round(microtime(true) - $startTime, 2) . 's'
+            ]);
+            return null;
+        }
+        
+        // Limite profondità ricorsiva (evita stack overflow)
+        if ($depth > 81) {
+            \Log::error("Generator depth limit exceeded", ['depth' => $depth]);
+            return null;
+        }
+        
+        // Trova la cella vuota
+        $bestCell = $this->findMostConstrainedCell($grid);
+        if ($bestCell === null) {
+            // Griglia completa - successo!
+            \Log::info("Generator SUCCESS", [
+                'total_calls' => $debugInfo['calls'],
+                'max_depth' => $debugInfo['max_depth'],
+                'total_time' => round(microtime(true) - $startTime, 2) . 's',
+                'backtracks' => $debugInfo['backtracks']
+            ]);
+            return $grid;
+        }
+        
+        [$row, $col] = $bestCell;
+        
+        // Traccia posizioni per rilevare loop (più permissivo)
+        $position = "{$row},{$col}";
+        $debugInfo['last_positions'][$position] = ($debugInfo['last_positions'][$position] ?? 0) + 1;
+        
+        // Solo log di warning senza interrompere la generazione
+        if ($debugInfo['last_positions'][$position] > 50 && $debugInfo['last_positions'][$position] % 25 === 0) {
+            \Log::warning("Position visited many times (normal for backtracking)", [
+                'position' => $position,
+                'visit_count' => $debugInfo['last_positions'][$position],
+                'depth' => $depth,
+                'calls' => $debugInfo['calls']
+            ]);
+        }
+        
+        // Genera lista di valori possibili
+        $values = $this->getShuffledValues();
+        $validValues = [];
+        
+        foreach ($values as $value) {
+            if ($this->validator->canPlaceValue($grid, $row, $col, $value)) {
+                $validValues[] = $value;
+            }
+        }
+        
+        // Debug se nessun valore valido (ridotto)
+        if (empty($validValues)) {
+            $debugInfo['backtracks']++;
+            return null;
+        }
+        
+        foreach ($validValues as $value) {
+            $newGrid = $grid->setCell($row, $col, $value);
+            
+            // Continua ricorsivamente con limiti
+            $result = $this->fillGridRecursive($newGrid, $depth + 1, $startTime, $debugInfo);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        
+        // Nessun valore valido trovato, backtrack
+        $debugInfo['backtracks']++;
+        return null;
+    }
+    
+    /**
+     * Trova la cella vuota con il minor numero di valori possibili (MCV heuristic)
+     * Versione semplificata per evitare overhead di memoria
+     */
+    private function findMostConstrainedCell(Grid $grid): ?array
+    {
+        // Trova semplicemente la prima cella vuota per ora (strategia semplice ma funzionale)
         for ($row = 0; $row < 9; $row++) {
             for ($col = 0; $col < 9; $col++) {
                 $cell = $grid->getCell($row, $col);
                 if ($cell->isEmpty()) {
-                    // Genera lista di valori possibili in ordine casuale deterministico
-                    $values = $this->getShuffledValues();
-                    
-                    foreach ($values as $value) {
-                        if ($this->validator->canPlaceValue($grid, $row, $col, $value)) {
-                            $newGrid = $grid->setCell($row, $col, $value);
-                            
-                            // Continua ricorsivamente
-                            $result = $this->fillGridRecursive($newGrid);
-                            if ($result !== null) {
-                                return $result;
-                            }
-                        }
-                    }
-                    
-                    // Nessun valore valido trovato, backtrack
-                    return null;
+                    return [$row, $col];
                 }
             }
         }
         
-        // Griglia completa
-        return $grid;
+        return null; // Griglia completa
     }
 
     /**

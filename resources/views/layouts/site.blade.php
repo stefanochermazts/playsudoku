@@ -71,7 +71,7 @@
                         <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.how_it_works') }}</a>
                     @endguest
                     @auth
-                        <a href="{{ route('dashboard') }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.dashboard') }}</a>
+                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.dashboard') : route('dashboard') }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.dashboard') }}</a>
                     @endauth
                 </nav>
 
@@ -137,13 +137,13 @@
                                     </a>
                                 @endif
                                 
-                                <a href="{{ route('dashboard') }}" 
-                                   @click="open = false"
-                                   class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
+                                                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.dashboard') : route('dashboard') }}" 
+                           @click="open = false"
+                           class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                     📊 Dashboard
                                 </a>
                                 
-                                <a href="{{ route('profile') }}" 
+                                <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.profile') : route('profile') }}" 
                                    @click="open = false"
                                    class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                     👤 Profilo

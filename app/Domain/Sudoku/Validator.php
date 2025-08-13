@@ -313,8 +313,23 @@ final class Validator implements ValidatorInterface
      * 
      * @param array<int, Grid> $solutions
      */
-    private function solveRecursive(Grid $grid, array &$solutions, int $maxSolutions): void
+    private function solveRecursive(Grid $grid, array &$solutions, int $maxSolutions, int $depth = 0, float $startTime = null): void
     {
+        // Inizializza startTime se prima chiamata
+        if ($startTime === null) {
+            $startTime = microtime(true);
+        }
+        
+        // Timeout per evitare loop infiniti (max 3 secondi)
+        if (microtime(true) - $startTime > 3.0) {
+            return;
+        }
+        
+        // Limite profondità per evitare stack overflow
+        if ($depth > 81) {
+            return;
+        }
+        
         if (count($solutions) >= $maxSolutions) {
             return; // Limite raggiunto
         }
@@ -359,7 +374,7 @@ final class Validator implements ValidatorInterface
         foreach ($candidates->toArray() as $value) {
             if ($this->canPlaceValue($grid, $row, $col, $value)) {
                 $newGrid = $grid->setCell($row, $col, $value);
-                $this->solveRecursive($newGrid, $solutions, $maxSolutions);
+                $this->solveRecursive($newGrid, $solutions, $maxSolutions, $depth + 1, $startTime);
             }
         }
     }

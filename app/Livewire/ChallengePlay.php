@@ -29,9 +29,9 @@ class ChallengePlay extends Component
     public bool $isReadOnly = false;
     public array $conflicts = [];
 
-    public function mount(int $challengeId): void
+    public function mount($challengeId): void
     {
-        $this->challenge = Challenge::with('puzzle')->findOrFail($challengeId);
+        $this->challenge = Challenge::with('puzzle')->findOrFail((int) $challengeId);
         
         // Verifica accesso alla sfida
         if ($this->challenge->status !== 'active' || $this->challenge->ends_at <= now()) {
@@ -47,6 +47,11 @@ class ChallengePlay extends Component
         // Controlla se le hints sono bloccate
         if (isset($this->challenge->settings['hints_allowed']) && !$this->challenge->settings['hints_allowed']) {
             $this->showCandidates = false;
+        }
+        
+        // Avvia il timer se non è read-only e non è già completato
+        if (!$this->isReadOnly && !$this->isCompleted) {
+            $this->timerRunning = true;
         }
     }
 
