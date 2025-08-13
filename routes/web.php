@@ -73,7 +73,30 @@ Route::view('profile', 'profile')
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // User management
     Route::get('/users', [App\Http\Controllers\Admin\AdminController::class, 'users'])->name('users');
+    Route::get('/users/create', [App\Http\Controllers\Admin\AdminController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [App\Http\Controllers\Admin\AdminController::class, 'storeUser'])->name('users.store');
+    Route::get('/users/{user}', [App\Http\Controllers\Admin\AdminController::class, 'showUser'])->name('users.show');
+    Route::get('/users/{user}/edit', [App\Http\Controllers\Admin\AdminController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [App\Http\Controllers\Admin\AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [App\Http\Controllers\Admin\AdminController::class, 'destroyUser'])->name('users.destroy');
+    
+    // Challenge management
+    Route::get('/challenges', [App\Http\Controllers\Admin\AdminController::class, 'challenges'])->name('challenges');
+    Route::get('/challenges/create', [App\Http\Controllers\Admin\AdminController::class, 'createChallenge'])->name('challenges.create');
+    Route::post('/challenges', [App\Http\Controllers\Admin\AdminController::class, 'storeChallenge'])->name('challenges.store');
+    Route::get('/challenges/{challenge}', [App\Http\Controllers\Admin\AdminController::class, 'showChallenge'])->name('challenges.show');
+    Route::get('/challenges/{challenge}/edit', [App\Http\Controllers\Admin\AdminController::class, 'editChallenge'])->name('challenges.edit');
+    Route::put('/challenges/{challenge}', [App\Http\Controllers\Admin\AdminController::class, 'updateChallenge'])->name('challenges.update');
+    Route::delete('/challenges/{challenge}', [App\Http\Controllers\Admin\AdminController::class, 'destroyChallenge'])->name('challenges.destroy');
+    
+    // Puzzle management
+    Route::get('/puzzles', [App\Http\Controllers\Admin\AdminController::class, 'puzzles'])->name('puzzles');
+    Route::get('/puzzles/generate', [App\Http\Controllers\Admin\AdminController::class, 'generatePuzzles'])->name('puzzles.generate');
+    Route::post('/puzzles/generate', [App\Http\Controllers\Admin\AdminController::class, 'storeGeneratedPuzzles'])->name('puzzles.store');
+    Route::delete('/puzzles/{puzzle}', [App\Http\Controllers\Admin\AdminController::class, 'destroyPuzzle'])->name('puzzles.destroy');
 });
 
 // Route demo Sudoku (accessibili a tutti)

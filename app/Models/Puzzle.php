@@ -76,4 +76,25 @@ class Puzzle extends Model
     {
         return $query->where('seed', $seed);
     }
+
+    /**
+     * Scope: puzzle non assegnati a sfide
+     */
+    public function scopeUnassigned($query)
+    {
+        return $query->whereDoesntHave('challenges');
+    }
+
+    /**
+     * Scope: puzzle non assegnati a sfide, escludendo una sfida specifica
+     */
+    public function scopeUnassignedExcept($query, $challengeId = null)
+    {
+        if ($challengeId) {
+            return $query->whereDoesntHave('challenges', function($q) use ($challengeId) {
+                $q->where('id', '!=', $challengeId);
+            });
+        }
+        return $query->unassigned();
+    }
 }

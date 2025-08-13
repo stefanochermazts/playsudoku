@@ -1,3 +1,3 @@
-<x-app-layout>
+<x-site-layout>
     <livewire:challenge-list />
-</x-app-layout>
+</x-site-layout>

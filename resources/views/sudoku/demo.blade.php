@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-site-layout>
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-6xl mx-auto">
         {{-- Header --}}
@@ -162,4 +162,4 @@ function loadSamplePuzzle() {
     loadPuzzle('normal');
 }
 </script>
-</x-app-layout>
+</x-site-layout>

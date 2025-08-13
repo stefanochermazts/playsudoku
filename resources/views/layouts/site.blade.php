@@ -25,6 +25,13 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    <style>
+        /* Alpine.js cloak per nascondere elementi durante inizializzazione */
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
+    
     <script>
         // Theme initialization
         (function() {
@@ -104,14 +111,16 @@
                                     class="flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-neutral-600 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none transition ease-in-out duration-150">
                                 <div class="me-1">{{ auth()->user()->name }}</div>
                                 <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <svg class="fill-current h-4 w-4 transition-transform" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                             </button>
 
                             <div x-show="open" 
+                                 x-cloak
                                  @click.outside="open = false"
+                                 @keydown.escape.window="open = false"
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 scale-95"
                                  x-transition:enter-end="opacity-100 scale-100"
@@ -122,24 +131,27 @@
                                 
                                 @if(auth()->user() && auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}" 
+                                       @click="open = false"
                                        class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                         👑 Dashboard Admin
                                     </a>
                                 @endif
                                 
                                 <a href="{{ route('dashboard') }}" 
+                                   @click="open = false"
                                    class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                     📊 Dashboard
                                 </a>
                                 
                                 <a href="{{ route('profile') }}" 
+                                   @click="open = false"
                                    class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                     👤 Profilo
                                 </a>
                                 
                                 <hr class="border-neutral-200 dark:border-neutral-700">
                                 
-                                <button onclick="logout()" 
+                                <button onclick="logout(); return false;" 
                                         class="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                                     🚪 Logout
                                 </button>
@@ -242,6 +254,20 @@
                     lightIcon.classList.remove('hidden');
                     darkIcon.classList.add('hidden');
                 }
+            });
+        </script>
+        
+        <!-- Debug Alpine.js -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM caricato');
+                setTimeout(() => {
+                    if (window.Alpine) {
+                        console.log('Alpine.js è disponibile');
+                    } else {
+                        console.error('Alpine.js NON è disponibile');
+                    }
+                }, 1000);
             });
         </script>
 </body>

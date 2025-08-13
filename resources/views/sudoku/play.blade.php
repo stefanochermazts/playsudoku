@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-site-layout>
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
@@ -78,4 +78,4 @@ document.addEventListener('livewire:initialized', () => {
     });
 });
 </script>
-</x-app-layout>
+</x-site-layout>
