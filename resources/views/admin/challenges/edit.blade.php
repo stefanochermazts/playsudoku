@@ -214,6 +214,21 @@
                             </div>
                         </div>
 
+                        <!-- Impostazioni gioco -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="hints_allowed" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Candidati (Hints)
+                                </label>
+                                <select id="hints_allowed" name="settings[hints_allowed]" class="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-800 dark:text-white">
+                                    @php($allowed = data_get($challenge->settings, 'hints_allowed', true))
+                                    <option value="1" {{ $allowed ? 'selected' : '' }}>Abilitati</option>
+                                    <option value="0" {{ !$allowed ? 'selected' : '' }}>Disabilitati</option>
+                                </select>
+                                <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Se disabilitati, la board non mostrerà candidati né il relativo pulsante.</p>
+                            </div>
+                        </div>
+
                         <!-- Warning Messages -->
                         @if($challenge->attempts->count() > 0)
                             <div class="bg-warning-50 dark:bg-warning-900/50 border border-warning-200 dark:border-warning-800 text-warning-800 dark:text-warning-200 px-4 py-3 rounded-lg">

@@ -58,8 +58,17 @@
             </div>
         </div>
 
-        {{-- Funzionalità implementate --}}
-        <div class="grid md:grid-cols-2 gap-6 mb-8">
+        
+
+        {{-- Board Demo --}}
+        <div id="board-container">
+            <div id="sudoku-board-wrapper">
+                @livewire('sudoku-board', ['readOnly' => false, 'startTimer' => false], key('sudoku-demo-board'))
+            </div>
+        </div>
+
+        {{-- Funzionalità implementate (spostate sotto la board) --}}
+        <div class="grid md:grid-cols-2 gap-6 mt-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
                     ✨ Funzionalità Implementate
@@ -89,13 +98,6 @@
                     <li><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">R</kbd> Redo</li>
                     <li><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">Tab</kbd> Navigazione accessibilità</li>
                 </ul>
-            </div>
-        </div>
-
-        {{-- Board Demo --}}
-        <div id="board-container">
-            <div id="sudoku-board-wrapper">
-                @livewire('sudoku-board', ['readOnly' => false, 'startTimer' => false], key('sudoku-demo-board'))
             </div>
         </div>
 
@@ -144,77 +146,79 @@ function loadEmptyBoard() {
 }
 
 function loadPuzzle(difficulty) {
-    console.log('🎯 Tentativo di caricare puzzle con difficoltà:', difficulty);
+    if (window.APP_DEBUG) console.log('🎯 Tentativo di caricare puzzle con difficoltà:', difficulty);
     
     // Metodo 1: Usa la funzione globale esposta dal componente
     if (typeof window.sudokuBoardLoadPuzzle === 'function') {
-        console.log('📞 Chiamata funzione globale...');
+        if (window.APP_DEBUG) console.log('📞 Chiamata funzione globale...');
         const success = window.sudokuBoardLoadPuzzle(difficulty);
         if (success) {
-            console.log('✅ Puzzle caricato tramite funzione globale!');
+            if (window.APP_DEBUG) console.log('✅ Puzzle caricato tramite funzione globale!');
             return;
         }
     }
 
     // Metodo 1-bis: Dispatch evento Livewire globale (v3)
     try {
-        console.log('📡 Dispatch Livewire event load-sample-puzzle');
+        if (window.APP_DEBUG) console.log('📡 Dispatch Livewire event load-sample-puzzle');
         Livewire.dispatch('load-sample-puzzle', { difficulty });
         // Diamo un feedback visivo/log
-        console.log('✅ Evento inviato a Livewire');
+        if (window.APP_DEBUG) console.log('✅ Evento inviato a Livewire');
         return;
     } catch (e) {
-        console.log('❌ Dispatch fallito, passo al fallback manuale...', e);
+        if (window.APP_DEBUG) console.log('❌ Dispatch fallito, passo al fallback manuale...', e);
     }
     
     // Metodo 2: Fallback - cerca tramite Livewire con retry
     const sudokuElements = document.querySelectorAll('[wire\\:id]');
-    console.log('🔍 Trovati', sudokuElements.length, 'elementi Livewire');
+    if (window.APP_DEBUG) console.log('🔍 Trovati', sudokuElements.length, 'elementi Livewire');
     
     let attempts = 0;
     const maxAttempts = 3;
     
     function tryLoadPuzzle() {
         attempts++;
-        console.log(`🔄 Tentativo ${attempts}/${maxAttempts}`);
+        if (window.APP_DEBUG) console.log(`🔄 Tentativo ${attempts}/${maxAttempts}`);
         
         for (let element of sudokuElements) {
             const wireId = element.getAttribute('wire:id');
-            console.log('🔍 Controllando elemento con wire:id:', wireId);
+            if (window.APP_DEBUG) console.log('🔍 Controllando elemento con wire:id:', wireId);
             
             const component = Livewire.find(wireId);
             
             if (component) {
-                console.log('✅ Componente trovato:', component);
-                console.log('🔍 Metodi disponibili:', Object.getOwnPropertyNames(component));
+                if (window.APP_DEBUG) console.log('✅ Componente trovato:', component);
+                if (window.APP_DEBUG) console.log('🔍 Metodi disponibili:', Object.getOwnPropertyNames(component));
                 
                 if (typeof component.call === 'function') {
                     try {
-                        console.log('📞 Chiamata loadSamplePuzzle...');
+                        if (window.APP_DEBUG) console.log('📞 Chiamata loadSamplePuzzle...');
                         component.call('loadSamplePuzzle', difficulty);
-                        console.log('✅ Puzzle caricato tramite fallback! Difficoltà:', difficulty);
+                        if (window.APP_DEBUG) console.log('✅ Puzzle caricato tramite fallback! Difficoltà:', difficulty);
                         return true;
                     } catch (error) {
-                        console.log('❌ Errore durante la chiamata:', error.message, error);
+                        if (window.APP_DEBUG) console.log('❌ Errore durante la chiamata:', error.message, error);
                     }
                 } else {
-                    console.log('❌ Metodo call non disponibile');
+                    if (window.APP_DEBUG) console.log('❌ Metodo call non disponibile');
                 }
             } else {
-                console.log('❌ Componente non trovato per wireId:', wireId);
+                if (window.APP_DEBUG) console.log('❌ Componente non trovato per wireId:', wireId);
             }
         }
         
         // Retry se non è riuscito e non ha raggiunto il max attempts
         if (attempts < maxAttempts) {
-            console.log('⏰ Retry tra 1 secondo...');
+            if (window.APP_DEBUG) console.log('⏰ Retry tra 1 secondo...');
             setTimeout(tryLoadPuzzle, 1000);
         } else {
-            console.error('❌ Tutti i tentativi falliti - componente non trovato');
-            console.log('Debug info:');
-            console.log('- Funzione globale disponibile?', typeof window.sudokuBoardLoadPuzzle);
-            console.log('- Elementi Livewire:', sudokuElements.length);
-            console.log('- Livewire oggetto disponibile?', typeof Livewire);
+            if (window.APP_DEBUG) {
+                console.error('❌ Tutti i tentativi falliti - componente non trovato');
+                console.log('Debug info:');
+                console.log('- Funzione globale disponibile?', typeof window.sudokuBoardLoadPuzzle);
+                console.log('- Elementi Livewire:', sudokuElements.length);
+                console.log('- Livewire oggetto disponibile?', typeof Livewire);
+            }
         }
         return false;
     }

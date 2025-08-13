@@ -24,6 +24,12 @@
     <meta name="twitter:description" content="{{ $seoDescription ?? __('app.meta.description') }}">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+
+    <script>
+        // Espone lo stato di debug di Laravel a JS per silenziare i log in produzione
+        window.APP_DEBUG = {{ config('app.debug') ? 'true' : 'false' }};
+    </script>
     
     <style>
         /* Alpine.js cloak per nascondere elementi durante inizializzazione */
@@ -260,15 +266,18 @@
         <!-- Debug Alpine.js -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM caricato');
-                setTimeout(() => {
-                    if (window.Alpine) {
-                        console.log('Alpine.js è disponibile');
-                    } else {
-                        console.error('Alpine.js NON è disponibile');
-                    }
-                }, 1000);
+                if (window.APP_DEBUG) {
+                    console.log('DOM caricato');
+                    setTimeout(() => {
+                        if (window.Alpine) {
+                            console.log('Alpine.js è disponibile');
+                        } else {
+                            console.error('Alpine.js NON è disponibile');
+                        }
+                    }, 1000);
+                }
             });
         </script>
+    @stack('scripts')
 </body>
 </html>

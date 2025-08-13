@@ -26,6 +26,7 @@ class SudokuBoard extends Component
     public string $inputMode = 'value'; // 'value' o 'candidates'
     public bool $highlightConflicts = true;
     public bool $showCandidates = true;
+    public bool $candidatesAllowed = true;
     public int $completionPercentage = 0;
     
     // Timer e statistiche
@@ -33,6 +34,9 @@ class SudokuBoard extends Component
     public bool $timerRunning = false;
     public int $errorsCount = 0;
     public int $hintsUsed = 0;
+    public ?float $startedAt = null; // timestamp in secondi con microtime(true)
+    public ?float $finishedAt = null; // timestamp fine
+    public ?int $finalElapsedMs = null; // durata finale in millisecondi
     
     // Undo/Redo e mosse
     public array $moves = [];
@@ -53,17 +57,40 @@ class SudokuBoard extends Component
     public function mount(
         ?array $initialGrid = null,
         bool $readOnly = false,
-        bool $startTimer = false
+        bool $startTimer = false,
+        ?bool $showCandidates = null,
+        ?bool $candidatesAllowed = null,
+        ?int $initialSeconds = null,
+        ?array $currentGrid = null,
+        ?int $initialErrors = null
     ): void {
         $this->readOnly = $readOnly;
         $this->startTimer = $startTimer;
+        if ($candidatesAllowed !== null) {
+            $this->candidatesAllowed = $candidatesAllowed;
+        }
+        if ($showCandidates !== null) {
+            $this->showCandidates = $showCandidates;
+        } elseif ($candidatesAllowed === false) {
+            $this->showCandidates = false;
+        }
         $this->initializeGrid($initialGrid);
+        if (is_array($currentGrid) && !empty($currentGrid)) {
+            $this->grid = $currentGrid;
+        }
         if (!$this->readOnly && $this->selectedRow === null) {
             $this->selectedRow = 0;
             $this->selectedCol = 0;
         }
+        if ($initialSeconds !== null && $initialSeconds >= 0) {
+            $this->timeElapsed = (int) $initialSeconds;
+        }
+        if ($initialErrors !== null && $initialErrors >= 0) {
+            $this->errorsCount = (int) $initialErrors;
+        }
         if ($this->startTimer) {
             $this->timerRunning = true;
+            $this->startedAt = microtime(true);
         }
     }
 
@@ -88,14 +115,31 @@ class SudokuBoard extends Component
             // Genera un puzzle di esempio per il demo invece di griglia vuota
             try {
                 $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
-                $seed = 123456; // Seed fisso per il demo
-                $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'easy');
+                $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
+                $attempts = 0;
+                $maxAttempts = 15;
+                $puzzle = null;
+                // Prova prima con il seed fisso per coerenza demo
+                $seed = 123456;
+                do {
+                    $attempts++;
+                    $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'easy');
+                    $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
+                    $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+                    if (!$isValid) {
+                        // Cambia seed e riprova
+                        $seed = random_int(1000, 999999);
+                    }
+                } while(!$isValid && $attempts < $maxAttempts);
+
                 $this->initialGrid = $puzzle->toArray();
                 $this->grid = $puzzle->toArray();
+                $this->isValid = $isValid;
             } catch (\Exception $e) {
                 // Fallback a griglia vuota in caso di errore
                 $this->initialGrid = array_fill(0, 9, array_fill(0, 9, null));
                 $this->grid = array_fill(0, 9, array_fill(0, 9, null));
+                $this->isValid = false;
             }
         }
 
@@ -145,9 +189,9 @@ class SudokuBoard extends Component
     }
 
     /**
-     * Imposta un valore in una cella
+     * Imposta un valore in una cella (con validazione dominio)
      */
-        public function setCellValue(int $row, int $col, ?int $value): void
+    public function setCellValue(int $row, int $col, ?int $value): void
     {
         if ($this->readOnly || $this->isGivenCell($row, $col)) {
             return;
@@ -155,7 +199,33 @@ class SudokuBoard extends Component
 
         // Avvia timer al primo input se non già avviato
         if (!$this->timerRunning && !$this->readOnly && $value !== null) {
-            $this->timerRunning = true;
+            $this->startTimer();
+        }
+
+        // Validazione dominio prima di applicare la mossa
+        if ($value !== null) {
+            /** @var \App\Domain\Sudoku\Contracts\ValidatorInterface $validator */
+            $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
+            $domainGrid = \App\Domain\Sudoku\Grid::fromArray($this->grid);
+            if (!$validator->canPlaceValue($domainGrid, $row, $col, (int) $value)) {
+                $this->errorsCount++;
+                $this->isValid = false;
+                if ($this->announceChanges) {
+                    $this->lastAction = "Mossa non valida: {$value} in riga " . ($row + 1) . " colonna " . ($col + 1);
+                }
+                return; // Non applicare la mossa
+            }
+
+            // Anche verifica che lo stato resti risolvibile
+            $testGrid = $domainGrid->setCell($row, $col, (int) $value);
+            if (!$validator->isSolvable($testGrid)) {
+                $this->errorsCount++;
+                $this->isValid = false;
+                if ($this->announceChanges) {
+                    $this->lastAction = "Mossa porta a stato non risolvibile: {$value} in riga " . ($row + 1) . " colonna " . ($col + 1);
+                }
+                return; // Non applicare la mossa
+            }
         }
 
         $oldValue = $this->grid[$row][$col];
@@ -360,10 +430,22 @@ class SudokuBoard extends Component
     {
         // Usa il service container per dependency injection
         $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
-        
-        $seed = random_int(1000, 999999);
-        $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
-        
+        $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
+
+        // Genera garantendo validità e unicità soluzione
+        $attempts = 0;
+        $maxAttempts = 15;
+        $puzzle = null;
+        $isValid = false;
+        $seed = 0;
+        do {
+            $attempts++;
+            $seed = random_int(1000, 999999);
+            $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
+            $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
+            $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+        } while(!$isValid && $attempts < $maxAttempts);
+
         $this->initialGrid = $puzzle->toArray();
         $this->grid = $puzzle->toArray();
         $this->initializeCandidates();
@@ -377,7 +459,7 @@ class SudokuBoard extends Component
         $this->moves = [];
         $this->currentMoveIndex = -1;
         $this->isCompleted = false;
-        $this->isValid = true;
+        $this->isValid = $isValid;
         
         // NON avviare timer automaticamente - si avvia al primo input
         $this->timerRunning = false;
@@ -414,8 +496,9 @@ class SudokuBoard extends Component
         $this->initializeGrid($initialGrid);
         $this->selectedRow = 0; $this->selectedCol = 0;
         $this->timeElapsed = 0; $this->errorsCount = 0; $this->hintsUsed = 0;
-        $this->moves = []; $this->currentMoveIndex = -1; $this->isCompleted = false; $this->isValid = true;
-        $this->timerRunning = true;
+        $this->moves = []; $this->currentMoveIndex = -1; $this->isCompleted = false;
+        $this->timerRunning = false;
+        $this->startedAt = null; $this->finishedAt = null; $this->finalElapsedMs = null;
         $this->recomputeAllCandidates();
         $this->lastAction = 'Nuova board caricata';
     }

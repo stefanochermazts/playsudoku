@@ -70,7 +70,8 @@ trait SudokuBoardHelpers
                 $this->lastAction = "Congratulazioni! Puzzle completato in " . $this->getFormattedTime();
             }
             
-            $this->dispatch('puzzle-completed', time: $this->timeElapsed);
+            // Notifica esterna con tempo, errori e griglia finale
+            $this->dispatch('puzzle-completed', time: $this->timeElapsed, errors: $this->errorsCount, grid: $this->grid);
         }
     }
 
@@ -151,7 +152,11 @@ trait SudokuBoardHelpers
      */
     public function startTimer(): void
     {
+        if ($this->timerRunning) return;
         $this->timerRunning = true;
+        if ($this->startedAt === null) {
+            $this->startedAt = microtime(true);
+        }
         $this->dispatch('start-timer');
     }
 
@@ -160,7 +165,12 @@ trait SudokuBoardHelpers
      */
     public function stopTimer(): void
     {
+        if (!$this->timerRunning) return;
         $this->timerRunning = false;
+        $this->finishedAt = microtime(true);
+        if ($this->startedAt !== null && $this->finishedAt !== null) {
+            $this->finalElapsedMs = (int) round(($this->finishedAt - $this->startedAt) * 1000);
+        }
         $this->dispatch('stop-timer');
     }
 
@@ -169,9 +179,20 @@ trait SudokuBoardHelpers
      */
     public function getFormattedTime(): string
     {
-        $minutes = intval($this->timeElapsed / 60);
-        $seconds = $this->timeElapsed % 60;
-        return sprintf('%02d:%02d', $minutes, $seconds);
+        // Durante il gioco: mostra solo mm:ss per evitare flicker
+        if (!$this->isCompleted) {
+            $minutes = intval($this->timeElapsed / 60);
+            $seconds = $this->timeElapsed % 60;
+            return sprintf('%02d:%02d', $minutes, $seconds);
+        }
+
+        // A gioco finito: mostra mm:ss.cc (centesimi) calcolati da finalElapsedMs
+        $totalMs = $this->finalElapsedMs ?? ($this->timeElapsed * 1000);
+        $totalMs = max(0, (int) $totalMs);
+        $minutes = intdiv($totalMs, 60_000);
+        $seconds = intdiv($totalMs % 60_000, 1000);
+        $centis = intdiv($totalMs % 1000, 10);
+        return sprintf('%02d:%02d.%02d', $minutes, $seconds, $centis);
     }
 
     /**

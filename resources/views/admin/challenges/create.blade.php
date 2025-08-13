@@ -207,6 +207,20 @@
                             </div>
                         </div>
 
+                        <!-- Impostazioni gioco -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="hints_allowed" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Candidati (Hints)
+                                </label>
+                                <select id="hints_allowed" name="settings[hints_allowed]" class="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-800 dark:text-white">
+                                    <option value="1" {{ old('settings.hints_allowed', 1) ? 'selected' : '' }}>Abilitati</option>
+                                    <option value="0" {{ !old('settings.hints_allowed', 1) ? 'selected' : '' }}>Disabilitati</option>
+                                </select>
+                                <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Se disabilitati, la board non mostrerà candidati né il relativo pulsante.</p>
+                            </div>
+                        </div>
+
                         <!-- Buttons -->
                         <div class="flex items-center justify-end space-x-4 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                             <a href="{{ route('admin.challenges') }}" 

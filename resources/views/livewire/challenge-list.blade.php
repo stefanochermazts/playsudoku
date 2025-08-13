@@ -137,6 +137,20 @@
                                 <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.challenges.your_time') }}:</span>
                                 <span class="font-medium text-green-600 dark:text-green-400">{{ $this->getFormattedTime($attempt->duration_ms) }}</span>
                             </div>
+                            @php
+                                // Calcola posizione rapida utente per label (stessa ordering della leaderboard)
+                                $rank = App\Models\ChallengeAttempt::where('challenge_id', $challenge->id)
+                                    ->where('valid', true)->whereNotNull('completed_at')
+                                    ->orderBy('duration_ms')->orderBy('errors_count')->orderBy('completed_at')
+                                    ->pluck('user_id')->search(auth()->id());
+                                $rank = is_int($rank) ? $rank + 1 : null;
+                            @endphp
+                            @if($rank)
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-neutral-600 dark:text-neutral-300">Posizione:</span>
+                                    <span class="font-semibold">#{{ $rank }}</span>
+                                </div>
+                            @endif
                         @endif
 
                         @if($challenge->settings && isset($challenge->settings['hints_allowed']))
@@ -174,6 +188,10 @@
                                 @endif
                             </button>
                         @endif
+                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}"
+                           class="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                            Vedi Classifica
+                        </a>
                     </div>
                 </div>
             @empty

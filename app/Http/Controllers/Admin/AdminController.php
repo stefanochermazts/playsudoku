@@ -216,10 +216,18 @@ class AdminController extends Controller
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'visibility' => ['required', 'in:public,private'],
             'status' => ['required', 'in:draft,active,completed,cancelled'],
+            'settings.hints_allowed' => ['nullable', 'boolean'],
         ]);
+
+        $settings = $request->input('settings', []);
+        // Normalizza booleano hints_allowed
+        if (array_key_exists('hints_allowed', $settings)) {
+            $settings['hints_allowed'] = (bool) $settings['hints_allowed'];
+        }
 
         Challenge::create([
             ...$validated,
+            'settings' => $settings,
             'created_by' => auth()->id(),
         ]);
 
@@ -263,9 +271,18 @@ class AdminController extends Controller
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'visibility' => ['required', 'in:public,private'],
             'status' => ['required', 'in:draft,active,completed,cancelled'],
+            'settings.hints_allowed' => ['nullable', 'boolean'],
         ]);
 
-        $challenge->update($validated);
+        $settings = $request->input('settings', []);
+        if (array_key_exists('hints_allowed', $settings)) {
+            $settings['hints_allowed'] = (bool) $settings['hints_allowed'];
+        }
+
+        $challenge->update([
+            ...$validated,
+            'settings' => $settings,
+        ]);
 
         return redirect()->route('admin.challenges')
             ->with('success', 'Sfida aggiornata con successo!');

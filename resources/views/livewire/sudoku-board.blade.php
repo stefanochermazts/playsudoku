@@ -8,7 +8,7 @@
         {{-- Timer e statistiche --}}
         <div class="flex items-center space-x-6">
             <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $this->getFormattedTime() }}</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white" data-role="timer" aria-label="Tempo di gioco">{{ $this->getFormattedTime() }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">Tempo</div>
             </div>
             
@@ -25,20 +25,16 @@
             @endif
         </div>
 
-        {{-- Controlli --}}
-        <div class="flex items-center gap-2">
-            @if (!$readOnly)
-            <button wire:click="toggleInputMode" 
-                    class="px-3 py-2 rounded-lg border text-sm font-medium transition-colors
-                           @if($inputMode === 'value') bg-blue-600 text-white border-blue-600 @else bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 @endif
-                           hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                @if($inputMode === 'value') Valori @else Candidati @endif
-            </button>
-            <button wire:click="$toggle('showCandidates')" class="px-3 py-2 rounded-lg border text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">{!! $showCandidates ? '👁️ Nascondi candidati' : '👁️ Mostra candidati' !!}</button>
-            <button wire:click="undo" class="p-2 rounded-lg border bg-gray-100 dark:bg-gray-700">↶</button>
-            <button wire:click="redo" class="p-2 rounded-lg border bg-gray-100 dark:bg-gray-700">↷</button>
-            @endif
-        </div>
+		{{-- Controlli --}}
+		<div class="flex items-center gap-2">
+			@if (!$readOnly)
+				@if($candidatesAllowed)
+					<button wire:click="$toggle('showCandidates')" class="px-3 py-2 rounded-lg border text-sm font-medium bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">{!! $showCandidates ? '👁️ Nascondi candidati' : '👁️ Mostra candidati' !!}</button>
+				@endif
+				<button wire:click="undo" class="p-2 rounded-lg border bg-gray-100 dark:bg-gray-700">↶</button>
+				<button wire:click="redo" class="p-2 rounded-lg border bg-gray-100 dark:bg-gray-700">↷</button>
+			@endif
+		</div>
     </div>
 
     {{-- Griglia principale --}}
@@ -106,7 +102,7 @@
                                     @if($hasConflict && $highlightConflicts) text-red-600 dark:text-red-400 @endif">
                             {{ $value }}
                         </span>
-                    @elseif(!$isGiven && $showCandidates)
+                    @elseif(!$isGiven && $showCandidates && $candidatesAllowed)
                         <div class="grid grid-cols-3 gap-[2px] sm:gap-1 text-[12px] sm:text-sm text-gray-600 dark:text-gray-300 p-2 sm:p-3 w-full h-full">
                             @for($i = 1; $i <= 9; $i++)
                                 <button type="button"
@@ -167,73 +163,99 @@
     
     // Usa livewire:init invece di DOMContentLoaded per garantire che @this sia disponibile
     document.addEventListener('livewire:init', function() {
-        console.log('🚀 SudokuBoard: Livewire inizializzato');
+        if (window.APP_DEBUG) console.log('🚀 SudokuBoard: Livewire inizializzato');
         
         // Clear any existing interval
         if (sudokuTimerInterval) {
             clearInterval(sudokuTimerInterval);
         }
         
-        // Start timer interval
+        // Start server tick interval (1s) - UI aggiornata solo da Livewire
         sudokuTimerInterval = setInterval(() => {
             // Find this specific SudokuBoard component and call tickTimer
             const component = @this;
             if (component && typeof component.call === 'function') {
                 try {
                     component.call('tickTimer');
+                    if (running) {
+                        baseSeconds += 1;
+                        lastBaseMs = Date.now();
+                        if (timerEl) {
+                            timerEl.textContent = formatTenths(baseSeconds);
+                        }
+                    }
                 } catch (error) {
-                    console.log('SudokuBoard timer tick error:', error);
+                    if (window.APP_DEBUG) console.log('SudokuBoard timer tick error:', error);
                 }
             }
         }, 1000);
+
+        // Event listeners per stato timer
+        window.addEventListener('start-timer', () => { running = true; lastBaseMs = Date.now(); startUiTimer(); });
+        window.addEventListener('stop-timer', () => { running = false; });
+        window.addEventListener('puzzle-completed', () => { running = false; stopUiTimer(); });
         
         // Esponi una funzione globale per caricare puzzle
         window.sudokuBoardLoadPuzzle = function(difficulty) {
-            console.log('🎯 Chiamata a window.sudokuBoardLoadPuzzle con difficoltà:', difficulty);
+            if (window.APP_DEBUG) console.log('🎯 Chiamata a window.sudokuBoardLoadPuzzle con difficoltà:', difficulty);
             const component = @this;
             if (component && typeof component.call === 'function') {
                 try {
                     component.call('loadSamplePuzzle', difficulty);
-                    console.log('✅ Puzzle caricato dal componente! Difficoltà:', difficulty);
+                    if (window.APP_DEBUG) console.log('✅ Puzzle caricato dal componente! Difficoltà:', difficulty);
                     return true;
                 } catch (error) {
-                    console.log('❌ Errore caricamento puzzle:', error);
+                    if (window.APP_DEBUG) console.log('❌ Errore caricamento puzzle:', error);
                     return false;
                 }
             } else {
-                console.log('❌ Componente non disponibile:', component);
+                if (window.APP_DEBUG) console.log('❌ Componente non disponibile:', component);
                 return false;
             }
         };
         
-        console.log('✅ Funzione window.sudokuBoardLoadPuzzle creata');
+        // Esponi una funzione globale per leggere lo stato corrente (grid, errori, tempo)
+        window.sudokuBoardGetState = function() {
+            const component = @this;
+            try {
+                const grid = component.get ? component.get('grid') : null;
+                const errors = component.get ? (component.get('errorsCount') ?? 0) : 0;
+                const seconds = component.get ? (component.get('timeElapsed') ?? 0) : 0;
+                return { grid, errors, seconds };
+            } catch (e) {
+                if (window.APP_DEBUG) console.log('sudokuBoardGetState error:', e);
+                return null;
+            }
+        };
+        
+        if (window.APP_DEBUG) console.log('✅ Funzione window.sudokuBoardLoadPuzzle creata');
     });
     
     // Fallback con DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
         // Se la funzione non esiste ancora, creala
         if (typeof window.sudokuBoardLoadPuzzle === 'undefined') {
-            console.log('🔄 Fallback: creazione funzione sudokuBoardLoadPuzzle');
+            if (window.APP_DEBUG) console.log('🔄 Fallback: creazione funzione sudokuBoardLoadPuzzle');
             
             setTimeout(() => {
                 window.sudokuBoardLoadPuzzle = function(difficulty) {
-                    console.log('🎯 Fallback: Chiamata con difficoltà:', difficulty);
+                    if (window.APP_DEBUG) console.log('🎯 Fallback: Chiamata con difficoltà:', difficulty);
                     const component = @this;
                     if (component && typeof component.call === 'function') {
                         try {
                             component.call('loadSamplePuzzle', difficulty);
-                            console.log('✅ Fallback: Puzzle caricato! Difficoltà:', difficulty);
+                            if (window.APP_DEBUG) console.log('✅ Fallback: Puzzle caricato! Difficoltà:', difficulty);
                             return true;
                         } catch (error) {
-                            console.log('❌ Fallback: Errore caricamento puzzle:', error);
+                            if (window.APP_DEBUG) console.log('❌ Fallback: Errore caricamento puzzle:', error);
                             return false;
                         }
                     } else {
-                        console.log('❌ Fallback: Componente non disponibile');
+                        if (window.APP_DEBUG) console.log('❌ Fallback: Componente non disponibile');
                         return false;
                     }
                 };
-                console.log('✅ Fallback: Funzione window.sudokuBoardLoadPuzzle creata');
+                if (window.APP_DEBUG) console.log('✅ Fallback: Funzione window.sudokuBoardLoadPuzzle creata');
             }, 2000);
         }
     });
@@ -242,6 +264,9 @@
     window.addEventListener('beforeunload', function() {
         if (sudokuTimerInterval) {
             clearInterval(sudokuTimerInterval);
+        }
+        if (sudokuUiTimerInterval) {
+            clearInterval(sudokuUiTimerInterval);
         }
         // Cleanup global function
         delete window.sudokuBoardLoadPuzzle;

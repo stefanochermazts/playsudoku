@@ -94,9 +94,20 @@
 
 ## 9) Anti‑cheat & Fair‑Play
 
-* Validazione mossa server‑side.
-* Verifica unicità soluzione.
-* Analisi pattern tempi di gioco.
+- Validazione risultato server‑side (alla conclusione):
+  - Griglia finale deve essere identica alla soluzione del puzzle (confronto cella‑per‑cella)
+  - Tempo minimo di completamento (default: 10s) per evitare submit istantanei
+  - Un solo completamento valido per tentativo (idempotenza)
+- Gestione pausa e metriche anti‑abuso per tentativi competitivi:
+  - Tracciamo `started_at`, `last_activity_at`, `pause_started_at`, `paused_ms_total`, `pauses_count`
+  - Alla pausa incrementiamo `pauses_count` e segniamo `pause_started_at`; al completamento accumuliamo le pause aperte
+  - Regola base: invalidazione se `paused_ms_total` > 70% del tempo reale (`now - started_at`)
+  - Regola base: invalidazione se `pauses_count` > 5
+- Opzioni di sfida:
+  - Candidati (Hints) abilitabili/disabilitabili per singola sfida (`settings.hints_allowed`)
+- Estensioni (v2):
+  - Rate‑limit su pause (finestra/numero), analisi outlier tempi (z‑score) e flag per moderazione
+  - Validazione mossa live sampling in modalità competitiva
 
 ---
 

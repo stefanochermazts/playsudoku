@@ -90,14 +90,21 @@ class ChallengePlay extends Component
             $this->isReadOnly = true;
             $this->timerRunning = false;
         }
+        
+        // Ripristina snapshot se presente
+        if ($this->attempt && $this->attempt->current_state) {
+            $this->grid = is_array($this->attempt->current_state)
+                ? $this->attempt->current_state
+                : json_decode($this->attempt->current_state, true);
+            // Se duration_ms è null, ripristina elapsedTime solo da snapshot salvato
+            // Usando secondi interi calcolati dal DB se esiste un apposito campo
+        }
     }
 
     private function initializeGrid(): void
     {
-        // Se c'è stato salvato, caricalo
-        if ($this->attempt && $this->attempt->current_state) {
-            $this->grid = $this->attempt->current_state;
-        } else {
+        // Se c'è stato salvato, la griglia è già stata impostata in loadOrCreateAttempt()
+        if (empty($this->grid)) {
             // Carica dalla griglia del puzzle
             $puzzleGrid = $this->challenge->puzzle->givens;
             $this->grid = is_array($puzzleGrid) ? $puzzleGrid : json_decode($puzzleGrid, true);
@@ -170,6 +177,8 @@ class ChallengePlay extends Component
         if (!$this->timerRunning && !$this->isCompleted) {
             $this->timerRunning = true;
         }
+        // Aggiorna last activity
+        $this->attempt?->update(['last_activity_at' => now()]);
 
         // Aggiungi alla cronologia mosse
         $this->addMoveToHistory($row, $col, $oldValue, $value);
@@ -368,12 +377,59 @@ class ChallengePlay extends Component
         $this->isReadOnly = true;
         $this->timerRunning = false;
         
+        // Anti-abuso base: validazione risultato prima del salvataggio definitivo
+        $isValid = true;
+        
+        // 1) Tempo minimo ragionevole (evita submit istantanei/abusi)
+        $minSeconds = 10; // configurabile se necessario
+        if ($this->elapsedTime < $minSeconds) {
+            $isValid = false;
+        }
+        
+        // 2) Confronto con soluzione del puzzle
+        $solution = $this->challenge->puzzle->solution;
+        if (is_string($solution)) {
+            $solution = json_decode($solution, true);
+        }
+        if (!is_array($solution) || count($solution) !== 9) {
+            $isValid = false;
+        } else {
+            for ($r = 0; $r < 9 && $isValid; $r++) {
+                for ($c = 0; $c < 9; $c++) {
+                    if (($this->grid[$r][$c] ?? null) !== ($solution[$r][$c] ?? null)) {
+                        $isValid = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 3) Un solo completamento per tentativo (idempotenza)
+        if ($this->attempt->completed_at !== null) {
+            $isValid = false;
+        }
+        
+        // 4) Soglia pause: invalidare se pause totali > 70% del tempo reale
+        if ($this->attempt) {
+            $realDurationMs = $this->attempt->started_at ? $this->attempt->started_at->diffInMilliseconds(now()) : ($this->elapsedTime * 1000);
+            $pausedMs = (int) ($this->attempt->paused_ms_total ?? 0);
+            if ($realDurationMs > 0 && ($pausedMs / $realDurationMs) > 0.7) {
+                $isValid = false;
+            }
+        }
+        
+        // 5) Limite numero pause (max 5)
+        if (($this->attempt->pauses_count ?? 0) > 5) {
+            $isValid = false;
+        }
+        
         // Aggiorna il tentativo
         $this->attempt->update([
             'duration_ms' => $this->elapsedTime * 1000,
             'errors_count' => $this->errorCount,
             'completed_at' => now(),
             'final_state' => $this->grid,
+            'valid' => $isValid,
         ]);
         
         // Salva tutte le mosse
@@ -395,6 +451,7 @@ class ChallengePlay extends Component
         $this->attempt->update([
             'current_state' => $this->grid,
             'errors_count' => $this->errorCount,
+            'duration_ms' => $this->elapsedTime * 1000,
         ]);
     }
 
@@ -404,6 +461,25 @@ class ChallengePlay extends Component
         if ($this->timerRunning && !$this->isCompleted) {
             $this->elapsedTime++;
         }
+    }
+
+    #[On('puzzle-completed')]
+    public function onPuzzleCompleted(int $time, int $errors = 0, ?array $grid = null): void
+    {
+        if ($this->isCompleted) return;
+        $this->elapsedTime = $time;
+        $this->errorCount = $errors;
+        if (is_array($grid)) {
+            $this->grid = $grid;
+        }
+        // Se c'era una pausa in corso, accumula il tempo pausa e azzera il flag
+        if ($this->attempt && $this->attempt->pause_started_at) {
+            $pausedMs = now()->diffInMilliseconds($this->attempt->pause_started_at);
+            $this->attempt->paused_ms_total = ($this->attempt->paused_ms_total ?? 0) + $pausedMs;
+            $this->attempt->pause_started_at = null;
+            $this->attempt->save();
+        }
+        $this->completeChallenge();
     }
 
     public function getFormattedTime(): string
@@ -419,5 +495,38 @@ class ChallengePlay extends Component
         $this->saveAttemptState();
         
         return redirect()->route('challenges.index');
+    }
+
+    public function pauseChallengeWithState(?array $state = null): void
+    {
+        $this->timerRunning = false;
+        // Gestione pausa: marca inizio pausa, aggiorna last activity
+        if ($this->attempt) {
+            $now = now();
+            $this->attempt->pause_started_at = $now;
+            $this->attempt->last_activity_at = $now;
+            $this->attempt->save();
+        }
+        if (is_array($state)) {
+            $grid = $state['grid'] ?? null;
+            $errors = $state['errors'] ?? null;
+            $seconds = $state['seconds'] ?? null;
+            if (is_array($grid)) {
+                $this->grid = $grid;
+            }
+            if (is_int($errors)) {
+                $this->errorCount = $errors;
+            }
+            if (is_int($seconds)) {
+                $this->elapsedTime = $seconds;
+            }
+        }
+        $this->saveAttemptState();
+        // Dopo salvataggio, redirect alla lista challenges
+        $url = app()->has('locale') && in_array(app()->getLocale(), ['en', 'it'])
+            ? route('localized.challenges.index', ['locale' => app()->getLocale()])
+            : route('challenges.index');
+        // Restituiamo il redirect per farlo gestire a Livewire
+        $this->redirect($url, navigate: true);
     }
 }

@@ -33,7 +33,7 @@
                             <svg class="w-4 h-4 text-neutral-600 dark:text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="font-mono text-lg font-semibold text-neutral-900 dark:text-white">{{ $this->getFormattedTime() }}</span>
+                            <span id="challenge-timer" class="font-mono text-lg font-semibold text-neutral-900 dark:text-white">{{ $this->getFormattedTime() }}</span>
                         </div>
                     </div>
                     
@@ -66,64 +66,26 @@
     <!-- Main Game Area -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid lg:grid-cols-3 gap-8">
-            <!-- Sudoku Board -->
+            <!-- Sudoku Board (riutilizza la stessa board della /demo) -->
             <div class="lg:col-span-2">
-                <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-8 border border-neutral-200/50 dark:border-neutral-700/50 sudoku-game"
-                     wire:keydown.window="handleKeyInput($event.key)"
-                     tabindex="0">
-                    
-                    <!-- Sudoku Grid -->
-                    <div class="sudoku-grid" style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; background-color: #374151; padding: 4px; border-radius: 12px; max-width: 500px; aspect-ratio: 1; margin: 0 auto;">
-                        @for($row = 0; $row < 9; $row++)
-                            @for($col = 0; $col < 9; $col++)
-                                @php
-                                    $isSelected = ($selectedRow === $row && $selectedCol === $col);
-                                    $originalGrid = is_array($challenge->puzzle->givens) ? $challenge->puzzle->givens : json_decode($challenge->puzzle->givens, true);
-                                    $isGiven = isset($originalGrid[$row][$col]) && $originalGrid[$row][$col] !== null;
-                                    $value = $grid[$row][$col] ?? null;
-                                    $isHighlighted = ($selectedRow === $row || $selectedCol === $col || 
-                                                    (intval($selectedRow / 3) === intval($row / 3) && intval($selectedCol / 3) === intval($col / 3)));
-                                    $hasConflict = collect($conflicts)->contains(fn($conflict) => $conflict['row'] === $row && $conflict['col'] === $col);
-                                    $candidates = $candidates[$row][$col] ?? [];
-                                @endphp
-                                
-                                <div class="sudoku-cell {{ $isSelected ? 'selected' : '' }} {{ $isHighlighted ? 'highlighted' : '' }} {{ $hasConflict ? 'conflict' : '' }} {{ $isGiven ? 'given' : 'user-input' }}"
-                                     style="background-color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; font-weight: 600; min-height: 50px; position: relative; border-radius: 2px; transition: all 0.2s ease;"
-                                     wire:click="selectCell({{ $row }}, {{ $col }})">
-                                    
-                                    @if($value !== null)
-                                        <span class="cell-number">{{ $value }}</span>
-                                    @elseif($showCandidates && !empty($candidates) && !$isSelected)
-                                        <div class="candidates-grid">
-                                            @for($num = 1; $num <= 9; $num++)
-                                                <span class="candidate {{ in_array($num, $candidates) ? 'visible' : 'hidden' }}">{{ $num }}</span>
-                                            @endfor
-                                        </div>
-                                    @elseif($isSelected && $value === null)
-                                        <span class="cell-placeholder">•</span>
-                                    @endif
-                                </div>
-                            @endfor
-                        @endfor
-</div>
-
-                    <!-- Number Input Panel -->
-                    <div class="mt-6 grid grid-cols-5 gap-3">
-                        @for($num = 1; $num <= 9; $num++)
-                            <button wire:click="setCellValue({{ $num }})"
-                                    class="aspect-square bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xl font-bold text-neutral-900 dark:text-white hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                                    @if($isReadOnly) disabled @endif>
-                                {{ $num }}
-                            </button>
-                        @endfor
-                        
-                        <!-- Clear Button -->
-                        <button wire:click="setCellValue(null)"
-                                class="aspect-square bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                                @if($isReadOnly) disabled @endif>
-                            ✗
-                        </button>
-                    </div>
+                @php($initialGrid = is_array($challenge->puzzle->givens) ? $challenge->puzzle->givens : json_decode($challenge->puzzle->givens, true))
+                @php($hintsAllowed = $challenge->settings['hints_allowed'] ?? true)
+                @php($attemptState = $attempt?->current_state ?? null)
+                @php($attemptSeconds = $attempt?->duration_ms ? intval($attempt->duration_ms/1000) : 0)
+                @php($attemptErrors = $attempt?->errors_count ?? 0)
+                @php($isReadOnlyBoard = (bool) ($attempt?->completed_at))
+                @php($shouldStartTimer = (!$isReadOnlyBoard) && (($attemptState && is_array($attemptState) && count($attemptState) > 0) || ($attemptSeconds > 0)))
+                <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-4 border border-neutral-200/50 dark:border-neutral-700/50">
+                    @livewire('sudoku-board', [
+                        'readOnly' => $isReadOnlyBoard ? true : false,
+                        'startTimer' => $shouldStartTimer,
+                        'initialGrid' => $initialGrid,
+                        'candidatesAllowed' => $hintsAllowed,
+                        'showCandidates' => $hintsAllowed,
+                        'initialSeconds' => $attemptSeconds,
+                        'currentGrid' => is_array($attemptState) ? $attemptState : (is_string($attemptState) ? json_decode($attemptState, true) : null),
+                        'initialErrors' => $attemptErrors,
+                    ], key('challenge-board-'.$challenge->id))
                 </div>
             </div>
 
@@ -159,7 +121,7 @@
                     <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50">
                         <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Azioni</h3>
                         <div class="space-y-3">
-                            <button wire:click="pauseChallenge"
+                            <button onclick="pauseAndSaveChallenge()"
                                     class="w-full px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg text-orange-700 dark:text-orange-300 font-medium hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
                                 Pausa & Salva
                             </button>
@@ -203,15 +165,14 @@
                     </div>
                     <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Sfida Completata!</h3>
                     <p class="text-neutral-600 dark:text-neutral-300 mb-6">
-                        Tempo finale: <strong>{{ $this->getFormattedTime() }}</strong><br>
-                        Errori: <strong>{{ $errorCount }}</strong>
+                        Hai concluso il sudoku con questo tempo: <strong>{{ $this->getFormattedTime() }}</strong> e con <strong>{{ $errorCount }}</strong> errori.
                     </p>
                     <div class="flex space-x-3">
                         <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
                            class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
                             Torna alle Sfide
                         </a>
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.leaderboard.index') : route('leaderboard.index') }}" 
+                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
                            class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
                             Vedi Classifica
                         </a>
@@ -222,165 +183,43 @@
     @endif
 </div>
 
-@push('styles')
-<style>
-.sudoku-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    gap: 1px;
-    background-color: #374151;
-    padding: 4px;
-    border-radius: 12px;
-    max-width: 500px;
-    aspect-ratio: 1;
-    margin: 0 auto;
-}
-
-.sudoku-cell {
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1.5rem;
-    font-weight: 600;
-    min-height: 50px;
-    position: relative;
-    border-radius: 2px;
-    transition: all 0.2s ease;
-}
-
-.dark .sudoku-cell {
-    background-color: #1f2937;
-    color: white;
-}
-
-.sudoku-cell.given {
-    background-color: #f3f4f6;
-    color: #111827;
-    font-weight: 700;
-}
-
-.dark .sudoku-cell.given {
-    background-color: #374151;
-    color: #f9fafb;
-}
-
-.sudoku-cell.selected {
-    background-color: #dbeafe !important;
-    box-shadow: inset 0 0 0 2px #3b82f6;
-}
-
-.dark .sudoku-cell.selected {
-    background-color: #1e40af !important;
-}
-
-.sudoku-cell.highlighted {
-    background-color: #f0f9ff;
-}
-
-.dark .sudoku-cell.highlighted {
-    background-color: #0c4a6e;
-}
-
-.sudoku-cell.conflict {
-    background-color: #fee2e2 !important;
-    color: #dc2626 !important;
-}
-
-.dark .sudoku-cell.conflict {
-    background-color: #7f1d1d !important;
-    color: #fca5a5 !important;
-}
-
-/* Thick borders for 3x3 sections */
-.sudoku-cell:nth-child(3n) {
-    border-right: 3px solid #374151;
-}
-
-.sudoku-cell:nth-child(n+19):nth-child(-n+27),
-.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
-    border-bottom: 3px solid #374151;
-}
-
-.candidates-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    width: 100%;
-    height: 100%;
-    font-size: 0.6rem;
-    font-weight: 400;
-}
-
-.candidate {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-}
-
-.candidate.visible {
-    color: #374151;
-}
-
-.dark .candidate.visible {
-    color: #9ca3af;
-}
-
-.candidate.hidden {
-    visibility: hidden;
-}
-
-.cell-number {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.cell-placeholder {
-    font-size: 2rem;
-    color: #9ca3af;
-}
-
-.dark .cell-placeholder {
-    color: #6b7280;
-}
-</style>
-@endpush
+{{-- Stili della board rimossi per evitare conflitti: si usano quelli del componente `sudoku-board` --}}
 
 @push('scripts')
 <script>
-    let timerInterval;
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        // Focus the game area for keyboard input
-        const gameArea = document.querySelector('.sudoku-game');
-        if (gameArea) {
-            gameArea.focus();
+    // Sincronizza il timer dell'header con quello della board riusata
+    document.addEventListener('livewire:init', function() {
+        const headerTimer = document.getElementById('challenge-timer');
+        function updateHeaderTimer() {
+            const boardTimer = document.querySelector('.sudoku-game [data-role="timer"]');
+            if (headerTimer && boardTimer) {
+                headerTimer.textContent = boardTimer.textContent;
+            }
         }
-        
-        // Start timer interval
-        if (timerInterval) {
-            clearInterval(timerInterval);
-        }
-        
-        timerInterval = setInterval(() => {
+
+        // Aggiorna periodicamente e su eventi Livewire
+        const syncInterval = setInterval(updateHeaderTimer, 500);
+        window.addEventListener('start-timer', updateHeaderTimer);
+        window.addEventListener('stop-timer', updateHeaderTimer);
+        window.addEventListener('puzzle-completed', updateHeaderTimer);
+
+        // Cleanup
+        window.addEventListener('beforeunload', function() {
+            clearInterval(syncInterval);
+        });
+    });
+
+    // Pausa & Salva: legge lo stato dalla board e chiama l'azione Livewire
+    function pauseAndSaveChallenge() {
+        try {
+            const state = window.sudokuBoardGetState ? window.sudokuBoardGetState() : null;
             const component = @this;
             if (component && typeof component.call === 'function') {
-                try {
-                    component.call('tickTimer');
-                } catch (error) {
-                    console.log('Timer tick error:', error);
-                }
+                component.call('pauseChallengeWithState', state);
             }
-        }, 1000);
-    });
-    
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-        if (timerInterval) {
-            clearInterval(timerInterval);
+        } catch (e) {
+            if (window.APP_DEBUG) console.log('pauseAndSaveChallenge error:', e);
         }
-    });
+    }
 </script>
 @endpush

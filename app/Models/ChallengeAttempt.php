@@ -29,14 +29,26 @@ class ChallengeAttempt extends Model
     protected $fillable = [
         'challenge_id',
         'user_id',
+        'started_at',
+        'last_activity_at',
+        'pause_started_at',
+        'paused_ms_total',
+        'pauses_count',
         'duration_ms',
         'errors_count',
         'hints_used',
         'completed_at',
         'valid',
+        'current_state',
+        'final_state',
     ];
 
     protected $casts = [
+        'started_at' => 'datetime',
+        'last_activity_at' => 'datetime',
+        'pause_started_at' => 'datetime',
+        'paused_ms_total' => 'integer',
+        'pauses_count' => 'integer',
         'duration_ms' => 'integer',
         'errors_count' => 'integer',
         'hints_used' => 'integer',
@@ -44,6 +56,8 @@ class ChallengeAttempt extends Model
         'completed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'current_state' => 'array',
+        'final_state' => 'array',
     ];
 
     /**

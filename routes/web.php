@@ -63,10 +63,12 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
             return view('challenges.play', ['challengeId' => $challenge]);
         })->name('localized.challenges.play');
         
-        Route::get('/leaderboard', function ($locale) {
-            return view('leaderboard.index');
-        })->name('localized.leaderboard.index');
+        // altre rotte protette
     });
+    // Leaderboard localizzata (protetta) definita fuori dal gruppo per evitare collisioni di route cache
+    Route::get('/leaderboard/{challenge}', [\App\Http\Controllers\LeaderboardController::class, 'show'])
+        ->middleware(['auth'])
+        ->name('localized.leaderboard.show');
     
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';
@@ -199,12 +201,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('challenges.play');
     
     // Redirect leaderboard senza locale
-    Route::get('/leaderboard', function (Request $request) {
+    Route::get('/leaderboard/{challenge?}', function (Request $request, $challenge = null) {
         $supported = (array) config('app.supported_locales', ['en', 'it']);
         
         $sessionLocale = $request->session()->get('locale');
         if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
-            return redirect()->to(url('/'.$sessionLocale.'/leaderboard'));
+            $suffix = $challenge ? '/leaderboard/'.$challenge : '/leaderboard';
+            return redirect()->to(url('/'.$sessionLocale.$suffix));
         }
         
         $preferred = 'en';
@@ -217,8 +220,9 @@ Route::middleware(['auth'])->group(function () {
             $preferred = $supported[0] ?? 'en';
         }
         
-        return redirect()->to(url('/'.$preferred.'/leaderboard'));
-    })->name('leaderboard.index');
+        $suffix = $challenge ? '/leaderboard/'.$challenge : '/leaderboard';
+        return redirect()->to(url('/'.$preferred.$suffix));
+    })->name('leaderboard.redirect');
 });
 
 // Route di test

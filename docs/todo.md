@@ -126,8 +126,12 @@ Deliverable: pagina single‑player con board accessibile e stabile.
 - [x] Pagina lista sfide (daily/weekly/custom) con stato personificato (mai iniziata / in corso / completata)
 - [x] Dettaglio sfida: avvio/pausa/ripresa; syncing seed; blocco hint se impostato
 - [x] Conclusione: invio risultato → validazione → redirect a classifica sfida
-- [ ] Anti‑abuso base: limite tentativi per sfida (rate-limit + regole business)
-- [ ] Fix algoritmo Generator.fillGridRecursive 
+- [x] Anti‑abuso base: limite tentativi per sfida e regole business minime
+  - [x] Un solo tentativo valido per utente/sfida (vincolo unique + logica applicativa)
+  - [x] Verifica server‑side del completamento: griglia finale ≡ soluzione puzzle
+  - [x] Soglia tempo minimo (10s) per considerare il risultato valido
+  - [x] Salvataggio `valid=false` in caso di violazioni (no classifica)
+- [x] Fix algoritmo Generator.fillGridRecursive 
   - Aggiungere limite profondità ricorsiva
   - Implementare timeout interno
   - Ottimizzare strategia backtracking
