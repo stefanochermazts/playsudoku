@@ -83,6 +83,64 @@
             </div>
         </div>
 
+        <!-- Quick Actions -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-neutral-900 dark:text-white mb-6">{{ __('app.dashboard.quick_actions') }}</h2>
+            <div class="grid md:grid-cols-4 gap-4">
+                <a href="{{ route('localized.challenges.index', ['locale' => app()->getLocale()]) }}" 
+                   class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-xl p-6 border border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white dark:hover:bg-neutral-800 transition-all group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span class="text-xl">🎯</span>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-neutral-900 dark:text-white">{{ __('app.nav.challenges') }}</h3>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.browse_challenges') }}</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ route('localized.daily-board.index', ['locale' => app()->getLocale()]) }}" 
+                   class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-xl p-6 border border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white dark:hover:bg-neutral-800 transition-all group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span class="text-xl">📅</span>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-neutral-900 dark:text-white">{{ __('app.daily_board') }}</h3>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.daily_leaderboards') }}</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" 
+                   class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-xl p-6 border border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white dark:hover:bg-neutral-800 transition-all group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span class="text-xl">📊</span>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-neutral-900 dark:text-white">{{ __('app.weekly_board') }}</h3>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.weekly_leaderboards') }}</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ route('profile') }}" 
+                   class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-xl p-6 border border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white dark:hover:bg-neutral-800 transition-all group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span class="text-xl">👤</span>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-neutral-900 dark:text-white">{{ __('app.nav.profile') }}</h3>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.view_stats') }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Main Content Grid -->
         <div class="grid lg:grid-cols-3 gap-8">
             <!-- Active Challenges -->
@@ -198,12 +256,12 @@
                             <span class="text-green-700 dark:text-green-300 font-medium">{{ __('app.dashboard.view_all_challenges') }}</span>
                         </a>
                         
-                        <a href="{{ route('leaderboard.index') }}" 
+                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
                            class="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors">
                             <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <span class="text-yellow-700 dark:text-yellow-300 font-medium">{{ __('app.dashboard.view_leaderboard') }}</span>
+                            <span class="text-yellow-700 dark:text-yellow-300 font-medium">Vedi Sfide e Classifiche</span>
                         </a>
                     </div>
                 </div>

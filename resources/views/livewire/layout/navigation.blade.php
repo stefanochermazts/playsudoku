@@ -38,6 +38,15 @@ new class extends Component
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('app.nav.dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('localized.challenges.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.challenges.*')" wire:navigate>
+                        🎯 {{ __('app.nav.challenges') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('localized.daily-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.daily-board.*')" wire:navigate>
+                        📅 {{ __('app.daily_board') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('localized.weekly-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.weekly-board.*')" wire:navigate>
+                        📊 {{ __('app.weekly_board') }}
+                    </x-nav-link>
                     @if(auth()->user() && auth()->user()->isAdmin())
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
                             👑 Admin
@@ -137,7 +146,16 @@ new class extends Component
         @auth
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                {{ __('Dashboard') }}
+                {{ __('app.nav.dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.challenges.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.challenges.*')" wire:navigate>
+                🎯 {{ __('app.nav.challenges') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.daily-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.daily-board.*')" wire:navigate>
+                📅 {{ __('app.daily_board') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.weekly-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.weekly-board.*')" wire:navigate>
+                📊 {{ __('app.weekly_board') }}
             </x-responsive-nav-link>
         </div>
 

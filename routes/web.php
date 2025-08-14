@@ -63,12 +63,34 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
             return view('challenges.play', ['challengeId' => $challenge]);
         })->name('localized.challenges.play');
         
+        // Leaderboard localizzata (spostata dentro il gruppo auth)
+        Route::get('/leaderboard/{challenge}', function($locale, $challenge) {
+            return app(\App\Http\Controllers\LeaderboardController::class)->show(request(), $challenge);
+        })->name('localized.leaderboard.show');
+        
+        // Export leaderboard CSV
+        Route::get('/leaderboard/{challenge}/export', function($locale, $challenge) {
+            return app(\App\Http\Controllers\LeaderboardController::class)->exportCsv(request(), $challenge);
+        })->name('localized.leaderboard.export');
+        
+        // Daily Board routes
+        Route::get('/daily-board', [\App\Http\Controllers\DailyBoardController::class, 'index'])
+            ->name('localized.daily-board.index');
+        Route::get('/daily-board/archive', [\App\Http\Controllers\DailyBoardController::class, 'archive'])
+            ->name('localized.daily-board.archive');
+        Route::get('/daily-board/{date}', [\App\Http\Controllers\DailyBoardController::class, 'show'])
+            ->name('localized.daily-board.show');
+            
+        // Weekly Board routes
+        Route::get('/weekly-board', [\App\Http\Controllers\WeeklyBoardController::class, 'index'])
+            ->name('localized.weekly-board.index');
+        Route::get('/weekly-board/archive', [\App\Http\Controllers\WeeklyBoardController::class, 'archive'])
+            ->name('localized.weekly-board.archive');
+        Route::get('/weekly-board/{week}', [\App\Http\Controllers\WeeklyBoardController::class, 'show'])
+            ->name('localized.weekly-board.show');
+        
         // altre rotte protette
     });
-    // Leaderboard localizzata (protetta) definita fuori dal gruppo per evitare collisioni di route cache
-    Route::get('/leaderboard/{challenge}', [\App\Http\Controllers\LeaderboardController::class, 'show'])
-        ->middleware(['auth'])
-        ->name('localized.leaderboard.show');
     
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';
@@ -200,7 +222,8 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->to(url('/'.$preferred.'/challenges/'.$challenge.'/play'));
     })->name('challenges.play');
     
-    // Redirect leaderboard senza locale
+    // Redirect leaderboard senza locale - TEMPORANEAMENTE COMMENTATO PER DEBUG
+    /*
     Route::get('/leaderboard/{challenge?}', function (Request $request, $challenge = null) {
         $supported = (array) config('app.supported_locales', ['en', 'it']);
         
@@ -223,6 +246,7 @@ Route::middleware(['auth'])->group(function () {
         $suffix = $challenge ? '/leaderboard/'.$challenge : '/leaderboard';
         return redirect()->to(url('/'.$preferred.$suffix));
     })->name('leaderboard.redirect');
+    */
 });
 
 // Route di test

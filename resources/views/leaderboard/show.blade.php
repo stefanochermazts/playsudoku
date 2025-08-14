@@ -1,7 +1,21 @@
 <x-site-layout>
     <div class="max-w-5xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white mb-2">Classifica — Sfida #{{ $challenge->id }}</h1>
-        <p class="text-neutral-600 dark:text-neutral-300 mb-6">Puzzle: {{ ucfirst($challenge->puzzle->difficulty) }} — Seed {{ $challenge->puzzle->seed }}</p>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-neutral-900 dark:text-white mb-2">Classifica — Sfida #{{ $challenge->id }}</h1>
+                <p class="text-neutral-600 dark:text-neutral-300">Puzzle: {{ ucfirst($challenge->puzzle->difficulty) }} — Seed {{ $challenge->puzzle->seed }}</p>
+            </div>
+            
+            <div class="mt-4 lg:mt-0">
+                <a href="{{ route('localized.leaderboard.export', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    {{ __('app.export_csv') }}
+                </a>
+            </div>
+        </div>
 
         @if(!is_null($userRank))
             <div class="mb-4 p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200">

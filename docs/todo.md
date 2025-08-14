@@ -153,13 +153,33 @@ Deliverable: flusso end‑to‑end per completare una sfida e comparire in class
 ---
 
 ### Fase 7 — Classifiche
-- [ ] Vista classifica per sfida con filtri (globale, difficoltà)
-- [ ] Board del giorno/settimana con archivio e trend semplici
-- [ ] Profili utente: best times per difficoltà, percentuali completati
-- [ ] Esportazione CSV
-- [ ] Aggiornamento near‑real‑time: broadcasting Reverb (opzionale) oltre polling
+- [x] **Fix routing leaderboard**: risolto conflitto tra rotte localizzate e redirect che causava 404
+  - [x] Identificato conflitto tra `leaderboard/{challenge?}` e `{locale}/leaderboard/{challenge}`
+  - [x] Rimossa rotta redirect conflittuale temporaneamente
+  - [x] Spostata rotta leaderboard dentro gruppo auth per corretta gestione parametri
+  - [x] Implementata closure per gestione parametri `$locale` e `$challenge` nel routing localizzato
+- [x] Vista classifica per sfida funzionante con design responsive (Tailwind + dark mode)
+- [x] **Infrastructure**: LeaderboardService con cache, query ottimizzate, multiple leaderboard types
+- [x] **Profili utente base**: UserProfile model, statistiche dashboard (best times, puzzles solved, streaks)
+- [x] **Board del giorno/settimana**: pagine dedicate con archivio e trend storici
+- [x] **Profili utente avanzati**: best times per difficoltà, percentuali completati per tipo sfida
+- [x] **Esportazione CSV**: funzionalità download classifiche
+- [ ] **Aggiornamento near‑real‑time**: broadcasting Reverb (opzionale) oltre polling
 
 Deliverable: leaderboard performanti con caching e UX reattiva.
+
+**✅ COMPLETATO** - Note implementazione:
+- **Routing Fix**: Risolto problema critico 404 su `/en/leaderboard/{id}` causato da conflitto order-sensitive nel routing ✅
+- **Vista Leaderboard**: Componente LeaderboardController con vista `leaderboard.show` implementata e funzionante ✅  
+- **LeaderboardService**: Servizio completo con cache (TTL 5min), global/daily/weekly leaderboards ✅
+- **Daily/Weekly Boards**: DailyBoardController e WeeklyBoardController con archivi storici e statistiche ✅
+- **Profili Avanzati**: User model esteso con statistiche per difficoltà, tipo sfida e trend temporali ✅
+- **Esportazione CSV**: Funzionalità export completa con headers dettagliati e formato standard ✅
+- **Statistiche Avanzate**: getStatsByDifficulty(), getStatsByChallengeType(), getPerformanceTrend() ✅
+- **Design Responsive**: Tutte le nuove viste con Tailwind CSS, dark mode e mobile-first ✅
+- **Performance**: Query ottimizzate, pagination, eager loading, cache strategico ✅
+- **Locale Support**: Routing e traduzioni complete per IT/EN ✅
+- **Auth Integration**: Middleware auth su tutte le nuove funzionalità ✅
 
 ---
 

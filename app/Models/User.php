@@ -107,4 +107,129 @@ class User extends Authenticatable
     {
         return $this->profile ?? $this->profile()->create();
     }
+
+    /**
+     * Ottiene statistiche dettagliate per difficoltà
+     */
+    public function getStatsByDifficulty(): array
+    {
+        $stats = [];
+        $difficulties = ['easy', 'normal', 'hard', 'expert', 'crazy'];
+
+        foreach ($difficulties as $difficulty) {
+            $attempts = $this->completedAttempts()
+                ->whereHas('challenge.puzzle', function($query) use ($difficulty) {
+                    $query->where('difficulty', $difficulty);
+                });
+
+            $stats[$difficulty] = [
+                'completed' => $attempts->count(),
+                'best_time' => $attempts->min('duration_ms'),
+                'average_time' => $attempts->avg('duration_ms'),
+                'total_errors' => $attempts->sum('errors_count'),
+                'total_hints' => $attempts->sum('hints_used'),
+                'completion_rate' => $this->getCompletionRateByDifficulty($difficulty),
+            ];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Calcola percentuale completamento per difficoltà
+     */
+    public function getCompletionRateByDifficulty(string $difficulty): float
+    {
+        $totalChallenges = \App\Models\Challenge::whereHas('puzzle', function($query) use ($difficulty) {
+            $query->where('difficulty', $difficulty);
+        })->count();
+
+        if ($totalChallenges === 0) {
+            return 0.0;
+        }
+
+        $completedChallenges = $this->completedAttempts()
+            ->whereHas('challenge.puzzle', function($query) use ($difficulty) {
+                $query->where('difficulty', $difficulty);
+            })
+            ->distinct('challenge_id')
+            ->count();
+
+        return ($completedChallenges / $totalChallenges) * 100;
+    }
+
+    /**
+     * Ottiene statistiche per tipo di sfida
+     */
+    public function getStatsByChallengeType(): array
+    {
+        $stats = [];
+        $types = ['daily', 'weekly', 'custom'];
+
+        foreach ($types as $type) {
+            $attempts = $this->completedAttempts()
+                ->whereHas('challenge', function($query) use ($type) {
+                    $query->where('type', $type);
+                });
+
+            $stats[$type] = [
+                'completed' => $attempts->count(),
+                'best_time' => $attempts->min('duration_ms'),
+                'average_time' => $attempts->avg('duration_ms'),
+                'completion_rate' => $this->getCompletionRateByChallengeType($type),
+            ];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Calcola percentuale completamento per tipo sfida
+     */
+    public function getCompletionRateByChallengeType(string $type): float
+    {
+        $totalChallenges = \App\Models\Challenge::where('type', $type)
+            ->where('status', 'active')
+            ->count();
+
+        if ($totalChallenges === 0) {
+            return 0.0;
+        }
+
+        $completedChallenges = $this->completedAttempts()
+            ->whereHas('challenge', function($query) use ($type) {
+                $query->where('type', $type);
+            })
+            ->distinct('challenge_id')
+            ->count();
+
+        return ($completedChallenges / $totalChallenges) * 100;
+    }
+
+    /**
+     * Ottiene trend performance negli ultimi mesi
+     */
+    public function getPerformanceTrend(int $months = 6): array
+    {
+        $trend = [];
+        $startDate = now()->subMonths($months);
+
+        for ($i = 0; $i < $months; $i++) {
+            $monthStart = $startDate->copy()->addMonths($i)->startOfMonth();
+            $monthEnd = $monthStart->copy()->endOfMonth();
+
+            $monthAttempts = $this->completedAttempts()
+                ->whereBetween('completed_at', [$monthStart, $monthEnd]);
+
+            $trend[] = [
+                'month' => $monthStart->format('Y-m'),
+                'month_name' => $monthStart->format('M Y'),
+                'completed' => $monthAttempts->count(),
+                'average_time' => $monthAttempts->avg('duration_ms'),
+                'best_time' => $monthAttempts->min('duration_ms'),
+            ];
+        }
+
+        return $trend;
+    }
 }
