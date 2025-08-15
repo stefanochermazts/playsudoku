@@ -23,8 +23,8 @@ class LeaderboardController extends Controller
 			->where('valid', true)
 			->whereNotNull('completed_at')
 			->with('user')
-			->orderBy('duration_ms')
-			->orderBy('errors_count')
+			->orderByRaw('(duration_ms + (errors_count * 3000))')
+			->orderBy('hints_used')
 			->orderBy('completed_at')
 			->paginate(25);
 
@@ -35,8 +35,8 @@ class LeaderboardController extends Controller
 			$all = $challenge->attempts()
 				->where('valid', true)
 				->whereNotNull('completed_at')
-				->orderBy('duration_ms')
-				->orderBy('errors_count')
+				->orderByRaw('(duration_ms + (errors_count * 3000))')
+				->orderBy('hints_used')
 				->orderBy('completed_at')
 				->pluck('user_id')
 				->toArray();
@@ -44,7 +44,11 @@ class LeaderboardController extends Controller
 			$userRank = $index === false ? null : ($index + 1);
 		}
 
-        return view('leaderboard.show', compact('challenge', 'attempts', 'userRank'));
+        // Configura SEO meta tags per questa leaderboard
+        $metaService = app(\App\Services\MetaService::class);
+        $metaService->setLeaderboard($challenge);
+
+        return view('leaderboard.show', compact('challenge', 'attempts', 'userRank', 'metaService'));
     }
 
     /**
@@ -64,8 +68,8 @@ class LeaderboardController extends Controller
             ->where('valid', true)
             ->whereNotNull('completed_at')
             ->with('user')
-            ->orderBy('duration_ms')
-            ->orderBy('errors_count')
+            ->orderByRaw('(duration_ms + (errors_count * 3000))')
+            ->orderBy('hints_used')
             ->orderBy('completed_at')
             ->get();
 

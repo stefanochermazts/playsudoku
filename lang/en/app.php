@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 return [
     'app_name' => 'PlaySudoku',
+    
+    // Meta tags for SEO
+    'meta' => [
+        'description' => 'Play Sudoku online for free! Daily challenges, competitive leaderboards, training mode and puzzle analyzer. The most complete Sudoku platform for beginners and experts.',
+        'keywords' => 'sudoku, puzzle, game, online, free, challenges, leaderboard, training, brain training, english',
+    ],
     'welcome_title' => 'Free Sudoku Online - Play Sudoku Puzzles Daily',
     'welcome_subtitle' => 'Play sudoku online for free with daily challenges, competitive leaderboards and smart solver. The best free sudoku game for puzzle enthusiasts.',
     'home' => [
@@ -18,13 +24,25 @@ return [
         'home' => 'Home',
         'dashboard' => 'Dashboard',
         'challenges' => 'Challenges',
+        'training' => 'Training',
+        'analyzer' => 'Analyzer',
+        'friends' => 'Friends',
+        'clubs' => 'Clubs',
         'profile' => 'Profile',
         'login' => 'Login',
         'register' => 'Register',
         'logout' => 'Logout',
         'language' => 'Language',
+        'theme' => 'Theme',
         'features' => 'Features',
         'how_it_works' => 'How it works',
+        'menu' => 'Menu',
+        'dashboard_challenges' => 'Dashboard & Challenges',
+        'social' => 'Social',
+        'tools' => 'Tools',
+        'settings' => 'Settings',
+        'account' => 'Account',
+        'privacy' => 'Privacy',
     ],
     'meta' => [
         'description' => 'Free sudoku online with daily competitive challenges. Advanced sudoku game with leaderboards, smart solver and replay. The best platform to play sudoku puzzles.',
@@ -116,11 +134,14 @@ return [
         'game' => 'Game',
         'daily_challenges' => 'Daily Challenges',
         'leaderboards' => 'Leaderboards',
+        'training' => 'Training',
+        'analyzer' => 'Analyzer',
         'solver' => 'Solver',
         'support' => 'Support',
         'help' => 'Help',
         'contact' => 'Contact',
         'privacy' => 'Privacy',
+        'terms' => 'Terms',
         'rights' => 'All rights reserved.',
     ],
     'dashboard' => [
@@ -185,6 +206,7 @@ return [
         'no_challenges_desc' => 'Try changing the filters to see more challenges.',
         'challenge_not_available' => 'This challenge is no longer available.',
         'already_completed' => 'You have already completed this challenge.',
+        'play_challenge' => ':type Challenge (:difficulty)',
         'status_not_started' => 'Not started',
         'status_in_progress' => 'In progress',
         'status_completed' => 'Completed',
@@ -272,6 +294,961 @@ return [
         'your_stats' => 'Your Statistics',
         'average_time' => 'Average Time',
         'hints_used' => 'Hints Used',
+        'view_challenges_leaderboards' => 'View Challenges and Leaderboards',
+        'start_playing_to_see_stats' => 'Start playing to see your statistics!',
+        'difficulty_label' => 'Difficulty:',
+        'expires_label' => 'Expires:',
+        'time_label' => 'Time:',
+        'challenge_info' => 'Challenge Info',
+        'challenge_completed' => 'Challenge Completed!',
+        'view_leaderboard' => 'View Leaderboard',
+        'game_time' => 'Game Time',
+        'time' => 'Time',
+        'best_time' => 'Best Time',
+        'todays_challenge' => 'Today\'s Challenge',
+        'new_challenges_created_daily' => 'New challenges are created automatically every day.',
+        'accuracy' => 'Accuracy',
+    ],
+
+    // Accessibility and aria-label translations
+    'aria' => [
+        'sudoku_game' => 'Sudoku Game',
+        'game_stats' => 'Game Statistics',
+        'game_controls' => 'Game Controls',
+        'request_hint' => 'Request hint',
+        'request_hint_competitive' => 'Request hint (adds 20 seconds)',
+        'undo_move' => 'Undo last move',
+        'redo_move' => 'Redo undone move',
+        'sudoku_grid' => 'Sudoku 9x9 Grid',
+        'cell_label' => 'Cell row :row column :col',
+        'cell_with_value' => 'Cell row :row column :col, value :value',
+        'cell_given' => 'Cell row :row column :col, given number',
+        'cell_empty' => 'Cell row :row column :col, empty',
+        'cell_error' => 'Cell row :row column :col, error',
+        'candidate' => 'Candidate :number',
+        'loading_puzzle' => 'Loading puzzle in progress',
+        'number_input_panel' => 'Number input panel',
+        'insert_number' => 'Insert number :number',
+        'clear_cell' => 'Clear number from selected cell',
+        'game_status' => 'Game status',
+        'end_impersonation' => 'End impersonation and return to my account',
+        'toggle_theme' => 'Toggle theme',
+        'user_menu' => 'User menu',
+        'return_to_account' => 'Return to my account',
+        'open_main_menu' => 'Open main menu',
+    ],
+
+    // Additional common translations
+    'export_csv' => 'Export CSV',
+    'difficulty' => 'Difficulty',
+    'status' => 'Status',
+
+    
+    // Leaderboard translations
+    'leaderboard' => [
+        'title' => 'Leaderboard — Challenge #:id',
+        'puzzle_info' => 'Puzzle: :difficulty — Seed :seed',
+        'your_position' => 'Your position: <strong>#:rank</strong>',
+        'scoring_system' => '📊 Scoring system:',
+        'scoring_description' => 'For each error, 3 seconds are added to the final time. The leaderboard is sorted by penalized time.',
+        'table_caption' => 'Challenge leaderboard',
+        'column_position' => 'Pos',
+        'column_user' => 'User',
+        'column_time_penalized' => 'Time (Penalized)',
+        'column_errors' => 'Errors',
+        'column_hints' => 'Hints',
+        'column_date' => 'Date',
+        'first_place' => 'First',
+        'second_place' => 'Second',
+        'third_place' => 'Third',
+        'no_results' => 'No results yet.',
+    ],
+    
+    // Sudoku Training translations
+    'training' => [
+        // Demo page
+        'title' => '🧩 Sudoku Training',
+        'subtitle' => 'Try our interactive Sudoku board with all implemented features',
+        'play_now' => '🎮 Play Now',
+        'analyzer' => '🔍 Analyzer',
+        'empty_board' => '📝 Empty Board',
+        'load_puzzle_difficulty' => '🎯 Load Puzzle by Difficulty',
+        'difficulty_easy' => '🟢 Easy',
+        'difficulty_medium' => '🔵 Medium',
+        'difficulty_hard' => '🟡 Hard',
+        'difficulty_expert' => '🔴 Expert',
+        'difficulty_crazy' => '🔴 Crazy',
+        
+        // Features section
+        'features_title' => '✨ Implemented Features',
+        'feature_grid' => '9×9 grid rendering with highlighting',
+        'feature_input' => 'Keyboard and mouse input',
+        'feature_modes' => 'Values / candidates mode switching',
+        'feature_undo' => 'Unlimited undo/redo',
+        'feature_timer' => 'Game timer',
+        'feature_validation' => 'Conflict validation',
+        'feature_accessibility' => 'Accessibility support (screen reader)',
+        'feature_responsive' => 'Responsive design',
+        'feature_hints' => 'Advanced hint system',
+        'feature_analyzer' => 'Puzzle analyzer with technical report',
+        
+        // Keyboard controls
+        'keyboard_title' => '⌨️ Keyboard Controls',
+        'key_numbers' => 'Insert number',
+        'key_delete' => 'Delete',
+        'key_arrows' => 'Move selection',
+        'key_mode' => 'Switch mode (Values/Candidates)',
+        'key_undo' => 'Undo',
+        'key_redo' => 'Redo',
+        'key_tab' => 'Accessibility navigation',
+        
+        // Technical details
+        'tech_title' => '🔧 Technical Details',
+        'tech_frontend' => 'Frontend:',
+        'tech_backend' => 'Backend:',
+        'tech_accessibility' => 'Accessibility:',
+        
+        // Play page
+        'play_title' => '🎮 Sudoku Single Player',
+        'puzzle_seed' => 'Puzzle generated with seed:',
+        'back_to_demo' => '← Back to Training',
+        'new_puzzle' => '🎲 New Puzzle',
+        'reset' => '🔄 Reset',
+        'hints_title' => '💡 Tips:',
+        'hint_mode_switch' => 'to switch between Values and Candidates mode',
+        'hint_candidates' => 'Candidates help you track possible numbers in each cell',
+        'hint_undo' => 'to undo moves',
+        'hint_errors' => 'Errors are highlighted in red if the option is enabled',
+        'hint_accessibility' => 'for accessibility navigation',
+        'reset_confirm' => 'Are you sure you want to reset the puzzle? All progress will be lost.',
+        'completion_message' => '🎉 Congratulations! You completed the puzzle in :time. Do you want to try a new puzzle?',
+        
+        // Analyzer page
+        'analyzer_title' => '🔍 Sudoku Puzzle Analyzer',
+        'analyzer_subtitle' => 'Import a Sudoku puzzle and discover all the techniques needed to solve it',
+        'back_to_training' => '🧩 Back to Training',
+        'play' => '🎮 Play',
+        'how_it_works' => '📚 How It Works',
+        'input_methods' => 'Input Methods:',
+        'input_manual' => '<strong>Manual:</strong> Click on cells and enter numbers',
+        'input_json' => '<strong>JSON:</strong> Paste a 9x9 array in JSON format',
+        'input_example' => '<strong>Sample Puzzle:</strong> Classic well-balanced Sudoku, perfect for testing the analyzer features',
+        'report_generated' => 'Generated Report:',
+        'report_techniques' => 'All techniques used step-by-step',
+        'report_stats' => 'Statistics of most frequent techniques',
+        'report_solution' => 'Verified final solution',
+        'report_difficulty' => 'Logical difficulty analysis',
+    ],
+
+    // Sudoku Board translations
+    'board' => [
+        'completed' => 'Completed',
+        'errors' => 'Errors',
+        'hints' => 'Hints',
+        'hint_button' => 'Hint',
+        'show_candidates' => 'Show candidates',
+        'hide_candidates' => 'Hide candidates',
+        'sudoku_completed' => 'Sudoku completed!',
+        'sudoku_in_progress' => 'Sudoku in progress, :percentage% completed.',
+        'errors_detected' => ':count errors detected.',
+        'hints_used' => ':count hints used.',
+    ],
+
+    // Sudoku Hints and Techniques translations
+    'hints' => [
+        'processing_error' => 'Error processing hint: :error',
+        'competitive_penalty' => 'Hint applied using :technique (+20s penalty)',
+        
+        // Technique names
+        'techniques' => [
+            'naked_singles' => 'Naked Single',
+            'hidden_singles' => 'Hidden Single',
+            'locked_candidates_pointing' => 'Locked Candidates (Pointing)',
+            'locked_candidates_claiming' => 'Locked Candidates (Claiming)',
+            'naked_pairs' => 'Naked Pairs',
+            'hidden_pairs' => 'Hidden Pairs',
+            'naked_triples' => 'Naked Triples',
+            'hidden_triples' => 'Hidden Triples',
+            'x_wing' => 'X-Wing',
+            'swordfish' => 'Swordfish',
+            'backtracking' => 'Brute Force',
+        ],
+        
+        // Detailed explanations
+        'explanations' => [
+            'naked_singles' => '🔍 Naked Single: Cell :cell can only contain the number :value. All other numbers (1-9) are already present in the same row, column or 3×3 box. The candidate :value is highlighted in yellow - click on it to confirm!',
+            'hidden_singles' => '🕵️ Hidden Single: The number :value can only be placed in cell :cell within this row/column/box. Even though there are other possible candidates for this cell, :value has no other place to go in this unit. The candidate :value is highlighted in yellow - click on it to confirm!',
+            'locked_candidates_pointing' => '📍 Locked Candidates (Pointing): The number :value is restricted to a single 3×3 box within a row/column, so it can be eliminated from other cells in the same row/column outside the box. Deduced placement: :cell = :value.',
+            'locked_candidates_claiming' => '🎯 Locked Candidates (Claiming): The number :value in this 3×3 box is restricted to a single row/column, so it can be eliminated from other cells in the same row/column outside the box. Deduced placement: :cell = :value.',
+            'naked_pairs' => '👥 Naked Pairs: Two cells in this unit contain exactly the same two candidates. These numbers must occupy those two cells, so they can be eliminated from all other cells in the same unit. Deduced placement: :cell = :value.',
+            'hidden_pairs' => '🔎 Hidden Pairs: Two numbers appear as candidates only in two cells of this unit. These numbers must occupy those two cells, so all other candidates can be eliminated from those cells. Deduced placement: :cell = :value.',
+            'naked_triples' => '🎲 Naked Triples: Three cells in this unit contain only three specific numbers among them. These three numbers must occupy those three cells, so they can be eliminated from other cells in the same unit. Deduced placement: :cell = :value.',
+            'hidden_triples' => '🔍 Hidden Triples: Three numbers appear as candidates only in three cells of this unit. These numbers must occupy those three cells, so all other candidates can be eliminated from those cells. Deduced placement: :cell = :value.',
+            'x_wing' => '❌ X-Wing: The number :value forms an X-Wing pattern: it appears only in two rows and two columns that intersect. This creates a logical chain that allows eliminating candidates from other cells and deducing: :cell = :value.',
+            'swordfish' => '🗡️ Swordfish: The number :value forms an advanced Swordfish pattern across three rows/columns. This complex candidate pattern creates a logical chain that enables the placement: :cell = :value.',
+            'default' => '🧩 Technique :technique: Logical analysis completed. Deduced placement: :cell = :value.',
+        ],
+        
+        // Candidate actions
+        'candidate_added' => 'Candidate :number added in row :row column :col',
+        'candidate_removed' => 'Candidate :number removed in row :row column :col',
+        
+        // Hint UI labels
+        'technique_label' => 'Technique:',
+        'click_to_confirm' => '👆 Click on the highlighted candidate to confirm it',
+    ],
+
+    // Contact Form translations
+    'contact' => [
+        'title' => 'Contact Us',
+        'subtitle' => 'Have questions or suggestions? We\'re here to help!',
+        'name' => 'Name',
+        'name_placeholder' => 'Your full name',
+        'email' => 'Email',
+        'email_placeholder' => 'your-email@example.com',
+        'subject' => 'Subject',
+        'subject_placeholder' => 'Message subject',
+        'message' => 'Message',
+        'message_placeholder' => 'Write your message here...',
+        'send_button' => 'Send Message',
+        'sending' => 'Sending...',
+        'success_title' => 'Message Sent!',
+        'success_message' => 'Thank you for contacting us. You will receive an email confirmation and we will respond as soon as possible.',
+        'send_another' => 'Send another message',
+        'error_sending' => 'Error sending message. Please try again later.',
+        'back_to_home' => 'Back to Home',
+    ],
+
+    // Help Page translations
+    'help' => [
+        'title' => 'Complete PlaySudoku Guide',
+        'subtitle' => 'Discover all features of the most advanced Sudoku platform',
+        
+        // Getting Started section
+        'getting_started' => [
+            'title' => '🚀 Getting Started',
+            'guest_play' => 'Play as guest in training pages without registration',
+            'register_benefits' => 'Register to participate in daily challenges and track your progress',
+            'choose_difficulty' => 'Choose from 5 difficulty levels: Easy, Medium, Hard, Expert, Crazy',
+        ],
+        
+        // Game Features section
+        'game_features' => [
+            'title' => '🎮 Game Features',
+            'candidates' => 'Advanced candidate system to track possible numbers',
+            'hints' => 'Smart hints based on real Sudoku techniques',
+            'undo_redo' => 'Unlimited undo/redo to correct mistakes',
+            'timer' => 'Automatic timer to track your times',
+            'error_detection' => 'Automatic error detection with highlighting',
+            'accessibility' => 'Full support for screen readers and keyboard navigation',
+        ],
+        
+        // Daily Challenges section
+        'daily_challenges' => [
+            'title' => '🏆 Daily Challenges',
+            'same_puzzle' => 'All players face the same puzzle every day',
+            'time_based' => 'Leaderboard based on completion time',
+            'penalty_system' => 'Penalty system for errors and hints',
+            'leaderboards' => 'Global leaderboards with detailed statistics',
+            'weekly_challenges' => 'Weekly challenges for longer competitions',
+        ],
+        
+        // Training section
+        'training' => [
+            'title' => '🧩 Training Mode',
+            'free_play' => 'Free play without time pressure',
+            'difficulty_selection' => 'Free difficulty selection',
+            'hint_system' => 'Advanced hint system with explanations',
+            'progress_tracking' => 'Personal progress tracking',
+        ],
+        
+        // Analyzer section
+        'analyzer' => [
+            'title' => '🔍 Puzzle Analyzer',
+            'import_puzzle' => 'Import puzzles from JSON or manual input',
+            'technique_analysis' => 'Complete analysis of required techniques',
+            'difficulty_rating' => 'Automatic difficulty assessment',
+            'step_by_step' => 'Step-by-step solving with explanations',
+        ],
+        
+        // Account Features section
+        'account_features' => [
+            'title' => '👤 Account Features',
+            'profile_stats' => 'Detailed performance statistics',
+            'progress_tracking' => 'Progress tracking over time',
+            'notification_preferences' => 'Email notification preferences',
+            'multilingual' => 'Multilingual support (Italian/English)',
+        ],
+        
+        // Tips section
+        'tips' => [
+            'title' => '💡 Useful Tips',
+            'start_easy' => 'Start with easy puzzles to learn the basics',
+            'use_candidates' => 'Always use candidates to track possibilities',
+            'learn_techniques' => 'Learn advanced techniques with the hint system',
+            'practice_daily' => 'Participate in daily challenges to improve',
+            'analyze_mistakes' => 'Use the analyzer to understand mistakes',
+        ],
+        
+        // Contact section
+        'support' => [
+            'title' => '📞 Support',
+            'contact_us' => 'Contact us for questions or technical issues',
+            'feedback' => 'Your feedback helps us improve the platform',
+            'bug_reports' => 'Report bugs or issues encountered',
+        ],
+    ],
+
+    // Privacy & Legal translations
+    'privacy' => [
+        'title' => 'Privacy Policy',
+        'last_updated' => 'Last updated: :date',
+        'introduction' => 'PlaySudoku respects your privacy and is committed to protecting your personal data.',
+        'data_controller' => 'Data Controller',
+        'data_collected' => 'Data Collected',
+        'data_usage' => 'How We Use Your Data',
+        'data_sharing' => 'Data Sharing',
+        'data_retention' => 'Data Retention',
+        'your_rights' => 'Your Rights',
+        'contact_privacy' => 'Privacy Contacts',
+        'accept_privacy' => 'I accept the privacy policy',
+        'must_accept' => 'You must accept the privacy policy to continue',
+    ],
+
+    'cookies' => [
+        'title' => 'Cookie Policy',
+        'banner_title' => 'This website uses cookies',
+        'banner_text' => 'We use cookies to improve your browsing experience. Some cookies are essential for the website to function.',
+        'accept_all' => 'Accept All',
+        'accept_essential' => 'Essential Only',
+        'manage_preferences' => 'Manage Preferences',
+        'essential_cookies' => 'Essential Cookies',
+        'analytics_cookies' => 'Analytics Cookies',
+        'marketing_cookies' => 'Marketing Cookies',
+        'cookie_types' => 'Cookie Types',
+        'essential_description' => 'Necessary for website functionality (authentication, preferences)',
+        'analytics_description' => 'Help us understand how you use the site (Google Analytics)',
+        'marketing_description' => 'Used to personalize ads and content',
+        'manage_consent' => 'Manage your cookie consent at any time',
+    ],
+
+    'terms' => [
+        'title' => 'Terms of Service',
+        'acceptance' => 'Acceptance of Terms',
+        'service_description' => 'Service Description',
+        'user_obligations' => 'User Obligations',
+        'prohibited_uses' => 'Prohibited Uses',
+        'intellectual_property' => 'Intellectual Property',
+        'limitation_liability' => 'Limitation of Liability',
+        'termination' => 'Termination',
+        'governing_law' => 'Governing Law',
+    ],
+
+    // Social sharing translations
+    'social' => [
+        'share' => 'Share',
+        'share_facebook' => 'Share on Facebook',
+        'share_twitter' => 'Share on Twitter',
+        'share_linkedin' => 'Share on LinkedIn',
+        'share_whatsapp' => 'Share on WhatsApp',
+        'share_telegram' => 'Share on Telegram',
+        'copy_link' => 'Copy link',
+        'link_copied' => 'Link copied to clipboard!',
+        'copy_failed' => 'Could not copy link',
+    ],
+
+    // Breadcrumbs navigation
+    'breadcrumbs' => [
+        'navigation' => 'Breadcrumb navigation',
+        'back_to_home' => 'Back to home',
+        'current_location' => 'Current location',
+    ],
+
+    // Homepage marketing content
+    'homepage' => [
+        // Hero section
+        'hero' => [
+            'title' => 'The World\'s Most Advanced Competitive Sudoku',
+            'subtitle' => 'Challenge yourself and millions of players in real-time. Train, compete and become a Sudoku master.',
+            'cta_register' => 'Start Free Now',
+            'cta_training' => 'Try Training Mode',
+            'cta_demo' => 'See How It Works',
+            'stats_users' => ':count Registered Players',
+            'stats_challenges' => ':count Challenges Completed',
+            'stats_puzzles' => ':count Puzzles Solved',
+            'live_users' => ':count Online Now',
+        ],
+
+        // Features showcase
+        'features' => [
+            'title' => 'Why Choose PlaySudoku?',
+            'subtitle' => 'The most complete platform for Sudoku enthusiasts',
+            
+            'training' => [
+                'title' => '🎯 Training Mode',
+                'description' => 'Improve your skills with variable difficulty puzzles, smart hints and solving technique analysis.',
+                'cta' => 'Start Training',
+            ],
+            
+            'competitive' => [
+                'title' => '🏆 Competitive Challenges',
+                'description' => 'Challenge players worldwide with identical puzzles. Real-time leaderboards and advanced anti-cheat system.',
+                'cta' => 'Join Challenges',
+            ],
+            
+            'analyzer' => [
+                'title' => '🔍 Advanced Analyzer',
+                'description' => 'Upload any Sudoku puzzle and discover all the techniques needed to solve it step by step.',
+                'cta' => 'Try Analyzer',
+            ],
+            
+            'social' => [
+                'title' => '👥 Friends & Clubs',
+                'description' => 'Find friends, create private clubs and challenge your circle in exclusive leaderboards. Connect with fellow enthusiasts!',
+                'cta' => 'Explore Social Features',
+            ],
+        ],
+
+        // Social proof
+        'social_proof' => [
+            'title' => 'Join the Community',
+            'subtitle' => 'Thousands of players compete daily on PlaySudoku',
+            'stat_active_today' => ':count Active Players Today',
+            'stat_completed_today' => ':count Challenges Completed Today',
+            'stat_avg_time' => ':time min Average Time',
+            'stat_best_time_today' => 'Best Time Today: :time min',
+        ],
+
+        // Benefits section
+        'benefits' => [
+            'title' => 'Sudoku Benefits for Your Mind',
+            'subtitle' => 'Sudoku is not just a game: it\'s brain training',
+            
+            'memory' => [
+                'title' => 'Improves Memory',
+                'description' => 'Sudoku stimulates working memory and helps keep your mind sharp as you age.',
+            ],
+            
+            'logic' => [
+                'title' => 'Develops Logical Thinking',
+                'description' => 'Solve complex puzzles while developing deductive reasoning and problem-solving skills.',
+            ],
+            
+            'concentration' => [
+                'title' => 'Increases Concentration',
+                'description' => 'The focus required by Sudoku improves your ability to concentrate in daily life.',
+            ],
+            
+            'stress' => [
+                'title' => 'Reduces Stress',
+                'description' => 'The meditative activity of Sudoku helps you relax and reduce stress levels.',
+            ],
+        ],
+
+        // Registration benefits
+        'registration' => [
+            'title' => 'Free Account Benefits',
+            'subtitle' => 'Unlock all advanced PlaySudoku features',
+            'cta' => 'Sign Up Free',
+            
+            'benefits' => [
+                'progress' => [
+                    'title' => 'Track Progress',
+                    'description' => 'Monitor your statistics, best times and improvements over time.',
+                ],
+                'leaderboards' => [
+                    'title' => 'Global Leaderboards',
+                    'description' => 'Compete in daily and weekly leaderboards against players worldwide.',
+                ],
+                'challenges' => [
+                    'title' => 'Unlimited Challenges',
+                    'description' => 'Full access to all competitive challenges and game modes.',
+                ],
+                'analytics' => [
+                    'title' => 'Advanced Analytics',
+                    'description' => 'Detailed statistics on your solving techniques and areas for improvement.',
+                ],
+            ],
+        ],
+
+        // FAQ Section
+        'faq' => [
+            'title' => 'Frequently Asked Questions',
+            'subtitle' => 'Everything you need to know about PlaySudoku',
+            
+            'how_to_play' => [
+                'question' => 'How do I play Sudoku on PlaySudoku?',
+                'answer' => 'Select an empty cell and enter a number from 1 to 9. Each row, column and 3x3 box must contain all numbers from 1 to 9 without repetition.',
+            ],
+            
+            'difficulties' => [
+                'question' => 'What difficulty levels are available?',
+                'answer' => 'We offer 5 levels: Easy, Medium, Hard, Expert and Insane. Each level is balanced to provide the right challenge.',
+            ],
+            
+            'competitive' => [
+                'question' => 'How do competitive challenges work?',
+                'answer' => 'All players solve the same puzzle. The winner is who completes it in the shortest time with fewer errors. Integrated anti-cheat system.',
+            ],
+            
+            'free' => [
+                'question' => 'Is PlaySudoku really free?',
+                'answer' => 'Yes! All basic features are free. Registration unlocks advanced features like statistics and leaderboards.',
+            ],
+            
+            'mobile' => [
+                'question' => 'Can I play on mobile?',
+                'answer' => 'Absolutely! PlaySudoku is optimized for all devices: smartphones, tablets and desktop.',
+            ],
+            
+            'hints' => [
+                'question' => 'Are hints available?',
+                'answer' => 'Yes, training mode includes smart hints and explanations of solving techniques.',
+            ],
+        ],
+
+        // Testimonials
+        'testimonials' => [
+            'title' => 'What Our Users Say',
+            'marco' => 'PlaySudoku revolutionized my way of playing. The competitive challenges are engaging and the system is perfect!',
+            'sarah' => 'Amazing platform! The training mode helped me improve so much. Now I can solve expert puzzles confidently.',
+            'giovanni' => 'The analyzer mode is fantastic for learning new techniques. Highly recommended!',
+        ],
+
+        // Call to action sections
+        'cta' => [
+            'register_now' => 'Sign Up Free',
+            'start_training' => 'Start Training',
+            'join_challenge' => 'Join Challenges',
+            'try_analyzer' => 'Try Analyzer',
+            'learn_more' => 'Learn More',
+            'get_started' => 'Get Started',
+        ],
+    ],
+
+    // Puzzle Analyzer translations
+    'analyzer' => [
+        'title' => '🔍 Sudoku Puzzle Analyzer',
+        'subtitle' => 'Import a Sudoku puzzle and discover all the techniques needed to solve it',
+        
+        // Input section
+        'import_puzzle' => '📥 Import Puzzle',
+        'manual_input' => '✍️ Manual',
+        'json_input' => '📄 JSON',
+        'load_example' => '🎯 Load Sample Puzzle',
+        'json_input_title' => 'JSON Input',
+        'json_placeholder' => 'Paste your puzzle in JSON format (9x9 array) here...',
+        'import_from_json' => '📥 Import from JSON',
+        'clear_grid' => '🗑️ Clear Grid',
+        
+        // Actions
+        'analyze_button' => '🔍 Analyze Puzzle',
+        'analyzing' => '🔄 Analyzing...',
+        
+        // Report section
+        'analysis_report' => '📊 Analysis Report',
+        'puzzle_solved' => '✅ Puzzle Solved!',
+        'puzzle_unsolved' => '❌ Puzzle Not Solved',
+        'initial_numbers' => 'Initial numbers:',
+        'total_steps' => 'Total steps:',
+        'different_techniques' => 'Different techniques:',
+        'completed' => 'Completed:',
+        'yes' => 'Yes',
+        'no' => 'No',
+        
+        // Techniques section
+        'techniques_used' => '🛠️ Techniques Used',
+        'technique_count' => ':technique (:count times)',
+        
+        // Steps section
+        'solving_steps' => '📝 Solving Steps',
+        'step_number' => 'Step :number',
+        'position' => 'Position:',
+        'value' => 'Value:',
+        'technique' => 'Technique:',
+        'row_col' => 'R:row C:col',
+        
+        // Error messages
+        'error_json_invalid' => 'Invalid JSON. Check syntax.',
+        'error_json_format' => 'JSON must contain a 9x9 array',
+        'error_json_parsing' => 'JSON parsing error: :error',
+        'error_empty_grid' => 'Grid is empty. Enter some numbers before analyzing.',
+        'error_analysis' => 'Analysis error: :error',
+        
+        // Grid labels
+        'empty_grid_message' => 'Empty grid - enter numbers or load a puzzle',
+        'click_cell_instruction' => 'Click on a cell and type a number to enter it',
+        
+        // Sample puzzle
+        'sample_puzzle_loaded' => 'Sample puzzle loaded successfully - perfect for testing the analyzer',
+    ],
+
+    'friends' => [
+        'title' => 'Friends',
+        'subtitle' => 'Manage your friendships and challenge your friends at Sudoku',
+        'total_friends' => 'Friends',
+        'pending_requests' => 'Requests',
+        'search_users' => 'Search Users',
+        'search_placeholder' => 'Search by name or email...',
+        'searching' => 'Searching',
+        'send_request' => 'Send Request',
+        'add' => 'Add',
+        'suggestions' => 'Suggestions',
+        'mutual_friends' => 'Mutual friends',
+        'my_friends' => 'My Friends',
+        'no_friends_yet' => 'No friends yet',
+        'no_friends_description' => 'Search for users and send friend requests to start challenging your friends at Sudoku!',
+        'accept' => 'Accept',
+        'decline' => 'Decline',
+        'view_profile' => 'Profile',
+        'remove' => 'Remove',
+        'friends_since' => 'Friends since',
+        'unknown_date' => 'unknown date',
+        'remove_confirmation' => 'Are you sure you want to remove this friend?',
+        
+        // API messages
+        'request_sent' => 'Friend request sent successfully',
+        'request_error' => 'Error sending request',
+        'request_accepted' => 'Friend request accepted',
+        'accept_error' => 'Error accepting request',
+        'request_declined' => 'Friend request declined',
+        'decline_error' => 'Error declining request',
+        'friendship_removed' => 'Friendship removed successfully',
+        'remove_error' => 'Error removing friendship',
+        'user_blocked' => 'User blocked successfully',
+        'block_error' => 'Error blocking user',
+        'not_friends' => 'You are not friends',
+        'unauthorized' => 'Unauthorized',
+        'cannot_block_self' => 'You cannot block yourself',
+    ],
+
+    'clubs' => [
+        'title' => 'Clubs',
+        'subtitle' => 'Create or join private clubs to challenge your friends',
+        'my_clubs' => 'My Clubs',
+        'club_invites' => 'Club Invites',
+        'suggested_clubs' => 'Suggested Clubs',
+        'create_club' => 'Create New Club',
+        'join_club' => 'Join',
+        'view_club' => 'View',
+        'leave_club' => 'Leave Club',
+        'manage_club' => 'Manage',
+        
+        // Explore page
+        'explore_clubs' => 'Explore Clubs',
+        'explore_subtitle' => 'Discover and join public clubs in the community',
+        'back_to_clubs' => 'Back to Clubs',
+        'search_clubs_placeholder' => 'Search clubs by name or description...',
+        'search_label' => 'Search Clubs',
+        'search' => 'Search',
+        'sort_by' => 'Sort by',
+        'sort_newest' => 'Newest',
+        'sort_oldest' => 'Oldest',
+        'sort_members' => 'By members',
+        'sort_name' => 'By name',
+        'searching_for' => 'Searching for: :term',
+        'found_clubs' => ':count clubs found',
+        'showing_results' => 'Showing :from-:to of :total results',
+        'total_clubs' => 'Total Clubs',
+        'active_clubs' => 'Active Clubs',
+        'total_members' => 'Total Members',
+        'new_this_week' => 'New This Week',
+        'new' => 'New',
+        'popular' => 'Popular',
+        'unlimited' => 'Unlimited',
+        'created' => 'Created',
+        'view' => 'View',
+        'no_results' => 'No results',
+        'no_results_description' => 'We couldn\'t find clubs matching ":search"',
+        'no_public_clubs' => 'No public clubs',
+        'no_public_clubs_description' => 'There are no public clubs available yet.',
+        'clear_search' => 'Clear search',
+        'create_first_club' => 'Create the first club',
+        'view_details' => 'View details',
+        'join_now' => 'Join now',
+        'full' => 'Full',
+        'by' => 'by',
+        'join' => 'Join',
+        
+        // Club details
+        'members' => 'Members',
+        'admins' => 'Admins',
+        'owner' => 'Owner',
+        'visibility' => 'Visibility',
+        'max_members' => 'Max Members',
+        'invite_code' => 'Invite Code',
+        'description' => 'Description',
+        
+        // Visibility options
+        'visibility_public' => 'Public',
+        'visibility_private' => 'Private',
+        'visibility_invite_only' => 'Invite Only',
+        
+        // Actions
+        'accept_invite' => 'Accept Invite',
+        'decline_invite' => 'Decline Invite',
+        'send_invite' => 'Send Invite',
+        'remove_member' => 'Remove Member',
+        'make_admin' => 'Make Admin',
+        'remove_admin' => 'Remove Admin',
+        'transfer_ownership' => 'Transfer Ownership',
+        
+        // Messages
+        'created_successfully' => 'Club created successfully',
+        'creation_error' => 'Error creating club',
+        'updated_successfully' => 'Club updated successfully',
+        'update_error' => 'Error updating club',
+        'deleted_successfully' => 'Club deleted successfully',
+        'deletion_error' => 'Error deleting club',
+        'joined_successfully' => 'Successfully joined the club',
+        'join_error' => 'Error joining club',
+        'left_successfully' => 'Successfully left the club',
+        'leave_error' => 'Error leaving club',
+        'invite_sent' => 'Invite sent successfully',
+        'invite_error' => 'Error sending invite',
+        'invite_accepted' => 'Invite accepted successfully',
+        'accept_error' => 'Error accepting invite',
+        'invite_declined' => 'Invite declined',
+        'decline_error' => 'Error declining invite',
+        'member_removed' => 'Member removed successfully',
+        'remove_error' => 'Error removing member',
+        'role_changed' => 'Role changed successfully',
+        'role_change_error' => 'Error changing role',
+        
+        // Form labels
+        'club_name' => 'Club Name',
+        'club_description' => 'Club Description',
+        'club_visibility' => 'Club Visibility',
+        'club_max_members' => 'Maximum Members',
+        
+        // Empty states
+        'no_clubs_yet' => 'No clubs yet',
+        'no_clubs_description' => 'Create your first club or search for public clubs to join!',
+        'no_invites' => 'No pending invites',
+        'no_suggested_clubs' => 'No suggested clubs',
+        
+        // Statistics
+        'total_members' => 'Total Members',
+        'recent_joins' => 'New Members (30d)',
+        'pending_invites' => 'Pending Invites',
+        
+        // Create club form
+        'create_title' => 'Create New Club',
+        'create_subtitle' => 'Found your club and invite other sudoku players',
+        'back_to_clubs' => 'Back to Clubs',
+        'validation_errors' => 'There are errors in the form',
+        'basic_info' => 'Basic Information',
+        'name' => 'Club Name',
+        'name_placeholder' => 'Enter club name',
+        'description_placeholder' => 'Describe your club and its goals...',
+        'description_help' => 'Maximum 1000 characters. Explain the purpose of the club and what members can expect.',
+        'settings' => 'Settings',
+        'select_visibility' => 'Select visibility',
+        'visibility_public_desc' => 'Everyone can see and join the club',
+        'visibility_private_desc' => 'Only members can see the club',
+        'visibility_invite_desc' => 'Only by invitation from owner or admin',
+        'max_members_help' => 'Between 2 and 200 members. Leave empty for no limit.',
+        'cancel' => 'Cancel',
+        'created_successfully' => 'Club created successfully!',
+        'creation_error' => 'Error creating club. Please try again.',
+        
+        // Show club
+        'created_at' => 'Created on',
+        'member_since' => 'Member since',
+        'statistics' => 'Statistics',
+        'club_info' => 'Club Info',
+        'club_id' => 'Club ID',
+        
+        // Edit club
+        'edit_title' => 'Edit Club',
+        'edit_subtitle' => 'Edit settings for :name',
+        'back_to_club' => 'Back to Club',
+        'save_changes' => 'Save Changes',
+        'updated_successfully' => 'Club updated successfully!',
+        'update_error' => 'Error updating club. Please try again.',
+        'danger_zone' => 'Danger Zone',
+        'delete_warning' => 'Deleting the club is an irreversible action. All club data will be lost.',
+        'delete_club' => 'Delete Club',
+        'delete_confirm' => 'Are you sure you want to delete this club? This action cannot be undone.',
+        'delete_not_implemented' => 'Delete functionality not yet implemented.',
+        
+        // Club membership
+        'join_club' => 'Join Club',
+        'leave_club' => 'Leave Club',
+        'leave_confirm' => 'Are you sure you want to leave this club?',
+        'invite_friends' => 'Invite Friends',
+        'manage_invites' => 'Manage Invites',
+        'joined_successfully' => 'You have successfully joined the club!',
+        'left_successfully' => 'You have successfully left the club.',
+        'cannot_join_private' => 'You cannot join a private club without an invitation.',
+        'already_member' => 'You are already a member of this club.',
+        'club_full' => 'The club has reached its maximum number of members.',
+        'join_error' => 'Error joining the club. Please try again.',
+        'not_member' => 'You are not a member of this club.',
+        'owner_cannot_leave' => 'The owner cannot leave the club.',
+        'leave_error' => 'Error leaving the club. Please try again.',
+        'cannot_invite' => 'You do not have permission to invite members to this club.',
+        'invites_sent' => '{count} invite(s) sent successfully.',
+        'invite_error' => 'Error sending invites. Please try again.',
+        'invite_accepted' => 'Invite accepted! Welcome to the club.',
+        'invite_declined' => 'Invite declined.',
+        'invite_accept_error' => 'Error accepting the invite.',
+        'invite_decline_error' => 'Error declining the invite.',
+        
+        // Invite form
+        'invite_title' => 'Invite Friends',
+        'invite_subtitle' => 'Invite your friends to join :name club',
+        'select_friends' => 'Select Friends',
+        'no_friends_to_invite' => 'You have no friends to invite who are not already in the club.',
+        'pending_invites' => 'Pending Invites',
+        'no_pending_invites' => 'No pending invites.',
+        'send_invites' => 'Send Invites',
+        'invited_by' => 'Invited by',
+        'invited_on' => 'Invited on',
+        'accept_invite' => 'Accept',
+        'decline_invite' => 'Decline',
+        'pending' => 'Pending',
+        
+        // Explore clubs
+        'explore_clubs' => 'Explore Clubs',
+        'explore_subtitle' => 'Discover and join public clubs in the community',
+        'public_clubs' => 'Public Clubs',
+        'public_clubs_subtitle' => 'Discover clubs open to all users',
+        'search_clubs' => 'Search clubs...',
+        'search_clubs_placeholder' => 'Search clubs by name or description...',
+        'view_all' => 'View all',
+        'by' => 'by',
+        'view' => 'View',
+        'join' => 'Join',
+        'full' => 'Full',
+        'view_details' => 'View Details',
+        'join_now' => 'Join Now',
+        'search' => 'Search',
+        'sort_newest' => 'Newest',
+        'sort_oldest' => 'Oldest',
+        'sort_members' => 'By members',
+        'sort_name' => 'By name',
+        'no_results' => 'No results',
+        'no_results_description' => 'No clubs found matching ":search"',
+        'no_public_clubs' => 'No public clubs',
+        'no_public_clubs_description' => 'There are no public clubs available yet.',
+        'clear_search' => 'Clear search',
+        'create_first_club' => 'Create the first club',
+    ],
+
+    'profiles' => [
+        'member_since' => 'Member since',
+        'friends' => 'Friends',
+        'challenges_completed' => 'Challenges Completed',
+        'friends_count' => 'Friends',
+        'day_streak' => 'Day Streak',
+        'general_stats' => 'General Statistics',
+        'total_challenges' => 'Total Challenges',
+        'best_time' => 'Best Time',
+        'current_streak' => 'Current Streak',
+        'days' => 'day|days',
+        'stats_by_difficulty' => 'Statistics by Difficulty',
+        'avg_time' => 'Average Time',
+        'completion_rate' => 'Completion Rate',
+        'mutual_friends' => 'Mutual Friends',
+        'and_more' => 'and :count more',
+        'connect' => 'Connect',
+        'send_friend_request' => 'Send Friend Request',
+        'join_community' => 'Join the Community',
+        'join_description' => 'Register to view full profiles, add friends and participate in challenges!',
+        'join_now' => 'Join Now',
+    ],
+
+    'privacy' => [
+        'title' => 'Privacy Settings',
+        'subtitle' => 'Control who can see your profile and information',
+        'profile_visibility' => 'Profile Visibility',
+        'profile_visibility_description' => 'Choose who can see your user profile',
+        'stats_visibility' => 'Statistics Visibility',
+        'stats_visibility_description' => 'Control who can see your game statistics',
+        'general_settings' => 'General Settings',
+        'friend_requests_enabled' => 'Allow friend requests',
+        'friend_requests_description' => 'Allow other users to send you friend requests',
+        'show_online_status' => 'Show online status',
+        'online_status_description' => 'Your friends will be able to see when you are online',
+        'activity_feed_visible' => 'Activities visible to friends',
+        'activity_feed_description' => 'Your activities will appear in friends\' timeline',
+        'profile_public_description' => 'Everyone can see your profile',
+        'profile_friends_description' => 'Only your friends can see your profile',
+        'profile_private_description' => 'Only you can see your profile',
+        'stats_public_description' => 'Everyone can see your statistics',
+        'stats_friends_description' => 'Only your friends can see your statistics',
+        'stats_private_description' => 'Only you can see your statistics',
+        'settings_updated' => 'Privacy settings updated successfully',
+        'save_settings' => 'Save Settings',
+        'cancel' => 'Cancel',
+        'profile_not_visible' => ':name\'s profile is not visible',
+        'public' => 'Public',
+        'friends_only' => 'Friends only',
+        'private' => 'Private',
+    ],
+
+    'rankings' => [
+        'friends_title' => 'Friends Ranking',
+        'friends_subtitle' => 'Compare your performance with your friends',
+        'total_friends' => 'Total Friends',
+        'active_friends' => 'Active Friends',
+        'period' => 'Period',
+        'difficulty' => 'Difficulty',
+        'overall' => 'Overall',
+        'monthly' => 'Monthly',
+        'weekly' => 'Weekly',
+        'all_difficulties' => 'All Difficulties',
+        'your_position' => 'Your Position',
+        'position' => 'Position',
+        'completed' => 'Completed',
+        'completion_rate' => 'Completion Rate',
+        'best_time' => 'Best Time',
+        'avg_time' => 'Average Time',
+        'leaderboard' => 'Leaderboard',
+        'player' => 'Player',
+        'actions' => 'Actions',
+        'you' => 'You',
+        'of' => 'of',
+        'compare' => 'Compare',
+        'no_data' => 'No data available',
+        'no_data_description' => 'You and your friends haven\'t completed challenges in this period yet',
+        'compare_title' => 'Friends Comparison',
+        'vs' => 'vs',
+        'back_to_ranking' => 'Back to Ranking',
+        'head_to_head' => 'Head to Head',
+        'common_challenges' => 'Common Challenges',
+        'wins' => 'Wins',
+        'ties' => 'Ties',
+        'general_stats' => 'General Statistics',
+        'friend' => 'Friend',
+        'by_difficulty' => 'By Difficulty',
+        'best_time_comparison' => 'Best Time',
+        'tie' => 'Tie',
+        'not_friends' => 'You are not friends',
+    ],
+
+    'activity' => [
+        'title' => 'Friends Activity',
+        'subtitle' => 'See what your friends are doing on Sudoku',
+        'recent_activities' => 'Recent Activities',
+        'total_friends' => 'Total Friends',
+        'most_active_friends' => 'Most Active Friends',
+        'activity_types' => 'Activity Types',
+        'timeline' => 'Timeline',
+        'no_activities' => 'No activities',
+        'no_activities_description' => 'Add friends to see their activities here',
+        'add_friends' => 'Add Friends',
+        'challenge_completed' => ':user completed a :difficulty challenge in :time',
+        'new_personal_record' => ':user set a new personal record on :difficulty: :time',
+        'streak_milestone' => ':user reached a :days day streak',
+        'friend_added' => ':user added :friend as a friend',
+        'type_challenge_completed' => 'Challenges Completed',
+        'type_new_personal_record' => 'New Records',
+        'type_streak_milestone' => 'Streak Milestones',
+        'type_friend_added' => 'New Friendships',
+        'previous_best' => 'Previous best time',
+        'streak_achievement' => 'Streak milestone achieved!',
     ],
 ];
 

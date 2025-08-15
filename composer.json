@@ -16,14 +16,17 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.6",
         "laravel/breeze": "^2.3",
+        "laravel/dusk": "^8.3",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2"
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "phpstan/phpstan": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -56,6 +59,43 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ],
+        "test": [
+            "vendor/bin/pest"
+        ],
+        "test:coverage": [
+            "vendor/bin/pest --coverage --min=80"
+        ],
+        "test:coverage-html": [
+            "vendor/bin/pest --coverage --coverage-html=coverage-html"
+        ],
+        "test:unit": [
+            "vendor/bin/pest tests/Unit"
+        ],
+        "test:feature": [
+            "vendor/bin/pest tests/Feature"
+        ],
+        "test:dusk": [
+            "php artisan dusk"
+        ],
+        "analyse": [
+            "vendor/bin/phpstan analyse"
+        ],
+        "lint": [
+            "vendor/bin/pint"
+        ],
+        "lint:test": [
+            "vendor/bin/pint --test"
+        ],
+        "ci": [
+            "@lint:test",
+            "@analyse",
+            "@test:coverage"
+        ],
+        "quality": [
+            "@lint",
+            "@analyse",
+            "@test:coverage-html"
         ]
     },
     "extra": {

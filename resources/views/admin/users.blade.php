@@ -185,6 +185,20 @@
                                                     </button>
                                                 </form>
                                             @endif
+
+                                         <!-- Impersonate -->
+                                         @if(auth()->user()->isAdmin() && $user->id !== auth()->id())
+                                             <form action="{{ route('admin.users.impersonate', $user) }}" method="POST" class="inline" aria-label="Impersona utente {{ $user->email }}">
+                                                 @csrf
+                                                 <button type="submit"
+                                                         class="text-secondary-700 hover:text-secondary-900 dark:text-secondary-300 dark:hover:text-secondary-200 transition-colors"
+                                                         title="Impersona">
+                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7H7a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-6M15 3h6m0 0v6m0-6L10 14"></path>
+                                                     </svg>
+                                                 </button>
+                                             </form>
+                                         @endif
                                         </div>
                                     </td>
                                 </tr>

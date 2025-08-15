@@ -23,7 +23,8 @@ class ChallengePlay extends Component
     public array $moveHistory = [];
     public int $currentMoveIndex = -1;
     public int $errorCount = 0;
-    public int $elapsedTime = 0; // in seconds
+    public int $elapsedTime = 0;
+    public ?int $finalElapsedMs = null; // in millisecondi
     public bool $timerRunning = false;
     public bool $isCompleted = false;
     public bool $isReadOnly = false;
@@ -411,7 +412,9 @@ class ChallengePlay extends Component
         
         // 4) Soglia pause: invalidare se pause totali > 70% del tempo reale
         if ($this->attempt) {
-            $realDurationMs = $this->attempt->started_at ? $this->attempt->started_at->diffInMilliseconds(now()) : ($this->elapsedTime * 1000);
+            $realDurationMs = $this->attempt->started_at ? 
+                (int) abs($this->attempt->started_at->diffInMilliseconds(now())) : 
+                ($this->elapsedTime * 1000);
             $pausedMs = (int) ($this->attempt->paused_ms_total ?? 0);
             if ($realDurationMs > 0 && ($pausedMs / $realDurationMs) > 0.7) {
                 $isValid = false;
@@ -423,14 +426,22 @@ class ChallengePlay extends Component
             $isValid = false;
         }
         
-        // Aggiorna il tentativo
+        // Aggiorna il tentativo con tempo preciso
+        $durationMs = $this->finalElapsedMs ?? ($this->elapsedTime * 1000);
+        
         $this->attempt->update([
-            'duration_ms' => $this->elapsedTime * 1000,
+            'duration_ms' => $durationMs,
             'errors_count' => $this->errorCount,
             'completed_at' => now(),
             'final_state' => $this->grid,
             'valid' => $isValid,
         ]);
+
+        // Programma validazione anti-cheat asincrona per tentativi validi competitivi
+        if ($isValid && in_array($this->challenge->type, ['daily', 'weekly'])) {
+            \App\Jobs\ValidateAttemptMovesJob::dispatch($this->attempt, true);
+            \App\Jobs\AnalyzeTimingAnomaliesJob::dispatch($this->challenge, $this->attempt);
+        }
         
         // Salva tutte le mosse
         foreach ($this->moveHistory as $index => $move) {
@@ -460,22 +471,90 @@ class ChallengePlay extends Component
     {
         if ($this->timerRunning && !$this->isCompleted) {
             $this->elapsedTime++;
+            
+            // Controllo time_limit
+            $timeLimit = $this->challenge->settings['time_limit'] ?? null;
+            if ($timeLimit && ($this->elapsedTime * 1000) >= $timeLimit) {
+                $this->timeExpired();
+            }
         }
     }
 
-    #[On('puzzle-completed')]
-    public function onPuzzleCompleted(int $time, int $errors = 0, ?array $grid = null): void
+    /**
+     * Gestisce la scadenza del tempo limite
+     */
+    public function timeExpired(): void
     {
         if ($this->isCompleted) return;
-        $this->elapsedTime = $time;
+        
+        $this->timerRunning = false;
+        $this->isReadOnly = true;
+        $this->isCompleted = true;
+        
+        // Gestisci pause in corso prima di salvare
+        if ($this->attempt && $this->attempt->pause_started_at) {
+            $pauseStart = $this->attempt->pause_started_at;
+            $pauseEnd = now();
+            
+            if ($pauseStart <= $pauseEnd) {
+                $pausedMs = (int) abs($pauseStart->diffInMilliseconds($pauseEnd));
+                $currentPausedMs = (int) ($this->attempt->paused_ms_total ?? 0);
+                $this->attempt->paused_ms_total = $currentPausedMs + $pausedMs;
+            }
+            $this->attempt->pause_started_at = null;
+        }
+        
+        // Salva il tentativo come non completato ma con tempo scaduto
+        $this->attempt->update([
+            'duration_ms' => $this->elapsedTime * 1000,
+            'errors_count' => $this->errorCount,
+            'current_state' => $this->grid,
+            'valid' => false, // Non valido perché tempo scaduto
+        ]);
+        
+        $this->dispatch('time-expired');
+        session()->flash('warning', 'Tempo scaduto! Il tentativo è stato salvato ma non è valido per la classifica.');
+    }
+
+    #[On('puzzle-completed')]
+    public function onPuzzleCompleted(int $time, int $errors = 0, ?array $grid = null, ?int $finalMs = null): void
+    {
+        if ($this->isCompleted) return;
+        
+        // Usa il tempo finale preciso in millisecondi se disponibile
+        if ($finalMs !== null) {
+            $this->elapsedTime = (int) round($finalMs / 1000); // Secondi interi
+            $this->finalElapsedMs = $finalMs; // Millisecondi precisi
+        } else {
+            $this->elapsedTime = $time;
+        }
+        
         $this->errorCount = $errors;
         if (is_array($grid)) {
             $this->grid = $grid;
         }
         // Se c'era una pausa in corso, accumula il tempo pausa e azzera il flag
         if ($this->attempt && $this->attempt->pause_started_at) {
-            $pausedMs = now()->diffInMilliseconds($this->attempt->pause_started_at);
-            $this->attempt->paused_ms_total = ($this->attempt->paused_ms_total ?? 0) + $pausedMs;
+            // Calcola il tempo pausa assicurandosi che sia positivo
+            $pauseStart = $this->attempt->pause_started_at;
+            $pauseEnd = now();
+            
+            // Verifica che pause_started_at non sia nel futuro
+            if ($pauseStart <= $pauseEnd) {
+                $pausedMs = (int) abs($pauseStart->diffInMilliseconds($pauseEnd));
+                $currentPausedMs = (int) ($this->attempt->paused_ms_total ?? 0);
+                $newTotalPausedMs = $currentPausedMs + $pausedMs;
+                
+                $this->attempt->paused_ms_total = $newTotalPausedMs;
+            } else {
+                // Se pause_started_at è nel futuro, ignora questo calcolo
+                \Log::warning('Pause start time is in the future, skipping pause calculation', [
+                    'attempt_id' => $this->attempt->id,
+                    'pause_started_at' => $pauseStart->toDateTimeString(),
+                    'now' => $pauseEnd->toDateTimeString()
+                ]);
+            }
+            
             $this->attempt->pause_started_at = null;
             $this->attempt->save();
         }
@@ -484,6 +563,16 @@ class ChallengePlay extends Component
 
     public function getFormattedTime(): string
     {
+        // Se abbiamo il tempo finale preciso, mostriamo i centesimi
+        if ($this->isCompleted && $this->finalElapsedMs !== null) {
+            $totalMs = $this->finalElapsedMs;
+            $minutes = intdiv($totalMs, 60_000);
+            $seconds = intdiv($totalMs % 60_000, 1000);
+            $centis = intdiv($totalMs % 1000, 10);
+            return sprintf('%d:%02d.%02d', $minutes, $seconds, $centis);
+        }
+        
+        // Durante il gioco: solo mm:ss
         $minutes = intval($this->elapsedTime / 60);
         $seconds = $this->elapsedTime % 60;
         return sprintf('%d:%02d', $minutes, $seconds);
@@ -528,5 +617,28 @@ class ChallengePlay extends Component
             : route('challenges.index');
         // Restituiamo il redirect per farlo gestire a Livewire
         $this->redirect($url, navigate: true);
+    }
+
+    /**
+     * Listener per l'evento hint-used dal SudokuBoard
+     */
+    #[On('hint-used')]
+    public function onHintUsed(array $data): void
+    {
+        if ($this->attempt && !$this->isCompleted) {
+            // Aggiorna il conteggio hint nel database
+            $this->attempt->hints_used = $data['hintsUsed'] ?? $this->attempt->hints_used + 1;
+            
+            // Aggiorna il tempo se c'è stata penalizzazione
+            if (isset($data['timeElapsed'])) {
+                $this->elapsedTime = $data['timeElapsed'];
+                $this->attempt->duration_ms = $this->elapsedTime * 1000;
+            }
+            
+            $this->attempt->save();
+            
+            // Salva anche lo stato corrente
+            $this->saveAttemptState();
+        }
     }
 }

@@ -89,10 +89,7 @@
                                     </div>
                                     <div class="text-right">
                                         <div class="font-mono text-sm text-neutral-900 dark:text-white">
-                                            @php($ms = (int) ($attempt->duration_ms ?? 0))
-                                            @php($s = intdiv($ms, 1000))
-                                            @php($cs = intdiv($ms % 1000, 10))
-                                            {{ sprintf('%02d:%02d.%02d', intdiv($s,60), $s%60, $cs) }}
+                                            {{ $attempt->getFormattedDuration() }}
                                         </div>
                                         <div class="text-xs text-neutral-500 dark:text-neutral-400">
                                             {{ $attempt->completed_at?->format('M j') }}

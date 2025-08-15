@@ -71,7 +71,12 @@ trait SudokuBoardHelpers
             }
             
             // Notifica esterna con tempo, errori e griglia finale
-            $this->dispatch('puzzle-completed', time: $this->timeElapsed, errors: $this->errorsCount, grid: $this->grid);
+            $this->dispatch('puzzle-completed', 
+                time: $this->timeElapsed, 
+                errors: $this->errorsCount, 
+                grid: $this->grid,
+                finalMs: $this->finalElapsedMs
+            );
         }
     }
 
@@ -170,6 +175,9 @@ trait SudokuBoardHelpers
         $this->finishedAt = microtime(true);
         if ($this->startedAt !== null && $this->finishedAt !== null) {
             $this->finalElapsedMs = (int) round(($this->finishedAt - $this->startedAt) * 1000);
+            
+            // timeElapsed rimane intero (secondi), finalElapsedMs contiene la precisione
+            $this->timeElapsed = (int) round($this->finalElapsedMs / 1000);
         }
         $this->dispatch('stop-timer');
     }

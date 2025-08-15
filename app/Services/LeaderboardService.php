@@ -13,10 +13,13 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Servizio per la gestione delle classifiche
+ * Servizio per la gestione delle classifiche con cache ottimizzato
  */
 class LeaderboardService
 {
+    public function __construct(
+        private CacheService $cacheService
+    ) {}
     /**
      * Ottiene la classifica per una sfida specifica
      */
@@ -25,17 +28,21 @@ class LeaderboardService
         int $limit = 100,
         int $page = 1
     ): LengthAwarePaginator {
-        $cacheKey = "leaderboard_challenge_{$challenge->id}_limit_{$limit}";
+        // Usa cache ottimizzato per performance migliori
+        $leaderboardData = $this->cacheService->getChallengeLeaderboard($challenge->id, $limit);
         
-        return Cache::remember($cacheKey, 300, function () use ($challenge, $limit, $page) {
-            $query = ChallengeAttempt::where('challenge_id', $challenge->id)
-                ->valid()
-                ->completed()
-                ->with(['user', 'user.profile'])
-                ->byBestTime();
-
-            return $query->paginate($limit, ['*'], 'page', $page);
-        });
+        // Converte in paginator per compatibilità
+        $total = count($leaderboardData);
+        $perPage = $limit;
+        $currentPageItems = array_slice($leaderboardData, ($page - 1) * $perPage, $perPage);
+        
+        return new LengthAwarePaginator(
+            $currentPageItems,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'pageName' => 'page']
+        );
     }
 
     /**
@@ -48,6 +55,18 @@ class LeaderboardService
         string $difficulty = 'all',
         int $limit = 100
     ): Collection {
+        // Per period filters semplici usa cache ottimizzato
+        if (!$startDate && !$endDate && $challengeType === 'all' && $difficulty === 'all') {
+            $period = 'all';
+            if ($startDate === today()) $period = 'daily';
+            elseif ($startDate >= now()->startOfWeek()) $period = 'weekly';
+            elseif ($startDate >= now()->startOfMonth()) $period = 'monthly';
+            
+            $data = $this->cacheService->getGlobalLeaderboard($period, $limit);
+            return collect($data);
+        }
+        
+        // Fallback al metodo originale per filtri complessi
         $cacheKey = $this->buildGlobalLeaderboardCacheKey(
             $startDate, $endDate, $challengeType, $difficulty, $limit
         );
@@ -178,25 +197,20 @@ class LeaderboardService
             return null;
         }
 
+        $userPenalizedTime = $userAttempt->getPenalizedTime();
+
         return ChallengeAttempt::where('challenge_id', $challenge->id)
             ->valid()
             ->completed()
-            ->where(function ($query) use ($userAttempt) {
-                $query->where('duration_ms', '<', $userAttempt->duration_ms)
-                    ->orWhere(function ($q) use ($userAttempt) {
-                        $q->where('duration_ms', $userAttempt->duration_ms)
-                            ->where('errors_count', '<', $userAttempt->errors_count);
-                    })
-                    ->orWhere(function ($q) use ($userAttempt) {
-                        $q->where('duration_ms', $userAttempt->duration_ms)
-                            ->where('errors_count', $userAttempt->errors_count)
-                            ->where('completed_at', '<', $userAttempt->completed_at);
-                    })
-                    ->orWhere(function ($q) use ($userAttempt) {
-                        $q->where('duration_ms', $userAttempt->duration_ms)
-                            ->where('errors_count', $userAttempt->errors_count)
-                            ->where('completed_at', $userAttempt->completed_at)
-                            ->where('hints_used', '<', $userAttempt->hints_used);
+            ->whereRaw('(duration_ms + (errors_count * 3000)) < ?', [$userPenalizedTime])
+            ->orWhere(function ($query) use ($userPenalizedTime, $userAttempt) {
+                $query->whereRaw('(duration_ms + (errors_count * 3000)) = ?', [$userPenalizedTime])
+                    ->where(function ($q) use ($userAttempt) {
+                        $q->where('hints_used', '<', $userAttempt->hints_used)
+                            ->orWhere(function ($subQ) use ($userAttempt) {
+                                $subQ->where('hints_used', $userAttempt->hints_used)
+                                    ->where('completed_at', '<', $userAttempt->completed_at);
+                            });
                     });
             })
             ->count() + 1;

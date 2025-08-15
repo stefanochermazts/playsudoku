@@ -1,0 +1,54 @@
+/* Critical CSS - Homepage - Above the Fold Only */
+
+/* Include default critical styles */
+@import 'default.css';
+
+/* Hero section critico */
+.hero{position:relative;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-align:center;padding:4rem 1rem;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');opacity:0.3}
+.hero-content{position:relative;z-index:10;max-width:48rem;margin:0 auto}
+.hero h1{font-size:3rem;font-weight:900;margin-bottom:1.5rem;line-height:1.1}
+.hero p{font-size:1.25rem;margin-bottom:2rem;opacity:0.9}
+.hero-cta{display:inline-flex;align-items:center;gap:0.5rem;background:#fff;color:#4f46e5;padding:0.75rem 2rem;border-radius:0.5rem;font-weight:600;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,0,0,0.2)}
+
+/* Features grid critico */
+.features{padding:4rem 1rem;background:#f9fafb}
+.features-grid{display:grid;grid-template-columns:1fr;gap:2rem;max-width:64rem;margin:0 auto}
+.feature{text-align:center;padding:2rem;background:#fff;border-radius:0.75rem;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.feature-icon{width:3rem;height:3rem;margin:0 auto 1rem;background:#dbeafe;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.feature h3{font-size:1.25rem;font-weight:600;color:#111827;margin-bottom:0.5rem}
+.feature p{color:#6b7280;font-size:0.875rem}
+
+/* Stats section critico */
+.stats{padding:3rem 1rem;background:#111827;color:#fff}
+.stats-grid{display:grid;grid-template-columns:1fr;gap:2rem;max-width:48rem;margin:0 auto;text-align:center}
+.stat-number{font-size:2.5rem;font-weight:900;color:#10b981}
+.stat-label{font-size:0.875rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em}
+
+/* Responsive homepage */
+@media (min-width: 640px) {
+  .hero h1{font-size:3.75rem}
+  .features-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media (min-width: 768px) {
+  .hero{padding:6rem 2rem}
+  .features{padding:6rem 2rem}
+  .stats{padding:4rem 2rem}
+}
+
+@media (min-width: 1024px) {
+  .features-grid{grid-template-columns:repeat(3,1fr)}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .features{background:#111827}
+  .feature{background:#1f2937;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+  .feature h3{color:#f9fafb}
+  .feature p{color:#d1d5db}
+  .stats{background:#0f172a}
+}

@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'enforce-locale' => \App\Http\Middleware\EnforceLocaleInUrl::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'security' => \App\Http\Middleware\SecurityMiddleware::class,
+            'localized-auth' => \App\Http\Middleware\LocalizedAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

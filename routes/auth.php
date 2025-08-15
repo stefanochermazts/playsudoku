@@ -51,18 +51,42 @@ if ($isInLocalizedGroup) {
     });
 }
 
-Route::middleware('auth')->group(function () {
-    Volt::route('verify-email', 'pages.auth.verify-email')
-        ->name('verification.notice');
+Route::middleware('auth')->group(function () use ($isInLocalizedGroup) {
+    if ($isInLocalizedGroup) {
+        // Localized auth routes for authenticated users
+        Volt::route('verify-email', 'pages.auth.verify-email')
+            ->name('localized.verification.notice');
 
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
+        Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('localized.verification.verify');
 
-    Volt::route('confirm-password', 'pages.auth.confirm-password')
-        ->name('password.confirm');
+        Route::post('email/verification-notification', function () {
+            request()->user()->sendEmailVerificationNotification();
+            return back()->with('message', __('verification.sent'));
+        })->middleware(['throttle:6,1'])->name('localized.verification.send');
+
+        Volt::route('confirm-password', 'pages.auth.confirm-password')
+            ->name('localized.password.confirm');
+    } else {
+        // Non-localized auth routes for authenticated users  
+        Volt::route('verify-email', 'pages.auth.verify-email')
+            ->name('verification.notice');
+
+        Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('verification.verify');
+
+        Route::post('email/verification-notification', function () {
+            request()->user()->sendEmailVerificationNotification();
+            return back()->with('message', __('verification.sent'));
+        })->middleware(['throttle:6,1'])->name('verification.send');
+
+        Volt::route('confirm-password', 'pages.auth.confirm-password')
+            ->name('password.confirm');
+    }
     
-    // Logout route
+    // Logout route with context-aware naming
     Route::post('logout', function () {
         auth()->logout();
         request()->session()->invalidate();
@@ -71,5 +95,5 @@ Route::middleware('auth')->group(function () {
         // Redirect to localized home if available
         $locale = app()->getLocale();
         return redirect()->to(url('/' . $locale));
-    })->name('logout');
+    })->name($isInLocalizedGroup ? 'localized.logout' : 'logout');
 });

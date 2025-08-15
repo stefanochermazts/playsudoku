@@ -162,6 +162,38 @@ killasgroup=true
 * * * * * cd /var/www/playsudoku && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
 ```
 
+#### Comandi schedulati attivi:
+- **Sfida Giornaliera**: Ogni giorno alle 00:00
+- **Sfida Settimanale**: Ogni lunedì alle 00:00  
+- **Cleanup Database**: Ogni notte alle 02:00 (tentativi incompleti)
+- **🔒 Cleanup Consensi GDPR**: Ogni lunedì alle 01:00 (consensi scaduti)
+- **Ottimizzazione**: Ogni domenica alle 03:00
+- **Analisi Anomalie**: Ogni ora
+
+#### Comandi Privacy & GDPR specifici:
+```bash
+# Test manuale cleanup consensi (dry-run)
+php artisan consent:cleanup --dry-run
+
+# Cleanup forzato consensi scaduti
+php artisan consent:cleanup
+
+# Verificare stato scheduler
+php artisan schedule:status
+
+# Logs scheduler e privacy
+tail -f /var/www/playsudoku/storage/logs/scheduler.log
+```
+
+#### Configurazione email alerts:
+Configurare in `.env` per ricevere notifiche in caso di errori scheduler:
+```env
+MAIL_FROM_ADDRESS=noreply@playsudoku.example.com
+MAIL_FROM_NAME="PlaySudoku System"
+```
+
+**Nota GDPR**: Il comando `consent:cleanup` è essenziale per la compliance GDPR - pulisce automaticamente i consensi scaduti e mantiene un audit trail completo.
+
 ---
 
 ### 9) Nginx + SSL
@@ -237,9 +269,78 @@ Per zero-downtime avanzato, usare strategia a release con symlink (`current` →
 - Backup DB: pg_dump + retention; snapshot storage (S3 consigliato)
 - UFW: aprire 80/443; chiudere 8000 (solo localhost per Octane)
 
+#### 🔒 GDPR & Privacy Compliance:
+```bash
+# Verificare tabelle privacy create
+php artisan migrate:status | grep consent
+
+# Controllare admin privacy dashboard
+https://playsudoku.example.com/admin/consents
+
+# Test export GDPR per utente
+curl -X POST "https://playsudoku.example.com/admin/consents/export" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 1}'
+
+# Monitoring consensi attivi
+php artisan tinker --execute="echo 'Consensi attivi: ' . \App\Models\UserConsent::active()->count();"
+```
+
+#### Configurazioni privacy obbligatorie in `.env`:
+```env
+# Admin email per notifiche privacy
+MAIL_ADMIN_ADDRESS=admin@playsudoku.example.com
+
+# Google Analytics (se utilizzato)
+ANALYTICS_GA_MEASUREMENT_ID=G-446PVFY6BW
+ANALYTICS_AUTO_ENABLE_ENVIRONMENTS=production
+
+# Privacy compliance
+APP_PRIVACY_POLICY_VERSION=1.0
+```
+
+#### Backup e retention dati:
+- **Consensi utente**: Backup quotidiano con retention 7 anni (requisito GDPR)
+- **Audit logs**: Retention 6 anni per compliance  
+- **User data**: Right to erasure implementato via admin interface
+
 ---
 
 ### 12) Troubleshooting
 - 502 Bad Gateway: controllare Octane/supervisor attivo; `supervisorctl status`
 - 500 errori: verificare `.env` e cache config (`php artisan config:clear`)
 - Asset non serviti: ricostruire `npm run build`, verificare `public/build` e `location /build/`
+
+#### Troubleshooting Privacy & GDPR:
+```bash
+# Cookie banner non appare
+# → Verificare inclusion componente e cache views
+php artisan view:clear
+curl -I https://playsudoku.example.com/ | grep -i cookie
+
+# Consensi non salvati
+# → Controllare tabella user_consents e log errori
+php artisan tinker --execute="echo 'Tabella exists: ' . Schema::hasTable('user_consents');"
+tail -f storage/logs/laravel.log | grep -i consent
+
+# Scheduler consensi non funziona  
+# → Verificare cron attivo e log scheduler
+crontab -l | grep artisan
+php artisan schedule:list | grep consent
+tail -f storage/logs/scheduler.log
+
+# Admin dashboard consensi errore 403
+# → Verificare ruolo admin utente
+php artisan tinker --execute="User::find(1)->isAdmin();"
+
+# Export GDPR fallisce
+# → Controllare permessi storage e config mail
+ls -la storage/app/
+php artisan config:show mail
+```
+
+#### Log files importanti:
+- `storage/logs/laravel.log` - Errori applicazione
+- `storage/logs/scheduler.log` - Comandi schedulati  
+- `/var/log/supervisor/` - Supervisor queue/octane
+- `/var/log/nginx/` - Access/error logs web server

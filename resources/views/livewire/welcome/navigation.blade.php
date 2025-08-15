@@ -26,7 +26,7 @@
 
     <!-- Language switcher -->
     <div class="ms-2 flex items-center gap-1" aria-label="{{ __('app.nav.language') }}">
-        <a href="{{ url('/en') }}" class="rounded-md px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-400">EN</a>
-        <a href="{{ url('/it') }}" class="rounded-md px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-400">IT</a>
+        <a href="{{ url('/en') }}" class="rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-400" aria-label="Switch to English">EN</a>
+        <a href="{{ url('/it') }}" class="rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-400" aria-label="Cambia a Italiano">IT</a>
     </div>
 </nav>

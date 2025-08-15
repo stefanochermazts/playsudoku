@@ -6,7 +6,7 @@ namespace Tests\Unit\Domain\Sudoku;
 use App\Domain\Sudoku\Generator;
 use App\Domain\Sudoku\Validator;
 use App\Domain\Sudoku\DifficultyRater;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class GeneratorTest extends TestCase
 {

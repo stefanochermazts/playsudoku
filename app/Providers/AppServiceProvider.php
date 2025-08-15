@@ -26,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Sudoku\Contracts\DifficultyRaterInterface::class,
             \App\Domain\Sudoku\DifficultyRater::class
         );
+        
+        $this->app->bind(
+            \App\Domain\Sudoku\Contracts\SolverInterface::class,
+            \App\Domain\Sudoku\Solver::class
+        );
+        
+        // Servizi applicativi
+        $this->app->singleton(\App\Services\MoveValidationService::class);
     }
 
     /**
@@ -33,6 +41,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Registra observers per invalidazione cache automatica
+        \App\Models\ChallengeAttempt::observe(\App\Observers\ChallengeAttemptObserver::class);
+        
+        // Registra policies per autorizzazione
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\Challenge::class, \App\Policies\ChallengePolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\ChallengeAttempt::class, \App\Policies\ChallengeAttemptPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
     }
 }

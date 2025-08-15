@@ -137,10 +137,7 @@
                                                 {{ $attempt->user?->name ?? '—' }}
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap font-mono">
-                                                @php($ms = (int) ($attempt->duration_ms ?? 0))
-                                                @php($s = intdiv($ms, 1000))
-                                                @php($cs = intdiv($ms % 1000, 10))
-                                                {{ sprintf('%02d:%02d.%02d', intdiv($s,60), $s%60, $cs) }}
+                                                {{ $attempt->getFormattedDuration() }}
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap">{{ $attempt->errors_count }}</td>
                                             <td class="px-4 py-3 whitespace-nowrap">{{ $attempt->hints_used }}</td>

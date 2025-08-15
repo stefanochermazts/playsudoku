@@ -47,7 +47,9 @@ class DailyBoardController extends Controller
             ->with(['puzzle', 'attempts' => function($query) {
                 $query->where('valid', true)
                     ->whereNotNull('completed_at')
-                    ->orderBy('duration_ms')
+                    ->orderByRaw('(duration_ms + (errors_count * 3000))')
+                    ->orderBy('hints_used')
+                    ->orderBy('completed_at')
                     ->limit(3);
             }])
             ->orderByDesc('starts_at')

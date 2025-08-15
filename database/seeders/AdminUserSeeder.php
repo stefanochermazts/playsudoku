@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
     {
         // Crea utente admin se non esiste
         User::firstOrCreate(
-            ['email' => 'admin@playsudoku.com'],
+            ['email' => 'admin@playsudoku.club'],
             [
                 'name' => 'Admin PlaySudoku',
                 'role' => 'admin',

@@ -62,9 +62,10 @@
                 <!-- Top Players -->
                 @if($leaderboard && $leaderboard->count() > 0)
                     <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                             {{ __('app.top_players_today') }}
                         </h2>
+                        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">Tempo penalizzato: +3 secondi per errore</p>
                         
                         <div class="space-y-3">
                             @foreach($leaderboard->take(5) as $index => $attempt)
@@ -80,12 +81,12 @@
                                         </span>
                                         <span class="text-neutral-900 dark:text-white">{{ $attempt->user?->name ?? '—' }}</span>
                                     </div>
-                                    <span class="font-mono text-sm text-neutral-600 dark:text-neutral-300">
-                                        @php($ms = (int) ($attempt->duration_ms ?? 0))
-                                        @php($s = intdiv($ms, 1000))
-                                        @php($cs = intdiv($ms % 1000, 10))
-                                        {{ sprintf('%02d:%02d.%02d', intdiv($s,60), $s%60, $cs) }}
-                                    </span>
+                                    <div class="text-right">
+                                        <span class="font-mono text-sm text-neutral-900 dark:text-white font-semibold">
+                                            {{ $attempt->getFormattedPenalizedDuration() }}
+                                        </span>
+
+                                    </div>
                                 </div>
                             @endforeach
                         </div>

@@ -190,7 +190,7 @@
                         @endif
                         <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}"
                            class="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-                            Vedi Classifica
+                            {{ __('app.dashboard.view_leaderboard') }}
                         </a>
                     </div>
                 </div>

@@ -113,4 +113,17 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Email Addresses
+    |--------------------------------------------------------------------------
+    |
+    | These email addresses will receive contact form submissions.
+    |
+    */
+
+    'admin_addresses' => [
+        env('MAIL_ADMIN_ADDRESS', 'admin@playsudoku.com'),
+    ],
+
 ];

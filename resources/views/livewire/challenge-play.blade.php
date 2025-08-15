@@ -85,6 +85,8 @@
                         'initialSeconds' => $attemptSeconds,
                         'currentGrid' => is_array($attemptState) ? $attemptState : (is_string($attemptState) ? json_decode($attemptState, true) : null),
                         'initialErrors' => $attemptErrors,
+                        'isCompetitiveMode' => true,
+                        'hintsEnabled' => $hintsAllowed,
                     ], key('challenge-board-'.$challenge->id))
                 </div>
             </div>
@@ -93,14 +95,14 @@
             <div class="space-y-6">
                 <!-- Challenge Info -->
                 <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50">
-                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Info Sfida</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">{{ __('app.dashboard.challenge_info') }}</h3>
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
                             <span class="text-neutral-600 dark:text-neutral-300">Tipo:</span>
                             <span class="font-medium text-neutral-900 dark:text-white">{{ ucfirst($challenge->type) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-neutral-600 dark:text-neutral-300">Difficoltà:</span>
+                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.difficulty_label') }}</span>
                             <span class="font-medium text-neutral-900 dark:text-white">{{ ucfirst($challenge->puzzle->difficulty) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
@@ -163,7 +165,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Sfida Completata!</h3>
+                    <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{{ __('app.dashboard.challenge_completed') }}</h3>
                     <p class="text-neutral-600 dark:text-neutral-300 mb-6">
                         Hai concluso il sudoku con questo tempo: <strong>{{ $this->getFormattedTime() }}</strong> e con <strong>{{ $errorCount }}</strong> errori.
                     </p>
@@ -174,7 +176,7 @@
                         </a>
                         <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
                            class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
-                            Vedi Classifica
+                            {{ __('app.dashboard.view_leaderboard') }}
                         </a>
                     </div>
                 </div>

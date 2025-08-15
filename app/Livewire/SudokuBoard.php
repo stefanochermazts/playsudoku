@@ -6,6 +6,7 @@ namespace App\Livewire;
 use App\Domain\Sudoku\Grid;
 use App\Domain\Sudoku\MoveLog;
 use App\Domain\Sudoku\ValueObjects\Move;
+use App\Domain\Sudoku\Contracts\SolverInterface;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -51,8 +52,23 @@ class SudokuBoard extends Component
     // Accessibilità
     public string $lastAction = '';
     public bool $announceChanges = true;
+    
+    // Loading state
+    public bool $isLoading = false;
+    
+    // Feedback visivo errori
+    public bool $showErrorEffect = false;
 
     public bool $startTimer = false;
+    
+    // Sistema hint
+    public bool $hintsEnabled = true;
+    public string $lastHintMessage = '';
+    public string $lastHintTechnique = '';
+    public bool $isCompetitiveMode = false;
+    public ?int $highlightedHintRow = null;
+    public ?int $highlightedHintCol = null;
+    public ?int $highlightedHintValue = null;
 
     public function mount(
         ?array $initialGrid = null,
@@ -62,10 +78,14 @@ class SudokuBoard extends Component
         ?bool $candidatesAllowed = null,
         ?int $initialSeconds = null,
         ?array $currentGrid = null,
-        ?int $initialErrors = null
+        ?int $initialErrors = null,
+        bool $isCompetitiveMode = false,
+        bool $hintsEnabled = true
     ): void {
         $this->readOnly = $readOnly;
         $this->startTimer = $startTimer;
+        $this->isCompetitiveMode = $isCompetitiveMode;
+        $this->hintsEnabled = $hintsEnabled;
         if ($candidatesAllowed !== null) {
             $this->candidatesAllowed = $candidatesAllowed;
         }
@@ -181,8 +201,24 @@ class SudokuBoard extends Component
         $this->selectedCol = $col;
         
         if ($this->announceChanges) {
-            $cellValue = $this->grid[$row][$col] ?? 'vuota';
-            $this->lastAction = "Selezionata cella riga " . ($row + 1) . " colonna " . ($col + 1) . ", valore: " . $cellValue;
+            $cellValue = $this->grid[$row][$col];
+            $isGiven = $this->initialGrid[$row][$col] !== null;
+            $hasConflict = $cellValue && $this->hasConflict($row, $col, $cellValue);
+            $blockNum = floor($row / 3) * 3 + floor($col / 3) + 1;
+            
+            $description = "Selezionata cella riga " . ($row + 1) . " colonna " . ($col + 1) . ", blocco " . $blockNum;
+            
+            if ($cellValue) {
+                $description .= $isGiven ? ", numero fisso " . $cellValue : ", valore inserito " . $cellValue;
+            } else {
+                $description .= ", cella vuota";
+            }
+            
+            if ($hasConflict) {
+                $description .= ", attenzione: numero in conflitto";
+            }
+            
+            $this->lastAction = $description;
         }
         
         $this->dispatch('cell-selected', row: $row, col: $col);
@@ -196,6 +232,9 @@ class SudokuBoard extends Component
         if ($this->readOnly || $this->isGivenCell($row, $col)) {
             return;
         }
+        
+        // Pulisci l'evidenziazione hint quando l'utente inserisce un valore
+        $this->clearHintHighlight();
 
         // Avvia timer al primo input se non già avviato
         if (!$this->timerRunning && !$this->readOnly && $value !== null) {
@@ -210,6 +249,7 @@ class SudokuBoard extends Component
             if (!$validator->canPlaceValue($domainGrid, $row, $col, (int) $value)) {
                 $this->errorsCount++;
                 $this->isValid = false;
+                $this->triggerErrorEffect();
                 if ($this->announceChanges) {
                     $this->lastAction = "Mossa non valida: {$value} in riga " . ($row + 1) . " colonna " . ($col + 1);
                 }
@@ -221,6 +261,7 @@ class SudokuBoard extends Component
             if (!$validator->isSolvable($testGrid)) {
                 $this->errorsCount++;
                 $this->isValid = false;
+                $this->triggerErrorEffect();
                 if ($this->announceChanges) {
                     $this->lastAction = "Mossa porta a stato non risolvibile: {$value} in riga " . ($row + 1) . " colonna " . ($col + 1);
                 }
@@ -345,15 +386,19 @@ class SudokuBoard extends Component
         
         if (in_array($number, $candidates)) {
             $candidates = array_values(array_diff($candidates, [$number]));
-            $action = "rimosso";
+            $this->lastAction = __('app.hints.candidate_removed', [
+                'number' => $number,
+                'row' => $row + 1,
+                'col' => $col + 1
+            ]);
         } else {
             $candidates[] = $number;
             sort($candidates);
-            $action = "aggiunto";
-        }
-
-        if ($this->announceChanges) {
-            $this->lastAction = "Candidato {$number} {$action} in riga " . ($row + 1) . " colonna " . ($col + 1);
+            $this->lastAction = __('app.hints.candidate_added', [
+                'number' => $number,
+                'row' => $row + 1,
+                'col' => $col + 1
+            ]);
         }
     }
 
@@ -428,43 +473,52 @@ class SudokuBoard extends Component
      */
     public function loadSamplePuzzle(string $difficulty = 'medium'): void
     {
-        // Usa il service container per dependency injection
-        $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
-        $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
+        $this->isLoading = true;
+        
+        try {
+            // Usa il service container per dependency injection
+            $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
+            $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
 
-        // Genera garantendo validità e unicità soluzione
-        $attempts = 0;
-        $maxAttempts = 15;
-        $puzzle = null;
-        $isValid = false;
-        $seed = 0;
-        do {
-            $attempts++;
-            $seed = random_int(1000, 999999);
-            $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
-            $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
-            $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
-        } while(!$isValid && $attempts < $maxAttempts);
+            // Genera garantendo validità e unicità soluzione
+            $attempts = 0;
+            $maxAttempts = 15;
+            $puzzle = null;
+            $isValid = false;
+            $seed = 0;
+            do {
+                $attempts++;
+                $seed = random_int(1000, 999999);
+                $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
+                $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
+                $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+            } while(!$isValid && $attempts < $maxAttempts);
 
-        $this->initialGrid = $puzzle->toArray();
-        $this->grid = $puzzle->toArray();
-        $this->initializeCandidates();
-        
-        // Reset stato del gioco
-        $this->selectedRow = 0;
-        $this->selectedCol = 0;
-        $this->timeElapsed = 0;
-        $this->errorsCount = 0;
-        $this->hintsUsed = 0;
-        $this->moves = [];
-        $this->currentMoveIndex = -1;
-        $this->isCompleted = false;
-        $this->isValid = $isValid;
-        
-        // NON avviare timer automaticamente - si avvia al primo input
-        $this->timerRunning = false;
-        
-        $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
+            $this->initialGrid = $puzzle->toArray();
+            $this->grid = $puzzle->toArray();
+            $this->initializeCandidates();
+            
+            // Reset stato del gioco
+            $this->selectedRow = 0;
+            $this->selectedCol = 0;
+            $this->timeElapsed = 0;
+            $this->errorsCount = 0;
+            $this->hintsUsed = 0;
+            $this->moves = [];
+            $this->currentMoveIndex = -1;
+            $this->isCompleted = false;
+            $this->isValid = $isValid;
+            
+            // NON avviare timer automaticamente - si avvia al primo input
+            $this->timerRunning = false;
+            
+            $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
+        } catch (\Exception $e) {
+            $this->lastAction = "Errore caricamento puzzle: " . $e->getMessage();
+        } finally {
+            $this->isLoading = false;
+            $this->dispatch('puzzle-loaded'); // Evento per sincronizzazione UI
+        }
     }
 
     #[On('load-sample-puzzle')]
@@ -594,5 +648,181 @@ class SudokuBoard extends Component
             // Se non presente, lo aggiungiamo comunque come valore definitivo
         }
         $this->setCellValue($row, $col, $number);
+    }
+
+    /**
+     * Ottiene un suggerimento dal solver per la prossima mossa
+     */
+    public function getHint(): void
+    {
+        if (!$this->hintsEnabled || $this->readOnly || $this->isCompleted) {
+            return;
+        }
+
+        try {
+            /** @var SolverInterface $solver */
+            $solver = app(SolverInterface::class);
+            $grid = $this->createGridObject();
+            
+            // Ottieni il prossimo step logico
+            $stepResult = $solver->solveStep($grid);
+            
+            if ($stepResult['grid'] !== null && $stepResult['technique'] !== null && $stepResult['step'] !== null) {
+                $this->hintsUsed++;
+                $this->lastHintTechnique = $stepResult['technique'];
+                
+                // Applica penalizzazione nelle sfide competitive 
+                if ($this->isCompetitiveMode) {
+                    $this->timeElapsed += 20; // +20 secondi
+                    $this->lastHintMessage = __('app.hints.competitive_penalty', [
+                        'technique' => $this->getTechniqueName($stepResult['technique'])
+                    ]);
+                } else {
+                    // Modalità demo: spiegazione dettagliata
+                    $this->lastHintMessage = $this->getDetailedHintExplanation(
+                        $stepResult['technique'], 
+                        $stepResult['step'], 
+                        $grid
+                    );
+                }
+                
+                // Evidenzia il candidato suggerito invece di inserirlo automaticamente
+                $step = $stepResult['step'];
+                if (isset($step['row'], $step['col'], $step['value'])) {
+                    // Seleziona la cella e evidenzia il candidato
+                    $this->selectedRow = $step['row'];
+                    $this->selectedCol = $step['col'];
+                    $this->highlightedHintRow = $step['row'];
+                    $this->highlightedHintCol = $step['col'];
+                    $this->highlightedHintValue = $step['value'];
+                    
+                    // Assicurati che la cella sia in modalità candidati per visualizzare l'evidenziazione
+                    if ($this->candidatesAllowed && $this->grid[$step['row']][$step['col']] === null) {
+                        $this->showCandidates = true;
+                    }
+                }
+                
+                if ($this->announceChanges) {
+                    $this->lastAction = $this->lastHintMessage;
+                }
+                
+                // Emetti evento per eventuali listener esterni
+                $this->dispatch('hint-used', [
+                    'technique' => $stepResult['technique'],
+                    'hintsUsed' => $this->hintsUsed,
+                    'timeElapsed' => $this->timeElapsed
+                ]);
+                
+            } else {
+                $this->lastHintMessage = "Nessun suggerimento logico disponibile al momento";
+                if ($this->announceChanges) {
+                    $this->lastAction = $this->lastHintMessage;
+                }
+            }
+            
+        } catch (\Exception $e) {
+            $this->lastHintMessage = __('app.hints.processing_error', ['error' => $e->getMessage()]);
+            if ($this->announceChanges) {
+                $this->lastAction = $this->lastHintMessage;
+            }
+            
+            // Log per debugging
+            \Log::error('Hint system error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'grid_state' => $this->grid,
+            ]);
+        }
+    }
+
+    /**
+     * Crea un oggetto Grid dal state corrente del componente
+     */
+    private function createGridObject(): Grid
+    {
+        return Grid::fromArray($this->grid);
+    }
+
+    /**
+     * Traduce il nome della tecnica nella lingua corrente
+     */
+    private function getTechniqueName(string $technique): string
+    {
+        $translationKey = 'app.hints.techniques.' . $technique;
+        $translated = __($translationKey);
+        
+        // Se la traduzione non esiste, usa un fallback
+        if ($translated === $translationKey) {
+            return ucfirst(str_replace('_', ' ', $technique));
+        }
+        
+        return $translated;
+    }
+
+    /**
+     * Genera spiegazioni dettagliate per la modalità demo
+     */
+    private function getDetailedHintExplanation(string $technique, array $step, Grid $grid): string
+    {
+        $row = $step['row'] ?? 0;
+        $col = $step['col'] ?? 0;
+        $value = $step['value'] ?? 0;
+        $cellName = $this->getCellName($row, $col);
+        
+        $translationKey = 'app.hints.explanations.' . $technique;
+        $translated = __($translationKey, [
+            'cell' => $cellName,
+            'value' => $value
+        ]);
+        
+        // Se la traduzione specifica non esiste, usa il template default
+        if ($translated === $translationKey) {
+            return __('app.hints.explanations.default', [
+                'technique' => $this->getTechniqueName($technique),
+                'cell' => $cellName,
+                'value' => $value
+            ]);
+        }
+        
+        return $translated;
+    }
+
+    /**
+     * Converte coordinate in nome cella leggibile (es: R1C5 -> "R1C5")
+     */
+    private function getCellName(int $row, int $col): string
+    {
+        return sprintf("R%dC%d", $row + 1, $col + 1);
+    }
+
+    /**
+     * Pulisce l'evidenziazione del hint
+     */
+    public function clearHintHighlight(): void
+    {
+        $this->highlightedHintRow = null;
+        $this->highlightedHintCol = null;
+        $this->highlightedHintValue = null;
+        $this->lastHintMessage = '';
+        $this->lastHintTechnique = '';
+    }
+
+    /**
+     * Verifica se un candidato è quello evidenziato dal hint
+     */
+    public function isHintHighlighted(int $row, int $col, int $value): bool
+    {
+        return $this->highlightedHintRow === $row && 
+               $this->highlightedHintCol === $col && 
+               $this->highlightedHintValue === $value;
+    }
+
+    /**
+     * Attiva l'effetto visivo per errori (sfondo rosso temporaneo)
+     */
+    public function triggerErrorEffect(): void
+    {
+        $this->showErrorEffect = true;
+        $this->dispatch('error-effect-triggered');
     }
 }

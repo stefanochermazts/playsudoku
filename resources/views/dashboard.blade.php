@@ -42,7 +42,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-neutral-600 dark:text-neutral-300">Miglior Tempo</p>
+                            <p class="text-sm font-medium text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.best_time') }}</p>
                             <p class="text-2xl font-bold text-neutral-900 dark:text-white">--:--</p>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-8 border border-neutral-200/50 dark:border-neutral-700/50">
                         <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">Sfida di Oggi</h2>
+                            <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">{{ __('app.dashboard.todays_challenge') }}</h2>
                             <span class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-lg text-sm font-medium">
                                 Facile
                             </span>

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\OptimizedQueries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class ChallengeAttempt extends Model
 {
-    use HasFactory;
+    use HasFactory, OptimizedQueries;
 
     protected $fillable = [
         'challenge_id',
@@ -41,6 +42,13 @@ class ChallengeAttempt extends Model
         'valid',
         'current_state',
         'final_state',
+        'move_validation_passed',
+        'validated_at',
+        'validation_notes',
+        'flagged_for_review',
+        'reviewed_at',
+        'reviewed_by',
+        'admin_notes',
     ];
 
     protected $casts = [
@@ -58,6 +66,10 @@ class ChallengeAttempt extends Model
         'updated_at' => 'datetime',
         'current_state' => 'array',
         'final_state' => 'array',
+        'move_validation_passed' => 'boolean',
+        'validated_at' => 'datetime',
+        'flagged_for_review' => 'boolean',
+        'reviewed_at' => 'datetime',
     ];
 
     /**
@@ -85,6 +97,14 @@ class ChallengeAttempt extends Model
     }
 
     /**
+     * Relazione: admin che ha revisionato il tentativo
+     */
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
      * Scope: tentativi completati
      */
     public function scopeCompleted($query)
@@ -101,16 +121,42 @@ class ChallengeAttempt extends Model
     }
 
     /**
-     * Scope: ordinati per miglior tempo (per leaderboard)
+     * Scope: ordinati per miglior tempo penalizzato (per leaderboard)
      */
     public function scopeByBestTime($query)
     {
         return $query->whereNotNull('completed_at')
             ->where('valid', true)
-            ->orderBy('duration_ms')
-            ->orderBy('errors_count')
+            ->where(function($q) {
+                // Include i tentativi non ancora validati O quelli che hanno passato la validazione
+                $q->whereNull('move_validation_passed')
+                  ->orWhere('move_validation_passed', true);
+            })
+            ->where('flagged_for_review', false)
+            ->orderByRaw('(duration_ms + (errors_count * 3000))')
             ->orderBy('hints_used')
             ->orderBy('completed_at');
+    }
+
+    /**
+     * Scope: tentativi sospetti che necessitano revisione
+     */
+    public function scopeSuspicious($query)
+    {
+        return $query->where(function($q) {
+            $q->where('move_validation_passed', false)
+              ->orWhere('flagged_for_review', true);
+        });
+    }
+
+    /**
+     * Scope: tentativi validati e puliti
+     */
+    public function scopeValidated($query)
+    {
+        return $query->where('valid', true)
+            ->where('move_validation_passed', true)
+            ->where('flagged_for_review', false);
     }
 
     /**
@@ -136,18 +182,51 @@ class ChallengeAttempt extends Model
     }
 
     /**
+     * Calcola il tempo penalizzato (tempo + 3 secondi per errore)
+     */
+    public function getPenalizedTime(): int
+    {
+        if (!$this->duration_ms) {
+            return 0;
+        }
+
+        // 3 secondi di penalizzazione per errore (3000ms)
+        return $this->duration_ms + ($this->errors_count * 3000);
+    }
+
+    /**
      * Calcola la durata formattata
      */
     public function getFormattedDuration(): string
     {
         if (!$this->duration_ms) {
-            return '--:--';
+            return '--:--.--';
         }
 
-        $totalSeconds = intval($this->duration_ms / 1000);
-        $minutes = intval($totalSeconds / 60);
-        $seconds = $totalSeconds % 60;
+        $totalMs = (int) $this->duration_ms;
+        $minutes = intdiv($totalMs, 60_000);
+        $seconds = intdiv($totalMs % 60_000, 1000);
+        $centis = intdiv($totalMs % 1000, 10);
 
-        return sprintf('%02d:%02d', $minutes, $seconds);
+        return sprintf('%02d:%02d.%02d', $minutes, $seconds, $centis);
+    }
+
+    /**
+     * Calcola la durata penalizzata formattata
+     */
+    public function getFormattedPenalizedDuration(): string
+    {
+        $penalizedMs = $this->getPenalizedTime();
+        
+        if (!$penalizedMs) {
+            return '--:--.--';
+        }
+
+        $totalMs = (int) $penalizedMs;
+        $minutes = intdiv($totalMs, 60_000);
+        $seconds = intdiv($totalMs % 60_000, 1000);
+        $centis = intdiv($totalMs % 1000, 10);
+
+        return sprintf('%02d:%02d.%02d', $minutes, $seconds, $centis);
     }
 }

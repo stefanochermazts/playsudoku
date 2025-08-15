@@ -30,6 +30,16 @@ return [
     'Enter your name' => 'Enter your name',
     'Confirm your password' => 'Confirm your password',
     'Already have an account?' => 'Already have an account?',
+    
+    // Email verification
+    'Email not verified' => 'Email not verified',
+    'Your email address is not verified.' => 'Your email address is not verified.',
+    'Please check your email' => 'Please check your email',
+    'Verification email sent' => 'Verification email sent',
+    'A new verification link has been sent to your email address.' => 'A new verification link has been sent to your email address.',
+    'Email verified successfully' => 'Email verified successfully',
+    'Welcome! Your email has been verified.' => 'Welcome! Your email has been verified.',
+    'Check spam folder too' => 'Check your spam folder if you don\'t see the email',
 ];
 
 

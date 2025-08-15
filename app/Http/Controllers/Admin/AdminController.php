@@ -8,6 +8,7 @@ use App\Models\Challenge;
 use App\Models\Puzzle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
@@ -160,6 +161,54 @@ class AdminController extends Controller
             ->with('success', 'Utente eliminato con successo!');
     }
 
+    /**
+     * Avvia l'impersonazione di un utente (solo admin)
+     */
+    public function impersonate(User $user)
+    {
+        $current = auth()->user();
+
+        if (!$current || !$current->isAdmin()) {
+            abort(403, 'Solo gli amministratori possono impersonare altri utenti.');
+        }
+
+        // Evita auto-impersonazione
+        if ($current->id === $user->id) {
+            return redirect()->route('admin.users')
+                ->with('error', 'Non puoi impersonare te stesso.');
+        }
+
+        // Memorizza l'ID dell'amministratore che sta impersonando
+        session(['impersonator_id' => $current->id]);
+
+        // Esegue login come l'utente selezionato (la sessione può essere rigenerata)
+        Auth::loginUsingId($user->id);
+        // Reimposta il flag in caso di rigenerazione della sessione
+        session(['impersonator_id' => $current->id]);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Stai impersonando: ' . $user->email);
+    }
+
+    /**
+     * Termina l'impersonazione tornando all'account admin originale
+     */
+    public function stopImpersonate(Request $request)
+    {
+        $impersonatorId = (int) $request->session()->get('impersonator_id');
+
+        if (!$impersonatorId) {
+            return redirect()->route('dashboard');
+        }
+
+        // Ripristina la sessione admin e rimuovi flag
+        Auth::loginUsingId($impersonatorId);
+        $request->session()->forget('impersonator_id');
+
+        return redirect()->route('admin.users')
+            ->with('success', 'Impersonazione terminata. Tornato al tuo account.');
+    }
+
     /*
      * ================================
      * CHALLENGE MANAGEMENT
@@ -224,6 +273,13 @@ class AdminController extends Controller
         if (array_key_exists('hints_allowed', $settings)) {
             $settings['hints_allowed'] = (bool) $settings['hints_allowed'];
         }
+        
+        // Converti time_limit da minuti a millisecondi
+        if (array_key_exists('time_limit', $settings) && $settings['time_limit']) {
+            $settings['time_limit'] = (int) $settings['time_limit'] * 60000; // minuti -> millisecondi
+        } elseif (array_key_exists('time_limit', $settings) && empty($settings['time_limit'])) {
+            $settings['time_limit'] = null; // nessun limite
+        }
 
         Challenge::create([
             ...$validated,
@@ -277,6 +333,13 @@ class AdminController extends Controller
         $settings = $request->input('settings', []);
         if (array_key_exists('hints_allowed', $settings)) {
             $settings['hints_allowed'] = (bool) $settings['hints_allowed'];
+        }
+        
+        // Converti time_limit da minuti a millisecondi
+        if (array_key_exists('time_limit', $settings) && $settings['time_limit']) {
+            $settings['time_limit'] = (int) $settings['time_limit'] * 60000; // minuti -> millisecondi
+        } elseif (array_key_exists('time_limit', $settings) && empty($settings['time_limit'])) {
+            $settings['time_limit'] = null; // nessun limite
         }
 
         $challenge->update([

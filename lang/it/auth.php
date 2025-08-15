@@ -30,6 +30,16 @@ return [
     'Enter your name' => 'Inserisci il tuo nome',
     'Confirm your password' => 'Conferma la tua password',
     'Already have an account?' => 'Hai già un account?',
+    
+    // Email verification
+    'Email not verified' => 'Email non verificata',
+    'Your email address is not verified.' => 'Il tuo indirizzo email non è verificato.',
+    'Please check your email' => 'Controlla la tua email',
+    'Verification email sent' => 'Email di verifica inviata',
+    'A new verification link has been sent to your email address.' => 'Un nuovo link di verifica è stato inviato al tuo indirizzo email.',
+    'Email verified successfully' => 'Email verificata con successo',
+    'Welcome! Your email has been verified.' => 'Benvenuto! La tua email è stata verificata.',
+    'Check spam folder too' => 'Controlla anche la cartella spam se non vedi l\'email',
 ];
 
 

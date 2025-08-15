@@ -1,30 +1,52 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{-- CSRF Token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $seoTitle ?? config('app.name', __('app.app_name')) }}</title>
-    <meta name="description" content="{{ $seoDescription ?? __('app.meta.description') }}">
-    <meta name="keywords" content="{{ __('app.meta.keywords') }}">
-    <meta name="author" content="PlaySudoku">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="{{ url()->current() }}">
+    {{-- Favicon --}}
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.svg') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.svg') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+
+    {{-- Resource Hints per Performance --}}
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//www.google-analytics.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="{{ $seoTitle ?? __('app.app_name') }}">
-    <meta property="og:description" content="{{ $seoDescription ?? __('app.meta.description') }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
+    {{-- Preload Critical Resources --}}
+    {{-- @vite(['resources/css/app.css'], 'preload') --}}
     
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $seoTitle ?? __('app.app_name') }}">
-    <meta name="twitter:description" content="{{ $seoDescription ?? __('app.meta.description') }}">
+    {{-- SEO Meta Tags via MetaService --}}
+    @php
+        // Initialize MetaService
+        $metaService = app(App\Services\MetaService::class);
+        
+        // Handle backward compatibility with existing $seoTitle and $seoDescription
+        if (isset($seoTitle) || isset($seoDescription)) {
+            $metaService->setPage(
+                $seoTitle ?? __('app.app_name'),
+                $seoDescription ?? __('app.meta.description'),
+                ['url' => url()->current()]
+            );
+        }
+        
+        // PerformanceService disabled for now to simplify CSS loading
+        // $performanceService = app(App\Services\PerformanceService::class);
+    @endphp
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.meta-tags')
+    
+    {{-- Load CSS normally --}}
+    @vite(['resources/css/app.css'])
+    
+    @vite(['resources/js/app.js'])
     @stack('styles')
+    
+    <!-- Analytics -->
+    @include('partials.analytics')
 
     <script>
         // Espone lo stato di debug di Laravel a JS per silenziare i log in produzione
@@ -39,30 +61,161 @@
     </style>
     
     <script>
-        // Theme initialization
+        // Theme initialization with database sync for authenticated users
         (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            @auth
+                // Per utenti autenticati, prova a caricare le preferenze dal database
+                const savedLocalTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let theme = savedLocalTheme || (prefersDark ? 'dark' : 'light');
+                
+                // Applica tema temporaneo mentre carichi le preferenze
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                
+                // Carica preferenze dal database in background
+                const preferencesUrl = @if(request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
+                    '{{ route("localized.api.preferences.get", ["locale" => app()->getLocale()]) }}'
+                @else
+                    '{{ route("api.preferences.get") }}'
+                @endif;
+                
+                fetch(preferencesUrl, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(preferences => {
+                    if (preferences.theme && preferences.theme !== 'auto') {
+                        // Sincronizza con preferenze database se diverse da localStorage
+                        if (preferences.theme !== savedLocalTheme) {
+                            localStorage.setItem('theme', preferences.theme);
+                            if (preferences.theme === 'dark') {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
+                            window.currentTheme = preferences.theme;
+                            
+                            // Aggiorna icone se necessario
+                            setTimeout(() => {
+                                const lightIcon = document.getElementById('theme-icon-light');
+                                const darkIcon = document.getElementById('theme-icon-dark');
+                                if (lightIcon && darkIcon) {
+                                    if (preferences.theme === 'dark') {
+                                        lightIcon.classList.add('hidden');
+                                        darkIcon.classList.remove('hidden');
+                                    } else {
+                                        lightIcon.classList.remove('hidden');
+                                        darkIcon.classList.add('hidden');
+                                    }
+                                }
+                            }, 100);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.warn('Impossibile caricare preferenze dal database:', error);
+                    // Continua con le preferenze locali
+                });
+                
+                window.currentTheme = theme;
+            @else
+                // Per utenti non autenticati, usa solo localStorage e preferenze sistema
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+                
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                
+                window.currentTheme = theme;
+            @endauth
             
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            
-            window.currentTheme = theme;
+            // Funzione per toggle del tema
+            window.toggleTheme = function() {
+                const currentTheme = window.currentTheme || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                @auth
+                    // Per utenti autenticati, salva sul server
+                    fetch('/api/user/preferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ theme: newTheme })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Applica il nuovo tema
+                            if (newTheme === 'dark') {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
+                            window.currentTheme = newTheme;
+                            
+                            // Salva anche in localStorage come backup
+                            localStorage.setItem('theme', newTheme);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Errore nel salvataggio del tema:', error);
+                        // Fallback: salva solo in localStorage
+                        localStorage.setItem('theme', newTheme);
+                        if (newTheme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                        }
+                        window.currentTheme = newTheme;
+                    });
+                @else
+                    // Per utenti non autenticati, usa solo localStorage
+                    localStorage.setItem('theme', newTheme);
+                    if (newTheme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                    window.currentTheme = newTheme;
+                @endauth
+            };
         })();
     </script>
 </head>
 <body class="font-sans antialiased bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 min-h-screen">
+    @if(session()->has('impersonator_id'))
+        <div class="bg-warning-100 dark:bg-yellow-900/40 text-warning-900 dark:text-yellow-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+                <div class="text-sm font-medium">🔄 Impersonazione attiva</div>
+                <form action="{{ route('impersonation.stop') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-3 py-1 bg-warning-600 hover:bg-warning-700 text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-warning-500" aria-label="Termina impersonazione e torna al mio account">
+                        {{ __('app.aria.return_to_account') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
     <!-- Floating background decorations -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute top-0 -left-4 w-72 h-72 bg-primary-200/30 dark:bg-primary-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl animate-pulse"></div>
         <div class="absolute top-0 -right-4 w-72 h-72 bg-secondary-200/30 dark:bg-secondary-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl animate-pulse" style="animation-delay: 2s;"></div>
         <div class="absolute -bottom-8 left-20 w-72 h-72 bg-accent-200/30 dark:bg-accent-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl animate-pulse" style="animation-delay: 4s;"></div>
     </div>
-    <header class="relative z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-700/80 sticky top-0">
+    <header class="relative z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-700/80" 
+            x-data="{ mobileMenuOpen: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
@@ -70,96 +223,184 @@
                     <x-site-logo />
                 </div>
 
-                <!-- Desktop Navigation -->
-                <nav class="hidden md:flex items-center space-x-8">
-                    @guest
-                        <a href="{{ url('/' . app()->getLocale()) }}#features" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.features') }}</a>
-                        <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.how_it_works') }}</a>
-                    @endguest
-                    @auth
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.dashboard') : route('dashboard') }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">{{ __('app.nav.dashboard') }}</a>
-                    @endauth
+                <!-- Desktop Navigation - Solo per guest -->
+                @guest
+                <nav class="hidden md:flex items-center space-x-4">
+                    <a href="{{ url('/' . app()->getLocale()) }}#features" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.features') }}</a>
+                    <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.how_it_works') }}</a>
+                    <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.training') }}</a>
+                    <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.analyzer') }}</a>
                 </nav>
+                @endguest
 
-                <!-- Right side controls -->
-                <div class="flex items-center space-x-4">
-                    <!-- Language switcher -->
-                    <div class="flex items-center space-x-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
-                        <a href="{{ url('/en') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
-                        <a href="{{ url('/it') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
-                    </div>
-
-                    <!-- Theme toggle -->
-                    <button onclick="toggleTheme()" 
-                            aria-label="Toggle theme"
-                            class="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
-                        <svg id="theme-icon-light" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            class="inline-flex items-center justify-center p-2 rounded-md text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-colors"
+                            aria-expanded="false"
+                            :aria-expanded="mobileMenuOpen"
+                            aria-label="{{ __('app.aria.open_main_menu') }}">
+                        <!-- Hamburger icon when menu is closed -->
+                        <svg :class="{'hidden': mobileMenuOpen, 'block': !mobileMenuOpen}" class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
-                        <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        <!-- X icon when menu is open -->
+                        <svg :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
+                </div>
 
-                    <!-- Auth buttons -->
+                <!-- Right side controls -->
+                <div class="hidden md:flex items-center space-x-4">
                     @guest
+                        <!-- Language switcher per guest -->
+                        <div class="flex items-center space-x-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+                            <a href="{{ url('/en') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
+                            <a href="{{ url('/it') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                        </div>
+
+                        <!-- Theme toggle per guest -->
+                        <button onclick="toggleTheme()" 
+                                aria-label="{{ __('app.aria.toggle_theme') }}"
+                                class="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                            <svg id="theme-icon-light" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Auth buttons -->
                         <div class="flex items-center space-x-3">
-                            <a href="{{ route('localized.login', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">{{ __('auth.Log in') }}</a>
+                            <a href="{{ route('localized.login', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">{{ __('app.nav.login') }}</a>
                             <a href="{{ route('localized.register', ['locale' => app()->getLocale()]) }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-all transform hover:scale-105">
-                                {{ __('auth.Register') }}
+                                {{ __('app.nav.register') }}
                             </a>
                         </div>
                     @endguest
+                    
                     @auth
-                        <!-- User dropdown menu -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" 
-                                    class="flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-neutral-600 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none transition ease-in-out duration-150">
-                                <div class="me-1">{{ auth()->user()->name }}</div>
-                                <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4 transition-transform" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </button>
+                        <!-- Hamburger Menu (tutto incluso nell'hamburger) -->
+                        <x-hamburger-menu />
+                    @endauth
+                </div>
+            </div>
+        </div>
 
-                            <div x-show="open" 
-                                 x-cloak
-                                 @click.outside="open = false"
-                                 @keydown.escape.window="open = false"
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md overflow-hidden shadow-lg z-50 border border-neutral-200 dark:border-neutral-700">
-                                
+        <!-- Mobile Navigation Menu -->
+        <div :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" 
+             class="hidden md:hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-700/80"
+             x-show="mobileMenuOpen"
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             @click.away="mobileMenuOpen = false">
+            <div class="px-4 pt-2 pb-3 space-y-1">
+                @guest
+                    <a href="{{ url('/' . app()->getLocale()) }}#features" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.nav.features') }}</a>
+                    <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.nav.how_it_works') }}</a>
+                @endguest
+                @auth
+                    <a href="{{ route('localized.dashboard', ['locale' => app()->getLocale()]) }}" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.nav.dashboard') }}</a>
+                    <a href="{{ route('localized.challenges.index', ['locale' => app()->getLocale()]) }}" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.nav.challenges') }}</a>
+                    <a href="{{ route('localized.friends.index', ['locale' => app()->getLocale()]) }}" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.nav.friends') }}</a>
+                    <a href="{{ route('localized.daily-board.index', ['locale' => app()->getLocale()]) }}" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.daily_board') }}</a>
+                    <a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" 
+                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                       @click="mobileMenuOpen = false">{{ __('app.weekly_board') }}</a>
+                @endauth
+                
+                {{-- Training e Analyzer - visibili sempre --}}
+                <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                   @click="mobileMenuOpen = false">{{ __('app.nav.training') }}</a>
+                <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" 
+                   class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                   @click="mobileMenuOpen = false">{{ __('app.nav.analyzer') }}</a>
+            </div>
+            
+            <!-- Mobile controls section -->
+            <div class="pt-4 pb-3 border-t border-neutral-200/80 dark:border-neutral-700/80">
+                <div class="px-4 space-y-3">
+                    <!-- Language switcher - mobile -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-neutral-600 dark:text-neutral-300">{{ __('app.nav.language') }}</span>
+                        <div class="flex items-center space-x-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+                            <a href="{{ url('/en') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
+                            <a href="{{ url('/it') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Theme toggle - mobile -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-neutral-600 dark:text-neutral-300">{{ __('app.nav.theme') }}</span>
+                        <button onclick="toggleTheme()" 
+                                aria-label="{{ __('app.aria.toggle_theme') }}"
+                                class="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                            <svg id="theme-icon-light-mobile" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <svg id="theme-icon-dark-mobile" class="h-5 w-5 hidden" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    @guest
+                        <!-- Auth buttons - mobile -->
+                        <div class="space-y-2 pt-2">
+                            <a href="{{ route('localized.login', ['locale' => app()->getLocale()]) }}" 
+                               class="block w-full text-center px-4 py-2 border border-primary-600 text-primary-600 dark:text-primary-400 font-medium rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                               @click="mobileMenuOpen = false">{{ __('app.nav.login') }}</a>
+                            <a href="{{ route('localized.register', ['locale' => app()->getLocale()]) }}" 
+                               class="block w-full text-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-all"
+                               @click="mobileMenuOpen = false">{{ __('app.nav.register') }}</a>
+                        </div>
+                    @endguest
+                    
+                    @auth
+                        <!-- User menu - mobile -->
+                        <div class="pt-2 border-t border-neutral-200/80 dark:border-neutral-700/80">
+                            <div class="flex items-center px-3 py-2">
+                                <div class="flex-shrink-0">
+                                    <div class="h-8 w-8 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-white font-medium text-sm">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-neutral-900 dark:text-white">{{ auth()->user()->name }}</div>
+                                    <div class="text-xs text-neutral-500 dark:text-neutral-400">{{ auth()->user()->email }}</div>
+                                </div>
+                            </div>
+                            <div class="mt-2 space-y-1">
                                 @if(auth()->user() && auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}" 
-                                       @click="open = false"
-                                       class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                                        👑 Dashboard Admin
-                                    </a>
+                                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                       @click="mobileMenuOpen = false">👑 Dashboard Admin</a>
                                 @endif
-                                
-                                                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.dashboard') : route('dashboard') }}" 
-                           @click="open = false"
-                           class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                                    📊 Dashboard
-                                </a>
-                                
-                                <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.profile') : route('profile') }}" 
-                                   @click="open = false"
-                                   class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                                    👤 Profilo
-                                </a>
-                                
-                                <hr class="border-neutral-200 dark:border-neutral-700">
-                                
-                                <button onclick="logout(); return false;" 
-                                        class="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                                    🚪 Logout
+                                <a href="{{ route('localized.profile', ['locale' => app()->getLocale()]) }}" 
+                                   class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                   @click="mobileMenuOpen = false">👤 {{ __('app.nav.profile') }}</a>
+                                <button onclick="logout(); mobileMenuOpen = false;" 
+                                        class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                                    🚪 {{ __('app.nav.logout') }}
                                 </button>
                             </div>
                         </div>
@@ -168,6 +409,13 @@
             </div>
         </div>
     </header>
+
+    {{-- Breadcrumb Navigation --}}
+    <div class="relative z-10 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <x-breadcrumbs class="min-h-[24px]" />
+        </div>
+    </div>
 
     <main class="relative z-10">
         {{ $slot }}
@@ -188,17 +436,21 @@
                 <div>
                     <h4 class="font-semibold mb-4">{{ __('app.footer.game') }}</h4>
                     <ul class="space-y-2 text-neutral-300">
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.daily_challenges') }}</a></li>
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.leaderboards') }}</a></li>
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.solver') }}</a></li>
+                        <li><a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.training') }}</a></li>
+                        <li><a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.analyzer') }}</a></li>
+                        <li><a href="{{ route('localized.daily-board.index', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.daily_challenges') }}</a></li>
+                        <li><a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.leaderboards') }}</a></li>
+                        <li><a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.solver') }}</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-semibold mb-4">{{ __('app.footer.support') }}</h4>
                     <ul class="space-y-2 text-neutral-300">
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.help') }}</a></li>
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.contact') }}</a></li>
-                        <li><a href="#" class="hover:text-primary-400 transition-colors">{{ __('app.footer.privacy') }}</a></li>
+                        <li><a href="{{ route('localized.help', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.help') }}</a></li>
+                        <li><a href="{{ route('localized.contact', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.contact') }}</a></li>
+                        <li><a href="{{ route('localized.privacy', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.privacy') }}</a></li>
+                        <li><a href="{{ route('localized.cookie-policy', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">Cookie Policy</a></li>
+                        <li><a href="{{ route('localized.terms', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.terms') }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -209,22 +461,53 @@
     </footer>
     
             <script>
-            function toggleTheme() {
+            async function toggleTheme() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const lightIcon = document.getElementById('theme-icon-light');
                 const darkIcon = document.getElementById('theme-icon-dark');
+                const newTheme = isDark ? 'light' : 'dark';
                 
+                // Applica il tema immediatamente nell'UI
                 if (isDark) {
                     document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
                     lightIcon.classList.remove('hidden');
                     darkIcon.classList.add('hidden');
                 } else {
                     document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
                     lightIcon.classList.add('hidden');
                     darkIcon.classList.remove('hidden');
                 }
+                
+                // Salva sempre nel localStorage
+                localStorage.setItem('theme', newTheme);
+                
+                // Se utente autenticato, salva anche nel database
+                @auth
+                const themeUrl = @if(request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
+                    '{{ route("localized.api.preferences.theme", ["locale" => app()->getLocale()]) }}'
+                @else
+                    '{{ route("api.preferences.theme") }}'
+                @endif;
+                
+                try {
+                    const response = await fetch(themeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ theme: newTheme })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Tema salvato:', data.message);
+                    }
+                } catch (error) {
+                    console.warn('Errore salvataggio tema nel database:', error);
+                    // Il tema rimane comunque applicato localmente
+                }
+                @endauth
             }
             
             // Logout function
@@ -279,5 +562,8 @@
             });
         </script>
     @stack('scripts')
+    
+    {{-- Cookie Banner --}}
+    <x-cookie-banner />
 </body>
 </html>

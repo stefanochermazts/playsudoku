@@ -1,0 +1,57 @@
+/* Critical CSS - Default Pages - Above the Fold Only */
+
+/* Reset essenziale */
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
+html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal}
+body{margin:0;line-height:inherit}
+
+/* Header critico - sempre visibile */
+.header{position:relative;background:#fff;border-bottom:1px solid #e5e7eb;z-index:50}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:80rem;margin:0 auto;padding:1rem 1.5rem}
+.logo{font-size:1.5rem;font-weight:800;color:#1f2937}
+.nav-links{display:none}
+.mobile-menu-btn{display:block;padding:0.5rem;color:#6b7280}
+
+/* Breadcrumbs critici */
+.breadcrumb-container{background:#f9fafb;border-bottom:1px solid #e5e7eb}
+.breadcrumb{max-width:80rem;margin:0 auto;padding:0.75rem 1.5rem}
+.breadcrumb ol{display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:#6b7280}
+
+/* Main content area */
+.main{position:relative;min-height:50vh;padding-top:2rem}
+
+/* Tipografia critica */
+h1{font-size:2.25rem;font-weight:700;color:#111827;margin:0 0 1rem 0;line-height:1.2}
+h2{font-size:1.875rem;font-weight:600;color:#1f2937;margin:0 0 0.75rem 0}
+p{color:#4b5563;line-height:1.6;margin:0 0 1rem 0}
+
+/* Layout responsivo critico */
+.container{max-width:80rem;margin:0 auto;padding:0 1rem}
+.grid{display:grid}
+.flex{display:flex}
+.hidden{display:none}
+
+/* Dark mode per elementi critici */
+@media (prefers-color-scheme: dark) {
+  .header{background:#111827;border-color:#374151}
+  .breadcrumb-container{background:#1f2937;border-color:#374151}
+  .logo{color:#f9fafb}
+  .mobile-menu-btn{color:#d1d5db}
+  h1{color:#f9fafb}
+  h2{color:#e5e7eb}
+  p{color:#d1d5db}
+}
+
+/* Media queries critiche */
+@media (min-width: 768px) {
+  .nav{padding:1rem 2rem}
+  .breadcrumb{padding:0.75rem 2rem}
+  .nav-links{display:flex}
+  .mobile-menu-btn{display:none}
+  .container{padding:0 2rem}
+}
+
+@media (min-width: 1024px) {
+  .nav{padding:1rem 2rem}
+  .main{padding-top:3rem}
+}

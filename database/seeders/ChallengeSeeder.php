@@ -142,7 +142,7 @@ class ChallengeSeeder extends Seeder
                 'created_by' => $admin->id,
                 'settings' => [
                     'hints_allowed' => $customIndex > 0,
-                    'time_limit' => $customIndex === 0 ? 600000 : null, // 10 minuti per Speed Challenge
+                    'time_limit' => $customIndex === 0 ? 1800000 : null, // 30 minuti per Speed Challenge
                     'max_attempts' => $customIndex + 1,
                 ],
             ]);

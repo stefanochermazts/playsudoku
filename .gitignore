@@ -27,3 +27,18 @@ frankenphp
 frankenphp-worker.php
 rr
 .rr.yaml
+
+# Coverage Reports
+/coverage-html/
+/coverage.xml
+/.coverage/
+*.coverage
+.nyc_output/
+
+# PHPStan
+/build/
+/.phpstan.cache
+
+# Dusk
+/tests/Browser/screenshots/
+/tests/Browser/console/

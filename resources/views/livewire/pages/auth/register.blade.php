@@ -14,6 +14,7 @@ new #[Layout('layouts.site')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public bool $privacy_accepted = false;
 
     /**
      * Handle an incoming registration request.
@@ -24,11 +25,18 @@ new #[Layout('layouts.site')] class extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'privacy_accepted' => ['required', 'accepted'],
+        ], [
+            'privacy_accepted.required' => __('app.privacy.must_accept'),
+            'privacy_accepted.accepted' => __('app.privacy.must_accept'),
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
-        event(new Registered($user = User::create($validated)));
+        // Remove privacy_accepted from user data (it's not a User field)
+        $userData = collect($validated)->except('privacy_accepted')->toArray();
+        
+        event(new Registered($user = User::create($userData)));
 
         Auth::login($user);
 
@@ -102,6 +110,32 @@ new #[Layout('layouts.site')] class extends Component
                                   placeholder="{{ __('auth.Confirm your password') }}" />
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                 </div>
+
+                <!-- Privacy Policy Checkbox -->
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" 
+                           wire:model="privacy_accepted" 
+                           id="privacy_accepted" 
+                           required
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 dark:border-neutral-600 rounded mt-1">
+                    <label for="privacy_accepted" class="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                        {{ __('app.privacy.accept_privacy') }} 
+                        <a href="{{ route('localized.privacy', ['locale' => app()->getLocale()]) }}" 
+                           target="_blank"
+                           class="text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                            {{ __('app.privacy.title') }}
+                        </a>
+                        e i 
+                        <a href="{{ route('localized.terms', ['locale' => app()->getLocale()]) }}" 
+                           target="_blank"
+                           class="text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                            {{ __('app.terms.title') }}
+                        </a>
+                    </label>
+                </div>
+                @error('privacy_accepted') 
+                    <div class="text-sm text-red-600 dark:text-red-400">{{ $message }}</div> 
+                @enderror
 
                 <!-- Submit Button -->
                 <button type="submit" 

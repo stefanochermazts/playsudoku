@@ -10,7 +10,11 @@ class SudokuDemoController extends Controller
 {
     public function index()
     {
-        return view('sudoku.demo');
+        // Configura SEO meta tags per training
+        $metaService = app(\App\Services\MetaService::class);
+        $metaService->setTraining();
+        
+        return view('sudoku.demo', ['metaService' => $metaService]);
     }
 
     public function play()
@@ -25,5 +29,17 @@ class SudokuDemoController extends Controller
             'initialGrid' => $puzzle->toArray(),
             'seed' => $seed,
         ]);
+    }
+
+    /**
+     * Pagina per analizzare puzzle importati
+     */
+    public function analyzer()
+    {
+        // Configura SEO meta tags per analyzer
+        $metaService = app(\App\Services\MetaService::class);
+        $metaService->setAnalyzer();
+        
+        return view('sudoku.analyzer', ['metaService' => $metaService]);
     }
 }

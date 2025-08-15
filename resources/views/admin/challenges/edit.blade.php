@@ -227,6 +227,21 @@
                                 </select>
                                 <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Se disabilitati, la board non mostrerà candidati né il relativo pulsante.</p>
                             </div>
+                            
+                            <div>
+                                <label for="time_limit" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Limite Tempo (minuti)
+                                </label>
+                                <input type="number" 
+                                       id="time_limit" 
+                                       name="settings[time_limit]" 
+                                       value="{{ old('settings.time_limit', data_get($challenge->settings, 'time_limit') ? intval(data_get($challenge->settings, 'time_limit') / 60000) : '') }}" 
+                                       min="1" 
+                                       max="180"
+                                       placeholder="Es. 30"
+                                       class="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-800 dark:text-white">
+                                <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Lascia vuoto per nessun limite. Il gioco si fermerà automaticamente alla scadenza.</p>
+                            </div>
                         </div>
 
                         <!-- Warning Messages -->

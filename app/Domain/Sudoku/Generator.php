@@ -5,6 +5,7 @@ namespace App\Domain\Sudoku;
 
 use App\Domain\Sudoku\Contracts\GeneratorInterface;
 use App\Domain\Sudoku\Contracts\ValidatorInterface;
+use Illuminate\Support\Facades\Log;
 use App\Domain\Sudoku\Exceptions\InvalidGridException;
 use App\Domain\Sudoku\ValueObjects\Cell;
 
@@ -270,7 +271,7 @@ final class Generator implements GeneratorInterface
         $bestCell = $this->findMostConstrainedCell($grid);
         if ($bestCell === null) {
             // Griglia completa - successo!
-            \Log::info("Generator SUCCESS", [
+            Log::info("Generator SUCCESS", [
                 'total_calls' => $debugInfo['calls'],
                 'max_depth' => $debugInfo['max_depth'],
                 'total_time' => round(microtime(true) - $startTime, 2) . 's',
@@ -287,7 +288,7 @@ final class Generator implements GeneratorInterface
         
         // Solo log di warning senza interrompere la generazione
         if ($debugInfo['last_positions'][$position] > 50 && $debugInfo['last_positions'][$position] % 25 === 0) {
-            \Log::warning("Position visited many times (normal for backtracking)", [
+            Log::warning("Position visited many times (normal for backtracking)", [
                 'position' => $position,
                 'visit_count' => $debugInfo['last_positions'][$position],
                 'depth' => $depth,

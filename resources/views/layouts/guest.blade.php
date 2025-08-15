@@ -5,6 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Favicon --}}
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+        <link rel="icon" href="{{ asset('favicon.svg') }}" sizes="any">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.svg') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.svg') }}">
+        <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+
         <title>{{ config('app.name', __('app.app_name')) }}</title>
         @php($supported = config('app.supported_locales', ['en','it']))
         @foreach($supported as $loc)
@@ -21,6 +28,9 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <!-- Analytics -->
+        @include('partials.analytics')
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">

@@ -21,6 +21,19 @@ new class extends Component
 }; ?>
 
 <nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+    @if(session()->has('impersonator_id'))
+        <div class="bg-warning-100 dark:bg-yellow-900/40 text-warning-900 dark:text-yellow-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+                <div class="text-sm font-medium">🔄 Impersonazione attiva</div>
+                <form action="{{ route('impersonation.stop') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-3 py-1 bg-warning-600 hover:bg-warning-700 text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-warning-500" aria-label="{{ __('app.aria.end_impersonation') }}">
+                        Torna al mio account
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -33,19 +46,28 @@ new class extends Component
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-4 xl:space-x-6 sm:-my-px sm:ms-10 sm:flex overflow-x-auto">
                     @auth
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('app.nav.dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('localized.challenges.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.challenges.*')" wire:navigate>
-                        🎯 {{ __('app.nav.challenges') }}
+                        {{ __('app.nav.challenges') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('localized.sudoku.training', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.sudoku.*')" wire:navigate>
+                        {{ __('app.nav.training') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('localized.sudoku.analyzer', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.sudoku.analyzer')" wire:navigate>
+                        {{ __('app.nav.analyzer') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('localized.friends.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.friends.*')" wire:navigate>
+                        {{ __('app.nav.friends') }}
                     </x-nav-link>
                     <x-nav-link :href="route('localized.daily-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.daily-board.*')" wire:navigate>
-                        📅 {{ __('app.daily_board') }}
+                        {{ __('app.daily_board') }}
                     </x-nav-link>
                     <x-nav-link :href="route('localized.weekly-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.weekly-board.*')" wire:navigate>
-                        📊 {{ __('app.weekly_board') }}
+                        {{ __('app.weekly_board') }}
                     </x-nav-link>
                     @if(auth()->user() && auth()->user()->isAdmin())
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" wire:navigate>
@@ -149,13 +171,22 @@ new class extends Component
                 {{ __('app.nav.dashboard') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('localized.challenges.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.challenges.*')" wire:navigate>
-                🎯 {{ __('app.nav.challenges') }}
+                {{ __('app.nav.challenges') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.sudoku.training', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.sudoku.*')" wire:navigate>
+                {{ __('app.nav.training') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.sudoku.analyzer', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.sudoku.analyzer')" wire:navigate>
+                {{ __('app.nav.analyzer') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('localized.friends.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.friends.*')" wire:navigate>
+                {{ __('app.nav.friends') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('localized.daily-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.daily-board.*')" wire:navigate>
-                📅 {{ __('app.daily_board') }}
+                {{ __('app.daily_board') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('localized.weekly-board.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.weekly-board.*')" wire:navigate>
-                📊 {{ __('app.weekly_board') }}
+                {{ __('app.weekly_board') }}
             </x-responsive-nav-link>
         </div>
 

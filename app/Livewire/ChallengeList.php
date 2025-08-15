@@ -80,23 +80,24 @@ class ChallengeList extends Component
 
         // Filtro per stato personale
         if ($this->status !== 'all') {
-            $userAttemptIds = $this->userAttempts->pluck('challenge_id');
-            
+            // La collezione è indicizzata per challenge_id, usiamo direttamente le chiavi
+            $userAttemptIds = $this->userAttempts->keys();
+
             switch ($this->status) {
                 case 'not_started':
-                    $query->whereNotIn('id', $userAttemptIds);
+                    $query->whereNotIn('id', $userAttemptIds->all());
                     break;
                 case 'in_progress':
                     $inProgressIds = $this->userAttempts
                         ->filter(fn($attempt) => !$attempt->completed_at)
-                        ->pluck('challenge_id');
-                    $query->whereIn('id', $inProgressIds);
+                        ->keys();
+                    $query->whereIn('id', $inProgressIds->all());
                     break;
                 case 'completed':
                     $completedIds = $this->userAttempts
                         ->filter(fn($attempt) => $attempt->completed_at)
-                        ->pluck('challenge_id');
-                    $query->whereIn('id', $completedIds);
+                        ->keys();
+                    $query->whereIn('id', $completedIds->all());
                     break;
             }
         }

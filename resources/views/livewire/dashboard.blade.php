@@ -182,10 +182,10 @@
                                             </div>
                                             
                                             <div class="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-300">
-                                                <span>Difficoltà: <strong>{{ ucfirst($challenge->puzzle->difficulty ?? 'Normal') }}</strong></span>
-                                                <span>Scade: <strong>{{ $challenge->ends_at->diffForHumans() }}</strong></span>
+                                                <span>{{ __('app.dashboard.difficulty_label') }} <strong>{{ ucfirst($challenge->puzzle->difficulty ?? 'Normal') }}</strong></span>
+                                                <span>{{ __('app.dashboard.expires_label') }} <strong>{{ $challenge->ends_at->diffForHumans() }}</strong></span>
                                                 @if($attempt && $attempt->duration_ms)
-                                                    <span>Tempo: <strong>{{ $this->getFormattedTime($attempt->duration_ms) }}</strong></span>
+                                                    <span>{{ __('app.dashboard.time_label') }} <strong>{{ $this->getFormattedTime($attempt->duration_ms) }}</strong></span>
                                                 @endif
                                             </div>
                                         </div>
@@ -221,8 +221,8 @@
                                 </svg>
                             </div>
                             <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">{{ __('app.dashboard.no_challenges') }}</h3>
-                            <p class="text-neutral-600 dark:text-neutral-300 mb-6">Le nuove sfide vengono create automaticamente ogni giorno.</p>
-                            <a href="{{ route('sudoku.demo') }}" 
+                            <p class="text-neutral-600 dark:text-neutral-300 mb-6">{{ __('app.dashboard.new_challenges_created_daily') }}</p>
+                            <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" 
                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold rounded-xl hover:from-primary-700 hover:to-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-all transform hover:scale-105">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -240,7 +240,7 @@
                 <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50">
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">{{ __('app.dashboard.quick_actions') }}</h3>
                     <div class="space-y-3">
-                        <a href="{{ route('sudoku.demo') }}" 
+                        <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" 
                            class="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                             <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -248,7 +248,7 @@
                             <span class="text-blue-700 dark:text-blue-300 font-medium">{{ __('app.dashboard.free_training') }}</span>
                         </a>
                         
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                        <a href="{{ route('localized.challenges.index', ['locale' => app()->getLocale()]) }}" 
                            class="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
                             <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -256,12 +256,12 @@
                             <span class="text-green-700 dark:text-green-300 font-medium">{{ __('app.dashboard.view_all_challenges') }}</span>
                         </a>
                         
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                        <a href="{{ route('localized.challenges.index', ['locale' => app()->getLocale()]) }}" 
                            class="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors">
                             <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <span class="text-yellow-700 dark:text-yellow-300 font-medium">Vedi Sfide e Classifiche</span>
+                            <span class="text-yellow-700 dark:text-yellow-300 font-medium">{{ __('app.dashboard.view_challenges_leaderboards') }}</span>
                         </a>
                     </div>
                 </div>
@@ -286,7 +286,7 @@
                         
                         @if(($userStats['puzzles_solved'] ?? 0) > 0)
                             <div class="flex justify-between">
-                                <span class="text-sm text-neutral-600 dark:text-neutral-300">Precisione:</span>
+                                <span class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.accuracy') }}:</span>
                                 <span class="text-sm font-medium text-neutral-900 dark:text-white">
                                     {{ $userStats['total_errors'] > 0 ? round((1 - $userStats['total_errors'] / max($userStats['puzzles_solved'], 1)) * 100, 1) : 100 }}%
                                 </span>
@@ -294,7 +294,7 @@
                         @endif
                         
                         @if(($userStats['puzzles_solved'] ?? 0) === 0)
-                            <p class="text-sm text-neutral-600 dark:text-neutral-300">Inizia a giocare per vedere le tue statistiche!</p>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.start_playing_to_see_stats') }}</p>
                         @endif
                     </div>
                 </div>
