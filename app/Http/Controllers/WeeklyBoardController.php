@@ -57,7 +57,7 @@ class WeeklyBoardController extends Controller
             ->orderByDesc('starts_at')
             ->paginate(8);
 
-        return view('weekly-board.archive-safe', compact('challenges', 'currentWeek'));
+        return view('weekly-board.archive', compact('challenges', 'currentWeek'));
     }
 
     /**
