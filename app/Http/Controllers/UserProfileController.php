@@ -90,14 +90,16 @@ class UserProfileController extends Controller
 
         $bestTime = $bestTimeAttempt ? $this->formatDuration($bestTimeAttempt->duration_ms) : null;
 
-        // Statistiche per difficoltà
-        $statsByDifficulty = ChallengeAttempt::select('difficulty')
+        // Statistiche per difficoltà (join con challenges -> puzzles per ricavare la difficulty)
+        $statsByDifficulty = ChallengeAttempt::join('challenges', 'challenge_attempts.challenge_id', '=', 'challenges.id')
+            ->join('puzzles', 'challenges.puzzle_id', '=', 'puzzles.id')
+            ->select('puzzles.difficulty')
             ->selectRaw('COUNT(*) as total_attempts')
             ->selectRaw('COUNT(CASE WHEN completed_at IS NOT NULL AND valid = true THEN 1 END) as completed')
-            ->selectRaw('MIN(CASE WHEN completed_at IS NOT NULL AND valid = true AND move_validation_passed = true THEN duration_ms END) as best_time_ms')
-            ->selectRaw('AVG(CASE WHEN completed_at IS NOT NULL AND valid = true AND move_validation_passed = true THEN duration_ms END) as avg_time_ms')
-            ->where('user_id', $user->id)
-            ->groupBy('difficulty')
+            ->selectRaw('MIN(CASE WHEN completed_at IS NOT NULL AND valid = true AND move_validation_passed = true THEN challenge_attempts.duration_ms END) as best_time_ms')
+            ->selectRaw('AVG(CASE WHEN completed_at IS NOT NULL AND valid = true AND move_validation_passed = true THEN challenge_attempts.duration_ms END) as avg_time_ms')
+            ->where('challenge_attempts.user_id', $user->id)
+            ->groupBy('puzzles.difficulty')
             ->get()
             ->mapWithKeys(function ($stat) {
                 return [$stat->difficulty => [

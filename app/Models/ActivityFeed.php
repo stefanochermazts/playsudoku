@@ -198,4 +198,37 @@ class ActivityFeed extends Model
             default => 'text-neutral-600 dark:text-neutral-400',
         };
     }
+
+    /**
+     * Genera dinamicamente la descrizione dell'attività in base alla lingua corrente
+     */
+    public function getLocalizedDescriptionAttribute(): string
+    {
+        // Assicurati che la relazione user sia caricata
+        if (!$this->relationLoaded('user')) {
+            $this->load('user');
+        }
+
+        return match ($this->type) {
+            self::TYPE_CHALLENGE_COMPLETED => __('app.activity.challenge_completed', [
+                'user' => $this->user->name,
+                'difficulty' => __('app.difficulty.' . $this->data['difficulty']),
+                'time' => self::formatTime($this->data['duration_ms']),
+            ]),
+            self::TYPE_NEW_PERSONAL_RECORD => __('app.activity.new_personal_record', [
+                'user' => $this->user->name,
+                'difficulty' => __('app.difficulty.' . $this->data['difficulty']),
+                'time' => self::formatTime($this->data['new_best_time']),
+            ]),
+            self::TYPE_STREAK_MILESTONE => __('app.activity.streak_milestone', [
+                'user' => $this->user->name,
+                'days' => $this->data['streak_days'],
+            ]),
+            self::TYPE_FRIEND_ADDED => __('app.activity.friend_added', [
+                'user' => $this->user->name,
+                'friend' => $this->data['friend_name'],
+            ]),
+            default => $this->description,
+        };
+    }
 }

@@ -443,7 +443,7 @@
 @endpush
 
 @push('scripts')
-<script src="{{ asset('js/sudoku-board-optimized.js') }}"></script>
+<script src="{{ asset('js/sudoku-board-optimized.js') }}" defer></script>
 <script>
     let sudokuTimerInterval;
     let uiTimerInterval;

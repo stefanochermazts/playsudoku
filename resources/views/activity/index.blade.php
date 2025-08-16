@@ -122,7 +122,7 @@
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
                                             <p class="text-sm text-neutral-900 dark:text-white">
-                                                {{ $activity->description }}
+                                                {{ $activity->localized_description }}
                                             </p>
                                             <p class="text-xs text-neutral-500 mt-1">
                                                 {{ $activity->created_at->diffForHumans() }}

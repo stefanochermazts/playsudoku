@@ -446,16 +446,16 @@ Deliverable: pipeline verde e copertura >80% su domini critici.
 ---
 
 ### Fase 20 — Badge System & Gamification
-- [ ] **Badge Engine**: Sistema badge dinamico con triggers automatici (prima vittoria, streak, tempo, difficoltà)
-- [ ] **Categorie Badge**: Achievement, Performance, Consistency, Special Events, Social
-- [ ] **Stagioni Competitive**: Sistema stagioni mensili/trimestrali con reset classifiche e badge esclusivi
-- [ ] **Leaderboard Stagionali**: Classifiche per stagione con archivio storico e confronti year-over-year
+- [x] **Badge Engine**: Sistema badge dinamico con triggers automatici (prima vittoria, streak, tempo, difficoltà)
+- [x] **Categorie Badge**: Achievement, Performance, Consistency, Social (base)
+- [x] **Stagioni Competitive (base)**: tabella stagioni, seeder stagione corrente, SeasonService
+- [x] **Leaderboard Stagionali (base)**: tabella punteggi stagione per utente, aggiornamento punti via servizio
 - [ ] **Analisi Tempi Avanzata**: Grafici performance temporali, trend improvement, comparison charts
 - [ ] **Rewards System**: Punti esperienza, livelli utente, unlock progressivi di funzionalità
-- [ ] **Badge Collection UI**: Galleria badge con progress tracking, rare badge showcase, condivisione social
-- [ ] **Notification System**: Alert per nuovi badge, stagioni in scadenza, milestone raggiunti
+- [x] **Badge Collection UI**: Galleria badge con progress tracking, rare badge showcase, condivisione social (base)
+- [x] **Notification System**: Hook di assegnazione badge su completamento sfida / eventi social (base)
 
-Deliverable: sistema gamification completo con badge, stagioni e analisi avanzate.
+Deliverable: sistema gamification (prima iterazione) con badge e stagioni base, pronto per estensioni (grafici e livelli).
 
 ---
 

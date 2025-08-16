@@ -52,7 +52,7 @@ class ResultService
             );
         }
 
-        return DB::transaction(function () use (
+        $attempt = DB::transaction(function () use (
             $user, $challenge, $finalBoard, $moveLog, $durationMs, $errorsCount, $hintsUsed, $validation
         ) {
             // Crea o aggiorna il tentativo
@@ -75,6 +75,20 @@ class ResultService
 
             return $attempt;
         });
+
+        // Award badges
+        app(BadgeService::class)->onChallengeCompleted($user, [
+            'duration_ms' => $durationMs,
+            'errors_count' => $errorsCount,
+            'hints_used' => $hintsUsed,
+            'difficulty' => $challenge->puzzle->difficulty ?? 'normal',
+            'type' => $challenge->type,
+        ]);
+
+        // Award season points (provisional placement = 1, refined later when leaderboard is resolved)
+        app(SeasonService::class)->awardPointsForChallenge($user, $challenge, 1);
+
+        return $attempt;
     }
 
     /**

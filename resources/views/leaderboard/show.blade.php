@@ -55,7 +55,8 @@
                     @php($offset = ($attempts->currentPage()-1)*$attempts->perPage())
                     @forelse($attempts as $i => $attempt)
                         @php($pos = $offset + $i + 1)
-                        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/30">
+                        @php($isCurrentUser = auth()->check() && ($attempt->user_id === auth()->id()))
+                        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/30 {{ $isCurrentUser ? 'bg-primary-50 dark:bg-primary-900/20' : '' }}">
                             <td class="px-4 py-3 whitespace-nowrap font-semibold">
                                 #{{ $pos }}
                                 @if($pos === 1)
@@ -66,7 +67,7 @@
                                     <span aria-label="{{ __('app.leaderboard.third_place') }}" title="{{ __('app.leaderboard.third_place') }}" class="ml-2 inline-flex items-center px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">🥉</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap">{{ $attempt->user?->name ?? '—' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : '' }}">{{ $attempt->user?->name ?? '—' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="font-mono font-semibold text-neutral-900 dark:text-white">
                                     {{ $attempt->getFormattedPenalizedDuration() }}

@@ -443,6 +443,17 @@ class ChallengePlay extends Component
             \App\Jobs\AnalyzeTimingAnomaliesJob::dispatch($this->challenge, $this->attempt);
         }
         
+        // Award badges per tentativi validi
+        if ($isValid) {
+            app(\App\Services\BadgeService::class)->onChallengeCompleted(auth()->user(), [
+                'duration_ms' => $durationMs,
+                'errors_count' => $this->errorCount,
+                'hints_used' => $this->attempt->hints_used ?? 0,
+                'difficulty' => $this->challenge->puzzle->difficulty ?? 'normal',
+                'type' => $this->challenge->type,
+            ]);
+        }
+        
         // Salva tutte le mosse
         foreach ($this->moveHistory as $index => $move) {
             AttemptMove::create([

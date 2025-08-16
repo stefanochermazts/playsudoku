@@ -152,8 +152,12 @@ class Dashboard extends Component
                 return;
             }
 
-            // Redirect alla pagina della sfida
-            return redirect()->route('challenges.play', ['challenge' => $challengeId]);
+            // Redirect alla pagina della sfida (route localizzata)
+            $locale = app()->getLocale();
+            return redirect()->route('localized.challenges.play', [
+                'locale' => $locale,
+                'challenge' => $challengeId,
+            ]);
         } catch (\Exception $e) {
             $this->dispatch('challenge-error', message: 'Errore nel caricamento della sfida. Le sfide saranno disponibili presto!');
             return;

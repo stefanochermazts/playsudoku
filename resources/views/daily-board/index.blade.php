@@ -18,6 +18,11 @@
                     </h2>
                     
                     <div class="space-y-4">
+                        <!-- Challenge identifier -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-neutral-600 dark:text-neutral-300">Challenge</span>
+                            <span class="text-neutral-900 dark:text-white font-medium">#{{ $dailyChallenge->id }} — {{ $dailyChallenge->title ?? 'Daily' }}</span>
+                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.difficulty') }}:</span>
                             <span class="px-3 py-1 rounded-full text-sm font-medium
@@ -48,28 +53,37 @@
                             </span>
                         </div>
 
-                        @if($dailyChallenge->status === 'active')
+                        @php($userCompleted = auth()->check() && $dailyChallenge->attempts()->where('valid', true)->whereNotNull('completed_at')->where('user_id', auth()->id())->exists())
+                        @if($dailyChallenge->status === 'active' && !$userCompleted)
                             <div class="pt-4">
                                 <a href="{{ route('localized.challenges.play', ['locale' => app()->getLocale(), 'challenge' => $dailyChallenge->id]) }}" 
                                    class="w-full inline-flex justify-center items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors">
                                     {{ __('app.play_now') }}
                                 </a>
                             </div>
+                        @else
+                            <div class="pt-4">
+                                <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $dailyChallenge->id]) }}" 
+                                   class="w-full inline-flex justify-center items-center px-4 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 dark:text-primary-300 font-medium rounded-lg transition-colors">
+                                    {{ __('app.view_full_leaderboard') }}
+                                </a>
+                            </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Top Players -->
-                @if($leaderboard && $leaderboard->count() > 0)
-                    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-                            {{ __('app.top_players_today') }}
-                        </h2>
-                        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">Tempo penalizzato: +3 secondi per errore</p>
-                        
+                <!-- Top Players (show even if empty) -->
+                <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+                        {{ __('app.top_players_today') }}
+                    </h2>
+                    <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">Tempo penalizzato: +3 secondi per errore</p>
+
+                    @if($leaderboard && $leaderboard->count() > 0)
                         <div class="space-y-3">
                             @foreach($leaderboard->take(5) as $index => $attempt)
-                                <div class="flex items-center justify-between">
+                                @php($isCurrentUser = auth()->check() && (is_array($attempt) ? ((int)($attempt['user_id'] ?? 0) === auth()->id()) : ($attempt->user_id === auth()->id())))
+                                <div class="flex items-center justify-between {{ $isCurrentUser ? 'bg-primary-50 dark:bg-primary-900/20 rounded-md px-2 py-1' : '' }}">
                                     <div class="flex items-center space-x-3">
                                         <span class="w-6 h-6 flex items-center justify-center rounded-full text-sm font-medium
                                             @if($index === 0) bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
@@ -79,26 +93,29 @@
                                         ">
                                             {{ $index + 1 }}
                                         </span>
-                                        <span class="text-neutral-900 dark:text-white">{{ $attempt->user?->name ?? '—' }}</span>
+                                        <span class="text-neutral-900 dark:text-white font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : '' }}">{{ is_array($attempt) ? ($attempt['user_name'] ?? '—') : ($attempt->user?->name ?? '—') }}</span>
                                     </div>
                                     <div class="text-right">
                                         <span class="font-mono text-sm text-neutral-900 dark:text-white font-semibold">
-                                            {{ $attempt->getFormattedPenalizedDuration() }}
+                                            {{ is_array($attempt) ? ($attempt['formatted_duration'] ?? '-') : ($attempt->getFormattedPenalizedDuration()) }}
                                         </span>
-
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-
-                        <div class="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-700">
-                            <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $dailyChallenge->id]) }}" 
-                               class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium">
-                                {{ __('app.view_full_leaderboard') }} →
-                            </a>
+                    @else
+                        <div class="text-sm text-neutral-600 dark:text-neutral-400">
+                            {{ __('app.no_completions_yet') }}
                         </div>
+                    @endif
+
+                    <div class="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-700">
+                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $dailyChallenge->id]) }}" 
+                           class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium">
+                            {{ __('app.view_full_leaderboard') }} →
+                        </a>
                     </div>
-                @endif
+                </div>
             </div>
         @else
             <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">

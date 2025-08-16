@@ -13,7 +13,7 @@
         <div class="mb-6 flex justify-between items-center">
             <a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" 
                class="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
-                ← {{ __('app.back_to_current_week') }}
+                ← {{ __('app.back_to_this_week') }}
             </a>
             
             <div class="flex space-x-2">
@@ -95,15 +95,27 @@
                                 @endif
 
                                 <!-- Action buttons -->
+                                @php($userCompleted = auth()->check() && $challenge->attempts()->where('valid', true)->whereNotNull('completed_at')->where('user_id', auth()->id())->exists())
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('localized.weekly-board.show', ['locale' => app()->getLocale(), 'week' => $challenge->starts_at->format('Y-m-d')]) }}" 
-                                       class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
-                                        {{ __('app.view_details') }}
-                                    </a>
-                                    <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
-                                       class="px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600">
-                                        {{ __('app.leaderboard') }}
-                                    </a>
+                                    @if($userCompleted)
+                                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                                           class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
+                                            {{ __('app.view_full_leaderboard') }}
+                                        </a>
+                                        <a href="{{ route('localized.weekly-board.show', ['locale' => app()->getLocale(), 'week' => $challenge->starts_at->format('Y-m-d')]) }}" 
+                                           class="px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600">
+                                            {{ __('app.view_details') }}
+                                        </a>
+                                    @else
+                                        <a href="{{ route('localized.weekly-board.show', ['locale' => app()->getLocale(), 'week' => $challenge->starts_at->format('Y-m-d')]) }}" 
+                                           class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
+                                            {{ __('app.play_this_challenge') }}
+                                        </a>
+                                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                                           class="px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600">
+                                            {{ __('app.view_full_leaderboard') }}
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>

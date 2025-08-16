@@ -12,23 +12,9 @@ Route::get('/', function (Request $request) {
         return view('welcome');
     }
     $supported = (array) config('app.supported_locales', ['en', 'it']);
-
-    $sessionLocale = $request->session()->get('locale');
-    if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
-        return redirect()->to(url('/'.$sessionLocale));
-    }
-
-    $preferred = 'en';
-    $accept = (string) $request->header('Accept-Language', '');
-    if (preg_match('/\bit\b/i', $accept)) {
-        $preferred = 'it';
-    }
-
-    if (! in_array($preferred, $supported, true)) {
-        $preferred = $supported[0] ?? 'en';
-    }
-
-    return redirect()->to(url('/'.$preferred));
+    $browserLocale = substr($request->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
+    $locale = in_array($browserLocale, $supported, true) ? $browserLocale : config('app.locale', 'en');
+    return redirect($locale);
 });
 
 // Gruppo opzionale con prefisso locale per contenuti tradotti.
@@ -81,7 +67,15 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
     Route::get('/terms', function ($locale) {
         return view('legal.terms');
     })->name('localized.terms');
-    
+
+    // Badges (nuova pagina)
+    Route::get('/badges', function ($locale) {
+        return view('badges.index');
+    })->middleware(['localized-auth'])->name('localized.badges.index');
+
+    // Seasonal leaderboard
+    Route::get('/season/leaderboard', function ($locale) { return view('season.leaderboard'); })->middleware(['localized-auth'])->name('localized.season.leaderboard');
+
     // Sfide localizzate (area riservata)
     Route::middleware(['localized-auth'])->group(function () {
         Route::get('/challenges', function ($locale) {
@@ -179,49 +173,17 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
 // Redirect dashboard senza locale a dashboard localizzato
 Route::get('dashboard', function (Request $request) {
     $supported = (array) config('app.supported_locales', ['en', 'it']);
-    
-    // Prova a ottenere locale dalla sessione
-    $sessionLocale = $request->session()->get('locale');
-    if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
-        return redirect()->to(url('/'.$sessionLocale.'/dashboard'));
-    }
-    
-    // Fallback su Accept-Language
-    $preferred = 'en';
-    $accept = (string) $request->header('Accept-Language', '');
-    if (preg_match('/\bit\b/i', $accept)) {
-        $preferred = 'it';
-    }
-    
-    if (! in_array($preferred, $supported, true)) {
-        $preferred = $supported[0] ?? 'en';
-    }
-    
-    return redirect()->to(url('/'.$preferred.'/dashboard'));
+    $browserLocale = substr($request->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
+    $locale = in_array($browserLocale, $supported, true) ? $browserLocale : config('app.locale', 'en');
+    return redirect()->route('localized.dashboard', ['locale' => $locale]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Redirect profile senza locale a profile localizzato
 Route::get('profile', function (Request $request) {
     $supported = (array) config('app.supported_locales', ['en', 'it']);
-    
-    // Prova a ottenere locale dalla sessione
-    $sessionLocale = $request->session()->get('locale');
-    if (is_string($sessionLocale) && in_array($sessionLocale, $supported, true)) {
-        return redirect()->to(url('/'.$sessionLocale.'/profile'));
-    }
-    
-    // Fallback su Accept-Language
-    $preferred = 'en';
-    $accept = (string) $request->header('Accept-Language', '');
-    if (preg_match('/\bit\b/i', $accept)) {
-        $preferred = 'it';
-    }
-    
-    if (! in_array($preferred, $supported, true)) {
-        $preferred = $supported[0] ?? 'en';
-    }
-    
-    return redirect()->to(url('/'.$preferred.'/profile'));
+    $browserLocale = substr($request->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
+    $locale = in_array($browserLocale, $supported, true) ? $browserLocale : config('app.locale', 'en');
+    return redirect()->route('localized.profile', ['locale' => $locale]);
 })->middleware(['auth'])->name('profile');
 
 // Admin routes

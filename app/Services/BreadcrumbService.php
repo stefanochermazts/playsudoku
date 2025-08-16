@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Challenge;
 use Illuminate\Support\Facades\Route;
+use Carbon\Carbon;
 
 class BreadcrumbService
 {
@@ -32,6 +33,15 @@ class BreadcrumbService
 
         // Generate breadcrumbs based on current route
         match (true) {
+            // Daily Board
+            str_contains($routeName, 'daily-board.archive') => $this->addDailyBoardArchive(),
+            str_contains($routeName, 'daily-board.show') => $this->addDailyBoardShow($parameters),
+            str_contains($routeName, 'daily-board.index') => $this->addDailyBoardIndex(),
+            // Weekly Board
+            str_contains($routeName, 'weekly-board.archive') => $this->addWeeklyBoardArchive(),
+            str_contains($routeName, 'weekly-board.show') => $this->addWeeklyBoardShow($parameters),
+            str_contains($routeName, 'weekly-board.index') => $this->addWeeklyBoardIndex(),
+            // Other sections
             str_contains($routeName, 'dashboard') => $this->addDashboard(),
             str_contains($routeName, 'profile') => $this->addProfile(),
             str_contains($routeName, 'sudoku.training') => $this->addTraining(),
@@ -39,6 +49,7 @@ class BreadcrumbService
             str_contains($routeName, 'sudoku.analyzer') => $this->addAnalyzer(),
             str_contains($routeName, 'challenges.play') => $this->addChallengePlay($parameters),
             str_contains($routeName, 'leaderboard.show') => $this->addLeaderboard($parameters),
+            str_contains($routeName, 'activity') => $this->addActivity(),
             str_contains($routeName, 'help') => $this->addHelp(),
             str_contains($routeName, 'contact') => $this->addContact(),
             str_contains($routeName, 'privacy') => $this->addPrivacy(),
@@ -142,6 +153,94 @@ class BreadcrumbService
         ];
     }
 
+    private function addDailyBoardIndex(): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.daily_board'),
+            'url' => route('localized.daily-board.index', ['locale' => app()->getLocale()]),
+            'current' => true
+        ];
+    }
+
+    private function addDailyBoardArchive(): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.daily_board'),
+            'url' => route('localized.daily-board.index', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        $this->breadcrumbs[] = [
+            'title' => __('app.daily_board_archive'),
+            'url' => route('localized.daily-board.archive', ['locale' => app()->getLocale()]),
+            'current' => true
+        ];
+    }
+
+    private function addDailyBoardShow(array $parameters): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.daily_board'),
+            'url' => route('localized.daily-board.index', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        $this->breadcrumbs[] = [
+            'title' => __('app.daily_board_archive'),
+            'url' => route('localized.daily-board.archive', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        if (isset($parameters['date'])) {
+            $this->breadcrumbs[] = [
+                'title' => (string) $parameters['date'],
+                'url' => route('localized.daily-board.show', ['locale' => app()->getLocale(), 'date' => $parameters['date']]),
+                'current' => true
+            ];
+        }
+    }
+
+    private function addWeeklyBoardIndex(): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.weekly_board'),
+            'url' => route('localized.weekly-board.index', ['locale' => app()->getLocale()]),
+            'current' => true
+        ];
+    }
+
+    private function addWeeklyBoardArchive(): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.weekly_board'),
+            'url' => route('localized.weekly-board.index', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        $this->breadcrumbs[] = [
+            'title' => __('app.weekly_board_archive'),
+            'url' => route('localized.weekly-board.archive', ['locale' => app()->getLocale()]),
+            'current' => true
+        ];
+    }
+
+    private function addWeeklyBoardShow(array $parameters): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.weekly_board'),
+            'url' => route('localized.weekly-board.index', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        $this->breadcrumbs[] = [
+            'title' => __('app.weekly_board_archive'),
+            'url' => route('localized.weekly-board.archive', ['locale' => app()->getLocale()]),
+            'current' => false
+        ];
+        if (isset($parameters['week'])) {
+            $this->breadcrumbs[] = [
+                'title' => (string) $parameters['week'],
+                'url' => route('localized.weekly-board.show', ['locale' => app()->getLocale(), 'week' => $parameters['week']]),
+                'current' => true
+            ];
+        }
+    }
+
     private function addChallengePlay(array $parameters): void
     {
         if (isset($parameters['challenge'])) {
@@ -198,6 +297,15 @@ class BreadcrumbService
                 ];
             }
         }
+    }
+
+    private function addActivity(): void
+    {
+        $this->breadcrumbs[] = [
+            'title' => __('app.activity.title'),
+            'url' => route('localized.activity.index', ['locale' => app()->getLocale()]),
+            'current' => true
+        ];
     }
 
     private function addHelp(): void

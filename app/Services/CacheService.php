@@ -41,8 +41,15 @@ class CacheService
             return ChallengeAttempt::where('challenge_id', $challengeId)
                 ->whereNotNull('completed_at')
                 ->where('valid', true)
-                ->where('move_validation_passed', '!=', false)
-                ->where('flagged_for_review', false)
+                // Allinea i filtri a quelli della pagina leaderboard: accetta NULL come valido
+                ->where(function($q){
+                    $q->where('move_validation_passed', true)
+                      ->orWhereNull('move_validation_passed');
+                })
+                ->where(function($q){
+                    $q->where('flagged_for_review', false)
+                      ->orWhereNull('flagged_for_review');
+                })
                 ->with(['user:id,name,email'])
                 ->orderByRaw('(duration_ms + (errors_count * 3000))')
                 ->orderBy('hints_used')

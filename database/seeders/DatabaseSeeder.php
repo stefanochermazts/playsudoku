@@ -29,6 +29,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SudokuSeeder::class,
             ChallengeSeeder::class,
+            FriendshipSeeder::class,
+            BadgeSeeder::class,
+            SeasonSeeder::class,
         ]);
     }
 }

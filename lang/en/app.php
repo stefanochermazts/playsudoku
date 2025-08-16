@@ -265,7 +265,8 @@ return [
     'time_remaining' => 'Time Remaining',
     'previous_period' => 'Previous Period',
     'next_period' => 'Next Period',
-    'leaderboard' => 'Leaderboard',
+    // Use 'leaderboard_label' for simple button/label to avoid collision with the 'leaderboard' translations group below
+    'leaderboard_label' => 'Leaderboard',
     
     // Dashboard
     'dashboard' => [
@@ -340,8 +341,16 @@ return [
 
     // Additional common translations
     'export_csv' => 'Export CSV',
-    'difficulty' => 'Difficulty',
     'status' => 'Status',
+    
+    // Difficulty levels
+    'difficulty' => [
+        'easy' => 'Easy',
+        'normal' => 'Normal',
+        'hard' => 'Hard',
+        'expert' => 'Expert',
+        'crazy' => 'Crazy',
+    ],
 
     
     // Leaderboard translations
@@ -374,7 +383,7 @@ return [
         'empty_board' => '📝 Empty Board',
         'load_puzzle_difficulty' => '🎯 Load Puzzle by Difficulty',
         'difficulty_easy' => '🟢 Easy',
-        'difficulty_medium' => '🔵 Medium',
+        'difficulty_medium' => '🔵 Normal',
         'difficulty_hard' => '🟡 Hard',
         'difficulty_expert' => '🔴 Expert',
         'difficulty_crazy' => '🔴 Crazy',
@@ -1249,6 +1258,62 @@ return [
         'type_friend_added' => 'New Friendships',
         'previous_best' => 'Previous best time',
         'streak_achievement' => 'Streak milestone achieved!',
+    ],
+
+    // Badges translations
+    'badges' => [
+        'title' => 'My Badges',
+        'subtitle' => 'Collect badges by completing challenges and activities.',
+        'obtained' => 'Obtained',
+        'locked' => 'Locked',
+        
+        // Badge names and descriptions
+        'first_win' => [
+            'name' => 'First Victory',
+            'description' => 'Complete your first challenge.',
+        ],
+        'five_wins' => [
+            'name' => 'Five Victories',
+            'description' => 'Complete 5 challenges.',
+        ],
+        'speedster_60s' => [
+            'name' => 'Speedster',
+            'description' => 'Complete a challenge in less than 60 seconds.',
+        ],
+        'hard_solver' => [
+            'name' => 'Hard Solver',
+            'description' => 'Complete a Hard challenge or higher.',
+        ],
+        'no_hints' => [
+            'name' => 'No Hints',
+            'description' => 'Complete without using hints.',
+        ],
+        'perfect_run' => [
+            'name' => 'Perfect Run',
+            'description' => 'Complete without errors.',
+        ],
+        'weekly_warrior' => [
+            'name' => 'Weekly Warrior',
+            'description' => 'Complete a weekly challenge.',
+        ],
+        'social_starter' => [
+            'name' => 'Social Starter',
+            'description' => 'Add a friend.',
+        ],
+        'club_member' => [
+            'name' => 'Club Member',
+            'description' => 'Join a club.',
+        ],
+    ],
+
+    // Season translations
+    'season' => [
+        'leaderboard_title' => 'Season Leaderboard',
+        'player' => 'Player',
+        'points' => 'Points',
+        'wins' => 'Wins',
+        'participations' => 'Participations',
+        'no_active' => 'No active season.',
     ],
 ];
 

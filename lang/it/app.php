@@ -44,14 +44,10 @@ return [
         'account' => 'Account',
         'privacy' => 'Privacy',
     ],
-    'meta' => [
-        'description' => 'Sudoku online gratis con sfide quotidiane competitive. Gioco sudoku avanzato con classifiche, solver intelligente e replay. La migliore piattaforma per giocare a sudoku.',
-        'keywords' => 'sudoku, sudoku online, sudoku gratis, gioco sudoku, puzzle sudoku, sudoku competitivo, sudoku difficile, sudoku giornaliero',
-    ],
     'welcome' => [
         'documentation' => [
             'title' => 'Documentazione',
-            'body' => 'La documentazione di Laravel copre ogni aspetto del framework. Che tu sia alle prime armi o abbia esperienza, ti consigliamo di leggerla dall’inizio alla fine.',
+            'body' => 'La documentazione di Laravel copre ogni aspetto del framework. Che tu sia alle prime armi o abbia esperienza, ti consigliamo di leggerla dall\'inizio alla fine.',
         ],
         'laracasts' => [
             'title' => 'Laracasts',
@@ -265,7 +261,8 @@ return [
     'time_remaining' => 'Tempo Rimanente',
     'previous_period' => 'Periodo Precedente',
     'next_period' => 'Periodo Successivo',
-    'leaderboard' => 'Classifica',
+    // Usa 'leaderboard_label' per etichetta semplice per evitare collisione con il gruppo 'leaderboard' sottostante
+    'leaderboard_label' => 'Classifica',
     
     // Dashboard
     'dashboard' => [
@@ -340,8 +337,16 @@ return [
 
     // Traduzioni aggiuntive mancanti
     'export_csv' => 'Esporta CSV',
-    'difficulty' => 'Difficoltà',
     'status' => 'Stato',
+    
+    // Difficulty levels
+    'difficulty' => [
+        'easy' => 'Facile',
+        'normal' => 'Normale',
+        'hard' => 'Difficile',
+        'expert' => 'Esperto',
+        'crazy' => 'Folle',
+    ],
 
     
     // Leaderboard translations
@@ -373,11 +378,11 @@ return [
         'analyzer' => '🔍 Analizzatore',
         'empty_board' => '📝 Board Vuota',
         'load_puzzle_difficulty' => '🎯 Carica Puzzle per Difficoltà',
-        'difficulty_easy' => '🟢 Easy',
-        'difficulty_medium' => '🔵 Medium',
-        'difficulty_hard' => '🟡 Hard',
-        'difficulty_expert' => '🔴 Expert',
-        'difficulty_crazy' => '🔴 Crazy',
+        'difficulty_easy' => '🟢 Facile',
+        'difficulty_medium' => '🔵 Normale',
+        'difficulty_hard' => '🟡 Difficile',
+        'difficulty_expert' => '🔴 Esperto',
+        'difficulty_crazy' => '🔴 Folle',
         
         // Features section
         'features_title' => '✨ Funzionalità Implementate',
@@ -1249,6 +1254,62 @@ return [
         'type_friend_added' => 'Nuove Amicizie',
         'previous_best' => 'Precedente miglior tempo',
         'streak_achievement' => 'Traguardo streak raggiunto!',
+    ],
+
+    // Badges translations
+    'badges' => [
+        'title' => 'I miei Badge',
+        'subtitle' => 'Colleziona badge completando sfide e attività.',
+        'obtained' => 'Ottenuto',
+        'locked' => 'Bloccato',
+        
+        // Badge names and descriptions
+        'first_win' => [
+            'name' => 'Prima Vittoria',
+            'description' => 'Completa la tua prima sfida.',
+        ],
+        'five_wins' => [
+            'name' => 'Cinque Vittorie',
+            'description' => 'Completa 5 sfide.',
+        ],
+        'speedster_60s' => [
+            'name' => 'Speedster',
+            'description' => 'Completa una sfida in meno di 60 secondi.',
+        ],
+        'hard_solver' => [
+            'name' => 'Hard Solver',
+            'description' => 'Completa una sfida Hard o superiore.',
+        ],
+        'no_hints' => [
+            'name' => 'No Hints',
+            'description' => 'Completa senza usare hint.',
+        ],
+        'perfect_run' => [
+            'name' => 'Perfect Run',
+            'description' => 'Completa senza errori.',
+        ],
+        'weekly_warrior' => [
+            'name' => 'Weekly Warrior',
+            'description' => 'Completa una sfida settimanale.',
+        ],
+        'social_starter' => [
+            'name' => 'Social Starter',
+            'description' => 'Aggiungi un amico.',
+        ],
+        'club_member' => [
+            'name' => 'Club Member',
+            'description' => 'Unisciti a un club.',
+        ],
+    ],
+
+    // Season translations
+    'season' => [
+        'leaderboard_title' => 'Classifica Stagionale',
+        'player' => 'Giocatore',
+        'points' => 'Punti',
+        'wins' => 'Vittorie',
+        'participations' => 'Partecipazioni',
+        'no_active' => 'Nessuna stagione attiva.',
     ],
 ];
 
