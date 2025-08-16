@@ -2,43 +2,42 @@
     <div class="max-w-6xl mx-auto px-4 py-8">
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
-                {{ __('app.daily_board_archive') }}
+                {{ __('app.weekly_board_archive') }}
             </h1>
             <p class="text-neutral-600 dark:text-neutral-300">
-                {{ __('app.daily_board_archive_description') }}
+                {{ __('app.weekly_board_archive_description') }}
             </p>
         </div>
 
         <!-- Navigation -->
         <div class="mb-6 flex justify-between items-center">
-            <a href="{{ route('localized.daily-board.index', ['locale' => app()->getLocale()]) }}" 
+            <a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" 
                class="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
-                ← {{ __('app.back_to_today') }}
+                ← {{ __('app.back_to_this_week') }}
             </a>
             
             <div class="flex space-x-2">
-                <a href="{{ route('localized.daily-board.archive', ['locale' => app()->getLocale(), 'date' => $currentDate->copy()->subDays(30)->format('Y-m-d')]) }}" 
-                   class="px-3 py-1 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-md hover:bg-neutral-300 dark:hover:bg-neutral-600">
-                    {{ __('app.previous_month') }}
+                <a href="{{ route('localized.weekly-board.archive', ['locale' => app()->getLocale(), 'week' => $currentWeek->copy()->subWeeks(12)->format('Y-m-d')]) }}" 
+                   class="px-3 py-1 text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded hover:bg-neutral-50 dark:hover:bg-neutral-700">
+                    {{ __('app.previous_period') }}
                 </a>
-                @if($currentDate->copy()->addDays(30) <= now())
-                    <a href="{{ route('localized.daily-board.archive', ['locale' => app()->getLocale(), 'date' => $currentDate->copy()->addDays(30)->format('Y-m-d')]) }}" 
-                       class="px-3 py-1 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-md hover:bg-neutral-300 dark:hover:bg-neutral-600">
-                        {{ __('app.next_month') }}
+                @if($currentWeek->format('Y-m-d') < now()->startOfWeek()->format('Y-m-d'))
+                    <a href="{{ route('localized.weekly-board.archive', ['locale' => app()->getLocale(), 'week' => $currentWeek->copy()->addWeeks(12)->format('Y-m-d')]) }}" 
+                       class="px-3 py-1 text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded hover:bg-neutral-50 dark:hover:bg-neutral-700">
+                        {{ __('app.next_period') }}
                     </a>
                 @endif
             </div>
         </div>
 
-        <!-- Challenges List -->
         @if($challenges->count() > 0)
-            <div class="space-y-6">
+            <div class="grid gap-6">
                 @foreach($challenges as $challenge)
-                    <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between">
                             <div class="mb-4 lg:mb-0">
                                 <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                                    {{ $challenge->starts_at->format('l, F j, Y') }}
+                                    {{ __('app.week_of') }} {{ $challenge->starts_at->format('F j') }} - {{ $challenge->ends_at->format('F j, Y') }}
                                 </h3>
                                 
                                 <div class="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-300">
@@ -68,16 +67,17 @@
                             </div>
 
                             <div class="flex flex-col lg:flex-row items-start lg:items-center space-y-3 lg:space-y-0 lg:space-x-6">
-                                <!-- Top 3 players -->
+                                <!-- Top 5 players -->
                                 @if($challenge->attempts->count() > 0)
-                                    <div class="flex items-center space-x-2">
-                                        @foreach($challenge->attempts->take(3) as $index => $attempt)
-                                            <div class="flex flex-col items-center">
-                                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
+                                    <div class="flex space-x-3">
+                                        @foreach($challenge->attempts->take(5) as $index => $attempt)
+                                            <div class="text-center">
+                                                <div class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium mb-1
                                                     @if($index === 0) bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
-                                                    @elseif($index === 1) bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
-                                                    @else bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300
-                                                    @endif">
+                                                    @elseif($index === 1) bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200
+                                                    @elseif($index === 2) bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300
+                                                    @else bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 @endif
+                                                ">
                                                     {{ $index + 1 }}
                                                 </div>
                                                 <div class="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-16">
@@ -93,14 +93,14 @@
                                     </div>
                                 @endif
 
-                                <!-- Action buttons -->
+                                <!-- Actions -->
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('localized.daily-board.show', ['locale' => app()->getLocale(), 'date' => $challenge->starts_at->format('Y-m-d')]) }}" 
-                                       class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
+                                    <a href="{{ route('localized.weekly-board.show', ['locale' => app()->getLocale(), 'week' => $challenge->starts_at->format('Y-m-d')]) }}" 
+                                       class="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded transition-colors">
                                         {{ __('app.view_details') }}
                                     </a>
                                     <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
-                                       class="px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600">
+                                       class="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-600 rounded transition-colors">
                                         {{ __('app.leaderboard') }}
                                     </a>
                                 </div>
@@ -111,24 +111,23 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-8">
-                {{ $challenges->links() }}
+            <div class="mt-6">
+                {!! $challenges->links() !!}
             </div>
         @else
-            <div class="text-center py-12">
-                <div class="max-w-md mx-auto">
-                    <div class="mb-4 text-neutral-400 dark:text-neutral-500">
-                        <svg class="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-2">
-                        {{ __('app.no_archived_challenges') }}
-                    </h3>
-                    <p class="text-neutral-600 dark:text-neutral-300">
-                        {{ __('app.no_archived_challenges_description') }}
-                    </p>
+            <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">
+                <div class="text-neutral-400 dark:text-neutral-500 mb-4">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
                 </div>
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-2">
+                    {{ __('app.no_archived_challenges') }}
+                </h3>
+                <p class="text-neutral-600 dark:text-neutral-300">
+                    {{ __('app.no_archived_challenges_description') }}
+                </p>
             </div>
         @endif
     </div>

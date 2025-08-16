@@ -38,26 +38,61 @@ class DailyBoardController extends Controller
      */
     public function archive(Request $request)
     {
-        $currentDate = $request->get('date') ? Carbon::parse($request->get('date')) : now();
+        \Log::info('=== DAILY ARCHIVE DEBUG START ===');
         
-        // Ottieni sfide daily degli ultimi 30 giorni
-        $challenges = Challenge::where('type', 'daily')
-            ->whereDate('starts_at', '<=', $currentDate->toDateString())
-            ->whereDate('starts_at', '>=', $currentDate->copy()->subDays(30)->toDateString())
-            ->with(['puzzle', 'attempts' => function($query) {
-                $query->where('valid', true)
-                    ->whereNotNull('completed_at')
-                    ->orderByRaw('(duration_ms + (errors_count * 3000))')
-                    ->orderBy('hints_used')
-                    ->orderBy('completed_at')
-                    ->limit(3);
-            }])
-            ->orderByDesc('starts_at')
-            ->paginate(10);
+        try {
+            $currentDate = $request->get('date') ? Carbon::parse($request->get('date')) : now();
+            \Log::info('Current date: ' . $currentDate->toDateString());
+            
+            // Ottieni sfide daily degli ultimi 30 giorni
+            $challenges = Challenge::where('type', 'daily')
+                ->whereDate('starts_at', '<=', $currentDate->toDateString())
+                ->whereDate('starts_at', '>=', $currentDate->copy()->subDays(30)->toDateString())
+                ->with(['puzzle', 'attempts' => function($query) {
+                    $query->where('valid', true)
+                        ->whereNotNull('completed_at')
+                        ->orderByRaw('(duration_ms + (errors_count * 3000))')
+                        ->orderBy('hints_used')
+                        ->orderBy('completed_at')
+                        ->limit(3);
+                }])
+                ->orderByDesc('starts_at')
+                ->paginate(10);
 
+            \Log::info('Daily challenges found: ' . $challenges->count());
+            
+            foreach($challenges as $index => $challenge) {
+                \Log::info("Challenge {$index}: ID={$challenge->id}");
+                \Log::info("- Type: " . gettype($challenge->puzzle) . " = " . ($challenge->puzzle ? 'EXISTS' : 'NULL'));
+                if($challenge->puzzle) {
+                    \Log::info("- Difficulty: " . gettype($challenge->puzzle->difficulty) . " = " . var_export($challenge->puzzle->difficulty, true));
+                    \Log::info("- Seed: " . gettype($challenge->puzzle->seed) . " = " . var_export($challenge->puzzle->seed, true));
+                }
+                \Log::info("- Attempts loaded: " . $challenge->attempts->count());
+                
+                foreach($challenge->attempts->take(2) as $aIndex => $attempt) {
+                    \Log::info("  Attempt {$aIndex}: duration_ms=" . gettype($attempt->duration_ms) . " = " . var_export($attempt->duration_ms, true));
+                    \Log::info("  Attempt {$aIndex}: user=" . ($attempt->user ? 'EXISTS' : 'NULL'));
+                    if($attempt->user) {
+                        \Log::info("  Attempt {$aIndex}: username=" . gettype($attempt->user->username ?? 'NULL') . " = " . var_export($attempt->user->username ?? 'NULL', true));
+                    }
+                }
+            }
 
-
-        return view('daily-board.archive', compact('challenges', 'currentDate'));
+            \Log::info('=== DAILY ARCHIVE DEBUG: RENDERING VIEW ===');
+            
+            $result = view('daily-board.archive', compact('challenges', 'currentDate'));
+            
+            \Log::info('=== DAILY ARCHIVE DEBUG: VIEW CREATED ===');
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            \Log::error('DAILY ARCHIVE ERROR: ' . $e->getMessage());
+            \Log::error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     /**

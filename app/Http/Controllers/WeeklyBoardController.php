@@ -41,25 +41,56 @@ class WeeklyBoardController extends Controller
         $currentWeek = $request->get('week') 
             ? Carbon::parse($request->get('week'))->startOfWeek()
             : now()->startOfWeek();
-        
-        // Ottieni sfide weekly delle ultime 12 settimane
-        $challenges = Challenge::where('type', 'weekly')
-            ->whereDate('starts_at', '<=', $currentWeek->toDateString())
-            ->whereDate('starts_at', '>=', $currentWeek->copy()->subWeeks(12)->toDateString())
-            ->with(['puzzle', 'attempts' => function($query) {
-                $query->where('valid', true)
-                    ->whereNotNull('completed_at')
-                    ->orderByRaw('(duration_ms + (errors_count * 3000))')
-                    ->orderBy('hints_used')
-                    ->orderBy('completed_at')
-                    ->limit(5);
-            }])
-            ->orderByDesc('starts_at')
-            ->paginate(8);
+            
+            // Ottieni sfide weekly delle ultime 12 settimane
+            $challenges = Challenge::where('type', 'weekly')
+                ->whereDate('starts_at', '<=', $currentWeek->toDateString())
+                ->whereDate('starts_at', '>=', $currentWeek->copy()->subWeeks(12)->toDateString())
+                ->with(['puzzle', 'attempts' => function($query) {
+                    $query->where('valid', true)
+                        ->whereNotNull('completed_at')
+                        ->orderByRaw('(duration_ms + (errors_count * 3000))')
+                        ->orderBy('hints_used')
+                        ->orderBy('completed_at')
+                        ->limit(5);
+                }])
+                ->orderByDesc('starts_at')
+                ->paginate(8);
 
+            \Log::info('Weekly challenges found: ' . $challenges->count());
+            
+            foreach($challenges as $index => $challenge) {
+                \Log::info("Challenge {$index}: ID={$challenge->id}");
+                \Log::info("- Type: " . gettype($challenge->puzzle) . " = " . ($challenge->puzzle ? 'EXISTS' : 'NULL'));
+                if($challenge->puzzle) {
+                    \Log::info("- Difficulty: " . gettype($challenge->puzzle->difficulty) . " = " . var_export($challenge->puzzle->difficulty, true));
+                    \Log::info("- Seed: " . gettype($challenge->puzzle->seed) . " = " . var_export($challenge->puzzle->seed, true));
+                }
+                \Log::info("- Attempts loaded: " . $challenge->attempts->count());
+                
+                foreach($challenge->attempts->take(2) as $aIndex => $attempt) {
+                    \Log::info("  Attempt {$aIndex}: duration_ms=" . gettype($attempt->duration_ms) . " = " . var_export($attempt->duration_ms, true));
+                    \Log::info("  Attempt {$aIndex}: user=" . ($attempt->user ? 'EXISTS' : 'NULL'));
+                    if($attempt->user) {
+                        \Log::info("  Attempt {$aIndex}: username=" . gettype($attempt->user->username ?? 'NULL') . " = " . var_export($attempt->user->username ?? 'NULL', true));
+                    }
+                }
+            }
 
-
-        return view('weekly-board.archive', compact('challenges', 'currentWeek'));
+            \Log::info('=== WEEKLY ARCHIVE DEBUG: RENDERING VIEW ===');
+            
+            $result = view('weekly-board.archive', compact('challenges', 'currentWeek'));
+            
+            \Log::info('=== WEEKLY ARCHIVE DEBUG: VIEW CREATED ===');
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            \Log::error('WEEKLY ARCHIVE ERROR: ' . $e->getMessage());
+            \Log::error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     /**
