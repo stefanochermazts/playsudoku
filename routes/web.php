@@ -275,7 +275,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     });
 });
 
-{{-- DEBUG routes removed - archive routes now properly protected --}}
+// DEBUG routes removed - archive routes now properly protected
 
 // Stop impersonation (accessibile a qualunque utente autenticato)
 Route::post('/impersonation/stop', [App\Http\Controllers\Admin\AdminController::class, 'stopImpersonate'])
