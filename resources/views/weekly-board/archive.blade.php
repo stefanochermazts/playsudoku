@@ -58,7 +58,7 @@
                                     
                                     <span>{{ __('app.seed') }}: <code class="font-mono">{{ $challenge->puzzle->seed }}</code></span>
                                     
-                                    <span>{{ __('app.participants') }}: {{ $challenge->attempts->where('valid', true)->unique('user_id')->count() }}</span>
+                                    <span>{{ __('app.participants') }}: {{ (int) $challenge->attempts->where('valid', true)->unique('user_id')->count() }}</span>
                                 </div>
                             </div>
 

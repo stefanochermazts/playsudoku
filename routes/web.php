@@ -115,7 +115,7 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middlew
             return app(\App\Http\Controllers\LeaderboardController::class)->exportCsv(request(), $challenge);
         })->name('localized.leaderboard.export');
         
-        // Daily Board routes
+                // Daily Board routes
         Route::get('/daily-board', [\App\Http\Controllers\DailyBoardController::class, 'index'])
             ->name('localized.daily-board.index');
         Route::get('/daily-board/archive', [\App\Http\Controllers\DailyBoardController::class, 'archive'])
@@ -274,6 +274,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::get('/export/suspicious', [App\Http\Controllers\Admin\ModerationController::class, 'exportSuspiciousAttempts'])->name('export.suspicious');
     });
 });
+
+{{-- DEBUG routes removed - archive routes now properly protected --}}
 
 // Stop impersonation (accessibile a qualunque utente autenticato)
 Route::post('/impersonation/stop', [App\Http\Controllers\Admin\AdminController::class, 'stopImpersonate'])
