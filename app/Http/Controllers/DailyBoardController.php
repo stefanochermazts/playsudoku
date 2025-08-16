@@ -55,6 +55,8 @@ class DailyBoardController extends Controller
             ->orderByDesc('starts_at')
             ->paginate(10);
 
+
+
         return view('daily-board.archive', compact('challenges', 'currentDate'));
     }
 

@@ -7,6 +7,8 @@ Route::middleware('enforce-locale')->group(function () {
     // All public pages should include the locale prefix; middleware enforces it.
 });
 
+
+
 Route::get('/', function (Request $request) {
     if (app()->environment('testing')) {
         return view('welcome');
