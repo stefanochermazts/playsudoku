@@ -256,7 +256,7 @@
                 @endif
                 @if(isset($stats['featured_stats']['top_completion_time']))
                 <div>
-                    <div class="text-3xl md:text-4xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['featured_stats']['top_completion_time']['time_minutes'] }}</div>
+                    <div class="text-3xl md:text-4xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['featured_stats']['top_completion_time']['time_minutes'] ?? '0' }}</div>
                     <div class="text-gray-600 dark:text-gray-300">{{ __('app.homepage.social_proof.stat_best_time_today', ['time' => '']) }}</div>
                 </div>
                 @endif
@@ -402,7 +402,7 @@
                         @endfor
                     </div>
                     <blockquote class="text-gray-600 dark:text-gray-300 mb-4">
-                        "{{ __('app.homepage.testimonials.' . strtolower(explode(' ', $testimonial['name'])[0])) }}"
+                        "{{ __('app.homepage.testimonials.' . strtolower((explode(' ', $testimonial['name'] ?? ''))[0] ?? 'default')) }}"
                     </blockquote>
                     <cite class="font-semibold text-gray-900 dark:text-white">{{ $testimonial['name'] }}</cite>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ $testimonial['location'] }}</div>
