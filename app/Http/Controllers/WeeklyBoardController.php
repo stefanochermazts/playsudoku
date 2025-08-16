@@ -57,49 +57,7 @@ class WeeklyBoardController extends Controller
             ->orderByDesc('starts_at')
             ->paginate(8);
 
-        \Log::info('🔍 DEBUG Weekly Archive - START', ['request_params' => $request->all()]);
-        \Log::info('🔍 DEBUG Weekly Archive - Current Week', ['current_week' => $currentWeek]);
-        \Log::info('🔍 DEBUG Weekly Archive - Challenges Query Done', [
-            'challenges_count' => $challenges->count(),
-            'total_challenges' => $challenges->total()
-        ]);
 
-        // Dettagli del primo challenge per debug
-        if ($challenges->count() > 0) {
-            $firstChallenge = $challenges->first();
-            \Log::info('🔍 DEBUG Weekly Archive - First Challenge Details', [
-                'id' => $firstChallenge->id,
-                'type' => $firstChallenge->type,
-                'starts_at' => $firstChallenge->starts_at,
-                'ends_at' => $firstChallenge->ends_at,
-                'starts_at_type' => gettype($firstChallenge->starts_at),
-                'ends_at_type' => gettype($firstChallenge->ends_at),
-                'puzzle_exists' => $firstChallenge->puzzle ? 'YES' : 'NO',
-                'puzzle_data' => $firstChallenge->puzzle ? [
-                    'difficulty' => $firstChallenge->puzzle->difficulty,
-                    'seed' => $firstChallenge->puzzle->seed,
-                    'difficulty_type' => gettype($firstChallenge->puzzle->difficulty),
-                    'seed_type' => gettype($firstChallenge->puzzle->seed)
-                ] : null,
-                'attempts_count' => $firstChallenge->attempts->count()
-            ]);
-
-            if ($firstChallenge->attempts->count() > 0) {
-                $firstAttempt = $firstChallenge->attempts->first();
-                \Log::info('🔍 DEBUG Weekly Archive - First Attempt Details', [
-                    'attempt_id' => $firstAttempt->id,
-                    'user_exists' => $firstAttempt->user ? 'YES' : 'NO',
-                    'user_name' => $firstAttempt->user?->name,
-                    'user_name_type' => $firstAttempt->user ? gettype($firstAttempt->user->name) : 'NULL',
-                    'duration_ms' => $firstAttempt->duration_ms,
-                    'duration_ms_type' => gettype($firstAttempt->duration_ms),
-                    'valid' => $firstAttempt->valid,
-                    'valid_type' => gettype($firstAttempt->valid)
-                ]);
-            }
-        }
-
-        \Log::info('🔍 DEBUG Weekly Archive - About to render view');
 
         return view('weekly-board.archive', compact('challenges', 'currentWeek'));
     }
