@@ -42,6 +42,15 @@ p{color:#4b5563;line-height:1.6;margin:0 0 1rem 0}
   p{color:#d1d5db}
 }
 
+/* Dark mode via classe JavaScript */
+.dark .header{background:#111827;border-color:#374151}
+.dark .breadcrumb-container{background:#1f2937;border-color:#374151}
+.dark .logo{color:#f9fafb}
+.dark .mobile-menu-btn{color:#d1d5db}
+.dark h1{color:#f9fafb}
+.dark h2{color:#e5e7eb}
+.dark p{color:#d1d5db}
+
 /* Media queries critiche */
 @media (min-width: 768px) {
   .nav{padding:1rem 2rem}

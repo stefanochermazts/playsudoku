@@ -37,10 +37,25 @@
 /* Dark mode per game */
 @media (prefers-color-scheme: dark) {
   .sudoku-grid{border-color:#6b7280;background:#6b7280}
-  .sudoku-cell{background:#1f2937;color:#e5e7eb}
+  .sudoku-cell{background:#1f2937;color:#e5e7eb !important}
   .sudoku-cell:hover{background:#374151}
-  .sudoku-cell.selected{background:#1e40af;color:#dbeafe}
-  .sudoku-cell.given{background:#111827;color:#9ca3af}
-  .sudoku-cell.error{background:#7f1d1d;color:#f87171}
+  .sudoku-cell.selected{background:#1e40af;color:#dbeafe !important}
+  .sudoku-cell.given{background:#111827;color:#9ca3af !important}
+  .sudoku-cell.error{background:#7f1d1d;color:#f87171 !important}
+  .sudoku-cell span{color:#e5e7eb !important}
+  .sudoku-cell.given span{color:#9ca3af !important}
+  .sudoku-cell.error span{color:#f87171 !important}
   .game-timer{color:#e5e7eb}
 }
+
+/* Dark mode via classe JavaScript */
+.dark .sudoku-grid{border-color:#6b7280;background:#6b7280}
+.dark .sudoku-cell{background:#1f2937;color:#e5e7eb !important}
+.dark .sudoku-cell:hover{background:#374151}
+.dark .sudoku-cell.selected{background:#1e40af;color:#dbeafe !important}
+.dark .sudoku-cell.given{background:#111827;color:#9ca3af !important}
+.dark .sudoku-cell.error{background:#7f1d1d;color:#f87171 !important}
+.dark .sudoku-cell span{color:#e5e7eb !important}
+.dark .sudoku-cell.given span{color:#9ca3af !important}
+.dark .sudoku-cell.error span{color:#f87171 !important}
+.dark .game-timer{color:#e5e7eb}

@@ -38,7 +38,7 @@
             <span class="font-medium">{{ __('app.leaderboard.scoring_system') }}</span> {{ __('app.leaderboard.scoring_description') }}
         </div>
 
-        <div class="overflow-x-auto bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+        <div class="overflow-x-auto bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100">
             <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                 <caption class="sr-only">{{ __('app.leaderboard.table_caption') }}</caption>
                 <thead class="bg-neutral-50 dark:bg-neutral-900/50">
@@ -67,7 +67,7 @@
                                     <span aria-label="{{ __('app.leaderboard.third_place') }}" title="{{ __('app.leaderboard.third_place') }}" class="ml-2 inline-flex items-center px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">🥉</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : '' }}">{{ $attempt->user?->name ?? '—' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-900 dark:text-neutral-100' }}">{{ $attempt->user?->name ?? '—' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="font-mono font-semibold text-neutral-900 dark:text-white">
                                     {{ $attempt->getFormattedPenalizedDuration() }}
@@ -75,7 +75,7 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">{{ $attempt->errors_count }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">{{ $attempt->hints_used }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-neutral-500">{{ optional($attempt->completed_at)->format('Y-m-d H:i') }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-300">{{ optional($attempt->completed_at)->format('Y-m-d H:i') }}</td>
                         </tr>
                     @empty
                         <tr>

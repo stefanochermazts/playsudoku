@@ -200,8 +200,13 @@
                 
                     @if($value)
                         <span class="text-4xl md:text-5xl font-bold leading-none
-                                    @if($isGiven) text-gray-900 dark:text-white @else text-blue-600 dark:text-blue-400 @endif
-                                    @if($hasConflict && $highlightConflicts) text-red-600 dark:text-red-400 @endif">
+                                    @if($hasConflict && $highlightConflicts) 
+                                        text-red-600 dark:text-red-400
+                                    @elseif($isGiven) 
+                                        text-gray-900 dark:!text-gray-300 
+                                    @else 
+                                        text-blue-600 dark:!text-blue-400 
+                                    @endif">
                             {{ $value }}
                         </span>
                     @elseif(!$isGiven && $showCandidates && $candidatesAllowed)

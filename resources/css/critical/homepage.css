@@ -52,3 +52,10 @@
   .feature p{color:#d1d5db}
   .stats{background:#0f172a}
 }
+
+/* Dark mode via classe JavaScript */
+.dark .features{background:#111827}
+.dark .feature{background:#1f2937;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.dark .feature h3{color:#f9fafb}
+.dark .feature p{color:#d1d5db}
+.dark .stats{background:#0f172a}
