@@ -15,3 +15,5 @@ class SeasonLeaderboard extends Model
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
 }
 
+
+

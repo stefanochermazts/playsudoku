@@ -58,7 +58,7 @@
 				@endif
 				@if($candidatesAllowed)
 					<button wire:click="$toggle('showCandidates')" 
-					        class="px-2 py-1 rounded-md border text-xs font-medium bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					        class="px-2 py-1 rounded-md border text-xs font-medium bg-white text-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					        aria-label="{{ $showCandidates ? __('app.board.hide_candidates') : __('app.board.show_candidates') }}">
 					        {!! $showCandidates ? '👁️ ' . __('app.board.hide_candidates') : '👁️ ' . __('app.board.show_candidates') !!}
 					</button>
@@ -119,14 +119,15 @@
     </div>
 
     {{-- Griglia principale --}}
-    <div class="relative">
+    <div class="relative overflow-x-auto touch-pan-x touch-pan-y -mx-4 sm:mx-0">
         <div id="sudoku-main-grid"
-             class="sudoku-grid mx-auto rounded-lg overflow-hidden {{ $isCompetitiveMode ? 'competitive-mode' : '' }} {{ $showErrorEffect ? 'error-effect' : '' }}" 
+             class="sudoku-grid mx-auto rounded-lg overflow-visible {{ $isCompetitiveMode ? 'competitive-mode' : '' }} {{ $showErrorEffect ? 'error-effect' : '' }}"
+             style="position: relative;"
              role="grid"
              aria-label="{{ __('app.aria.sudoku_grid') }}"
              aria-rowcount="9"
              aria-colcount="9"
-             style="display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); width: 100%; max-width: 640px; aspect-ratio: 1; gap: 0; border: 4px solid #1f2937; background-color: #1f2937;"
+             style="display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); width: 100%; max-width: min(92vw, 640px); aspect-ratio: 1; gap: 0; border: 4px solid #1f2937; background-color: #1f2937; position: relative;"
              @if($isCompetitiveMode) 
                  oncontextmenu="return false;" 
                  onselectstart="return false;" 
@@ -149,8 +150,8 @@
                     // Classi base
                     $classes = ['sudoku-cell', 'flex', 'items-center', 'justify-center', 'text-center', 'cursor-pointer', 'bg-white', 'dark:bg-gray-800'];
                     
-                    // Inizializza stili bordi prima di tutto
-                    $borderStyle = "width: 100%; height: 100%; min-height: 70px; aspect-ratio: 1; position: relative; border: 1px solid #d1d5db;";
+                    // Inizializza stili bordi prima di tutto (rimosso min-height per mobile)
+                    $borderStyle = "width: 100%; height: 100%; aspect-ratio: 1; position: relative; border: 1px solid #d1d5db;";
                     
                     // Bordi spessi per separatori 3x3
                     if ($row % 3 === 0 && $row > 0) {
@@ -168,11 +169,8 @@
                         $classes[] = 'dark:bg-blue-900/25';
                     }
                     if ($isSelected) {
-                        $borderStyle .= " background-color: #dbeafe !important; box-shadow: inset 0 0 0 3px #3b82f6;";
-                        $classes[] = 'bg-blue-100';
-                        $classes[] = 'dark:bg-blue-900'; 
-                        $classes[] = 'ring-2';
-                        $classes[] = 'ring-blue-500';
+                        // Mostra solo il bordo interno: nascondi completamente il bordo esterno
+                        $borderStyle .= " border-color: transparent !important; border-left-color: transparent !important; border-top-color: transparent !important; border-right-color: transparent !important; border-bottom-color: transparent !important; box-shadow: inset 0 0 0 3px #3b82f6;";
                     }
                     if ($hasConflict && $highlightConflicts) {
                         $classes[] = 'bg-red-100';
@@ -184,9 +182,11 @@
                     }
                 @endphp
                 
-                <div wire:click="selectCell({{ $row }}, {{ $col }})"
-                     class="{{ implode(' ', $classes) }} hover:bg-gray-50 dark:hover:bg-gray-700 {{ $hasConflict ? 'conflict-indicator' : '' }} {{ $isGiven ? 'given-indicator' : '' }}"
+                <div wire:key="sudoku-cell-{{ $row }}-{{ $col }}" wire:click="selectCell({{ $row }}, {{ $col }})"
+                     class="relative focus:outline-none {{ implode(' ', $classes) }} hover:bg-gray-50 dark:hover:bg-gray-700 {{ $hasConflict ? 'conflict-indicator' : '' }} {{ $isGiven ? 'given-indicator' : '' }}"
                      style="{{ $borderStyle }}"
+                     data-row="{{ $row }}"
+                     data-col="{{ $col }}"
                      role="gridcell" 
                      aria-rowindex="{{ $row + 1 }}"
                      aria-colindex="{{ $col + 1 }}"
@@ -198,19 +198,23 @@
                      }}{{ $hasConflict ? ', ' . __('app.aria.cell_error') : '' }}"
                      tabindex="{{ $isSelected ? '0' : '-1' }}">
                 
+                    {{-- Overlay click full-cell per assicurare il click ovunque --}}
+                    <button type="button" wire:click="selectCell({{ $row }}, {{ $col }})" aria-hidden="true" tabindex="-1"
+                            class="absolute inset-0 w-full h-full focus:outline-none bg-transparent"></button>
+
                     @if($value)
-                        <span class="text-4xl md:text-5xl font-bold leading-none
+                        <span wire:click="selectCell({{ $row }}, {{ $col }})" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-none
                                     @if($hasConflict && $highlightConflicts) 
-                                        text-red-600 dark:text-red-400
+                                        text-red-700 dark:text-red-400
                                     @elseif($isGiven) 
-                                        text-gray-900 dark:!text-gray-300 
+                                        text-gray-800 {{ $isSelected ? 'dark:!text-white' : 'dark:!text-gray-200' }}
                                     @else 
-                                        text-blue-600 dark:!text-blue-400 
+                                        text-blue-700 {{ $isSelected ? 'dark:!text-white' : 'dark:!text-blue-400' }}
                                     @endif">
                             {{ $value }}
                         </span>
                     @elseif(!$isGiven && $showCandidates && $candidatesAllowed)
-                        <div class="grid grid-cols-3 gap-[2px] sm:gap-1 text-[12px] sm:text-sm text-gray-600 dark:text-gray-300 p-2 sm:p-3 w-full h-full">
+                        <div wire:click="selectCell({{ $row }}, {{ $col }})" class="grid grid-cols-3 gap-[2px] sm:gap-1 text-[12px] sm:text-sm text-gray-700 {{ $isSelected ? 'dark:!text-white' : 'dark:text-gray-300' }} p-2 sm:p-3 w-full h-full">
                             @for($i = 1; $i <= 9; $i++)
                                 @php
                                     $isHintCandidate = $this->isHintHighlighted($row, $col, $i);
@@ -947,31 +951,19 @@
 
 .sudoku-grid.error-effect::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(239, 68, 68, 0.3); /* Rosso con 30% trasparenza */
+    position: fixed; /* fissa in viewport per copertura totale su mobile */
+    inset: 0; /* top/right/bottom/left: 0 */
+    background-color: rgba(239, 68, 68, 0.35);
     pointer-events: none; /* Non blocca l'input */
-    border-radius: inherit;
-    z-index: 10;
-    animation: errorPulse 2s ease-out forwards;
+    border-radius: 0; /* copri tutto indipendentemente dal raggio della board */
+    z-index: 9999; /* sopra UI board */
+    animation: errorPulse 1.4s ease-out forwards;
 }
 
 @keyframes errorPulse {
-    0% { 
-        opacity: 1;
-        background-color: rgba(239, 68, 68, 0.4);
-    }
-    50% { 
-        opacity: 1;
-        background-color: rgba(239, 68, 68, 0.3);
-    }
-    100% { 
-        opacity: 0;
-        background-color: rgba(239, 68, 68, 0.1);
-    }
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
 }
 </style>
 @endpush
@@ -980,7 +972,28 @@
 <script>
 document.addEventListener('livewire:init', () => {
     Livewire.on('error-effect-triggered', () => {
-        // Rimuovi l'effetto dopo 2 secondi
+        // Overlay calcolato sulle dimensioni reali della board
+        const grid = document.getElementById('sudoku-main-grid');
+        if (grid) {
+            const rect = grid.getBoundingClientRect();
+            const ov = document.createElement('div');
+            ov.setAttribute('aria-hidden', 'true');
+            ov.style.position = 'fixed';
+            ov.style.left = `${rect.left}px`;
+            ov.style.top = `${rect.top}px`;
+            ov.style.width = `${rect.width}px`;
+            ov.style.height = `${rect.height}px`;
+            ov.style.pointerEvents = 'none';
+            ov.style.borderRadius = getComputedStyle(grid).borderRadius;
+            ov.style.backgroundColor = 'rgba(239, 68, 68, 0.35)';
+            ov.style.zIndex = '9999';
+            ov.style.animation = 'errorPulse 1.4s ease-out forwards';
+            ov.className = 'sudoku-error-overlay';
+            document.body.appendChild(ov);
+            setTimeout(() => ov.remove(), 1500);
+        }
+
+        // Rimuovi il flag lato Livewire dopo 2s
         setTimeout(() => {
             @this.showErrorEffect = false;
         }, 2000);

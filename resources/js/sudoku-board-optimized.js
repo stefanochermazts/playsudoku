@@ -17,12 +17,26 @@ class SudokuBoardOptimizer {
 
     init() {
         this.setupKeyboardOptimization();
-        this.setupMouseOptimization();
-        this.setupTouchOptimization();
+        // Disabilitato il delegation dei click/touch: lasciamo gestire a Livewire
+        // per evitare doppi handler e condizioni di race.
+        // this.setupMouseOptimization();
+        // this.setupTouchOptimization();
         this.setupRenderOptimization();
         this.setupMemoryManagement();
         
         console.log('🚀 SudokuBoard optimization loaded');
+    }
+
+    /**
+     * Trova l'istanza Livewire del componente board più vicino alla griglia
+     */
+    getLivewireBoardComponent(contextEl = null) {
+        if (!window.Livewire) return null;
+        let base = contextEl || document.getElementById('sudoku-main-grid') || document.querySelector('.sudoku-grid');
+        if (!base) return null;
+        const root = base.closest('[wire\\:id]');
+        if (!root) return null;
+        return window.Livewire.find(root.getAttribute('wire:id'));
     }
 
     /**
@@ -129,7 +143,9 @@ class SudokuBoardOptimizer {
             
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
-            
+
+            if (isNaN(row) || isNaN(col)) return;
+
             this.scheduleUpdate(() => {
                 this.processCellClick(row, col, event);
             });
@@ -248,7 +264,7 @@ class SudokuBoardOptimizer {
     processKeyInput(key, keyBuffer) {
         // Delega a Livewire ma con batching
         if (window.Livewire) {
-            const component = window.Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'));
+            const component = this.getLivewireBoardComponent();
             if (component) {
                 // Batch multiple key inputs
                 if (!this.keyBatch) {
@@ -286,7 +302,7 @@ class SudokuBoardOptimizer {
         
         // Delega a Livewire
         if (window.Livewire) {
-            const component = window.Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'));
+            const component = this.getLivewireBoardComponent();
             if (component) {
                 component.call('selectCell', row, col);
             }
@@ -304,7 +320,7 @@ class SudokuBoardOptimizer {
         
         // Carica candidati solo quando visibili
         if (window.Livewire) {
-            const component = window.Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'));
+            const component = this.getLivewireBoardComponent(cellElement);
             if (component) {
                 component.call('loadCandidatesForCell', row, col);
             }

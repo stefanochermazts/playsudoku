@@ -131,7 +131,7 @@
                 </p>
             </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {{-- Training Feature --}}
                 <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
                     <div class="text-4xl mb-4">🎯</div>
@@ -315,6 +315,28 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ __('app.homepage.benefits.stress.title') }}</h3>
                     <p class="text-gray-600 dark:text-gray-300">{{ __('app.homepage.benefits.stress.description') }}</p>
+                </div>
+
+                {{-- Badges Feature --}}
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l2.39 4.84 5.34.78-3.86 3.76.91 5.32L12 14.77l-4.78 2.51.91-5.32L4.27 7.62l5.34-.78L12 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Badges</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Sblocca badge per traguardi: serie quotidiane, livelli di difficoltà completati, tempi record e obiettivi stagionali. Mostra i progressi nel profilo e confrontati con gli amici.</p>
+                </div>
+
+                {{-- Privacy Feature --}}
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11zm0 0c-4.418 0-8 2.239-8 5v2a2 2 0 002 2h12a2 2 0 002-2v-2c0-2.761-3.582-5-8-5z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Privacy</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Controllo totale sui tuoi dati: consenso esplicito, analytics anonimizzati, possibilità di revoca in qualsiasi momento. Conforme GDPR per un’esperienza sicura.</p>
                 </div>
             </div>
         </div>

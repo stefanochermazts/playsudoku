@@ -175,8 +175,6 @@
                 <!-- Desktop Navigation - Solo per guest -->
                 @guest
                 <nav class="hidden md:flex items-center space-x-4">
-                    <a href="{{ url('/' . app()->getLocale()) }}#features" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.features') }}</a>
-                    <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.how_it_works') }}</a>
                     <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.training') }}</a>
                     <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.analyzer') }}</a>
                 </nav>
@@ -255,12 +253,6 @@
              @click.away="mobileMenuOpen = false">
             <div class="px-4 pt-2 pb-3 space-y-1">
                 @guest
-                    <a href="{{ url('/' . app()->getLocale()) }}#features" 
-                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                       @click="mobileMenuOpen = false">{{ __('app.nav.features') }}</a>
-                    <a href="{{ url('/' . app()->getLocale()) }}#how-it-works" 
-                       class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                       @click="mobileMenuOpen = false">{{ __('app.nav.how_it_works') }}</a>
                 @endguest
                 @auth
                     <a href="{{ route('localized.dashboard', ['locale' => app()->getLocale()]) }}" 

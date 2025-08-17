@@ -245,7 +245,21 @@ class SudokuBoard extends Component
         if ($value !== null) {
             /** @var \App\Domain\Sudoku\Contracts\ValidatorInterface $validator */
             $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
-            $domainGrid = \App\Domain\Sudoku\Grid::fromArray($this->grid);
+
+            // Costruisci una griglia di dominio corretta:
+            // - i valori di initialGrid sono "given"
+            // - i valori inseriti dall'utente NON sono given
+            $domainGrid = \App\Domain\Sudoku\Grid::fromArray($this->initialGrid);
+            for ($r = 0; $r < 9; $r++) {
+                for ($c = 0; $c < 9; $c++) {
+                    $current = $this->grid[$r][$c] ?? null;
+                    $isGiven = $this->initialGrid[$r][$c] !== null;
+                    if ($current !== null && !$isGiven) {
+                        $domainGrid = $domainGrid->setCell($r, $c, (int) $current);
+                    }
+                }
+            }
+
             if (!$validator->canPlaceValue($domainGrid, $row, $col, (int) $value)) {
                 $this->errorsCount++;
                 $this->isValid = false;
@@ -326,6 +340,25 @@ class SudokuBoard extends Component
             'r','R' => $this->redo(),
             default => null
         };
+    }
+
+    /**
+     * Gestisce un batch di input da tastiera (invocato dalla tastiera on‑screen)
+     *
+     * @param array<int, string> $keys
+     */
+    public function handleKeyInputBatch(array $keys = []): void
+    {
+        if (empty($keys)) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            if (!is_string($key)) {
+                continue;
+            }
+            $this->handleKeyInput($key);
+        }
     }
 
     /**

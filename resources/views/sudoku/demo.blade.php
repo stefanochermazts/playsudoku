@@ -133,41 +133,7 @@
             </div>
         </div>
 
-        {{-- Informazioni tecniche --}}
-        <div class="mt-8 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {{ __('app.training.tech_title') }}
-            </h3>
-            <div class="grid md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <div>
-                    <strong class="text-gray-900 dark:text-white">{{ __('app.training.tech_frontend') }}</strong>
-                    <ul class="mt-2 space-y-1">
-                        <li>• Livewire 3 (componente reattivo)</li>
-                        <li>• Alpine.js (interazioni)</li>
-                        <li>• Tailwind CSS (styling)</li>
-                        <li>• CSS Grid (layout griglia)</li>
-                    </ul>
-                </div>
-                <div>
-                    <strong class="text-gray-900 dark:text-white">{{ __('app.training.tech_backend') }}</strong>
-                    <ul class="mt-2 space-y-1">
-                        <li>• PHP 8.2+ (strict types)</li>
-                        <li>• Domain objects (Grid, Move, MoveLog)</li>
-                        <li>• Generator/Validator integrati</li>
-                        <li>• PSR-12 code style</li>
-                    </ul>
-                </div>
-                <div>
-                    <strong class="text-gray-900 dark:text-white">{{ __('app.training.tech_accessibility') }}</strong>
-                    <ul class="mt-2 space-y-1">
-                        <li>• ARIA labels e roles</li>
-                        <li>• Navigazione da tastiera</li>
-                        <li>• Screen reader support</li>
-                        <li>• Annunci live</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </div>
 

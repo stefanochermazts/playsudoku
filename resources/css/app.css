@@ -1,6 +1,5 @@
 /* Import critical CSS files */
 @import './critical/default.css';
-@import './critical/game.css';
 @import './critical/homepage.css';
 
 @tailwind base;
