@@ -198,10 +198,6 @@
                      }}{{ $hasConflict ? ', ' . __('app.aria.cell_error') : '' }}"
                      tabindex="{{ $isSelected ? '0' : '-1' }}">
                 
-                    {{-- Overlay click full-cell per assicurare il click ovunque --}}
-                    <button type="button" wire:click="selectCell({{ $row }}, {{ $col }})" aria-hidden="true" tabindex="-1"
-                            class="absolute inset-0 w-full h-full focus:outline-none bg-transparent"></button>
-
                     @if($value)
                         <span wire:click="selectCell({{ $row }}, {{ $col }})" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-none
                                     @if($hasConflict && $highlightConflicts) 
@@ -214,7 +210,7 @@
                             {{ $value }}
                         </span>
                     @elseif(!$isGiven && $showCandidates && $candidatesAllowed)
-                        <div wire:click="selectCell({{ $row }}, {{ $col }})" class="grid grid-cols-3 gap-[2px] sm:gap-1 text-[12px] sm:text-sm text-gray-700 {{ $isSelected ? 'dark:!text-white' : 'dark:text-gray-300' }} p-2 sm:p-3 w-full h-full">
+                        <div wire:click="selectCell({{ $row }}, {{ $col }})" class="relative z-10 grid grid-cols-3 gap-[2px] sm:gap-1 text-[12px] sm:text-sm text-gray-700 {{ $isSelected ? 'dark:!text-white' : 'dark:text-gray-300' }} p-2 sm:p-3 w-full h-full">
                             @for($i = 1; $i <= 9; $i++)
                                 @php
                                     $isHintCandidate = $this->isHintHighlighted($row, $col, $i);
