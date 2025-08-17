@@ -65,33 +65,35 @@ class FriendsRankingController extends Controller
      */
     private function getFriendsRankings(array $friendIds, string $type, string $difficulty): array
     {
-        $query = ChallengeAttempt::select('user_id')
+        $query = ChallengeAttempt::select('challenge_attempts.user_id')
             ->selectRaw('COUNT(*) as total_challenges')
-            ->selectRaw('SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) as completed_challenges')
-            ->selectRaw('AVG(CASE WHEN completed_at IS NOT NULL THEN duration_ms END) as avg_time')
-            ->selectRaw('MIN(CASE WHEN completed_at IS NOT NULL THEN duration_ms END) as best_time')
-            ->selectRaw('AVG(errors_count) as avg_errors')
-            ->selectRaw('SUM(hints_used) as total_hints')
-            ->whereIn('user_id', $friendIds)
-            ->where('valid', true)
+            ->selectRaw('SUM(CASE WHEN challenge_attempts.completed_at IS NOT NULL THEN 1 ELSE 0 END) as completed_challenges')
+            ->selectRaw('AVG(CASE WHEN challenge_attempts.completed_at IS NOT NULL THEN challenge_attempts.duration_ms END) as avg_time')
+            ->selectRaw('MIN(CASE WHEN challenge_attempts.completed_at IS NOT NULL THEN challenge_attempts.duration_ms END) as best_time')
+            ->selectRaw('AVG(challenge_attempts.errors_count) as avg_errors')
+            ->selectRaw('SUM(challenge_attempts.hints_used) as total_hints')
+            ->join('challenges', 'challenge_attempts.challenge_id', '=', 'challenges.id')
+            ->join('puzzles', 'challenges.puzzle_id', '=', 'puzzles.id')
+            ->whereIn('challenge_attempts.user_id', $friendIds)
+            ->where('challenge_attempts.valid', true)
             ->with('user');
 
         // Filtro per tipo di periodo
         switch ($type) {
             case 'monthly':
-                $query->where('created_at', '>=', now()->startOfMonth());
+                $query->where('challenge_attempts.created_at', '>=', now()->startOfMonth());
                 break;
             case 'weekly':
-                $query->where('created_at', '>=', now()->startOfWeek());
+                $query->where('challenge_attempts.created_at', '>=', now()->startOfWeek());
                 break;
         }
 
         // Filtro per difficoltà
         if ($difficulty !== 'all') {
-            $query->where('difficulty', $difficulty);
+            $query->where('puzzles.difficulty', $difficulty);
         }
 
-        $results = $query->groupBy('user_id')
+        $results = $query->groupBy('challenge_attempts.user_id')
             ->orderByDesc('completed_challenges')
             ->orderBy('avg_time')
             ->get();
@@ -210,16 +212,19 @@ class FriendsRankingController extends Controller
      */
     private function getUserStatsByDifficulty(User $user, string $difficulty): array
     {
-        $attempts = ChallengeAttempt::where('user_id', $user->id)
-            ->where('difficulty', $difficulty)
-            ->where('valid', true);
+        $attempts = ChallengeAttempt::where('challenge_attempts.user_id', $user->id)
+            ->join('challenges', 'challenge_attempts.challenge_id', '=', 'challenges.id')
+            ->join('puzzles', 'challenges.puzzle_id', '=', 'puzzles.id')
+            ->where('puzzles.difficulty', $difficulty)
+            ->where('challenge_attempts.valid', true);
 
-        $completed = $attempts->whereNotNull('completed_at');
+        $completed = clone $attempts;
+        $completed = $completed->whereNotNull('challenge_attempts.completed_at');
 
         return [
             'completed' => $completed->count(),
-            'best_time' => $completed->min('duration_ms'),
-            'avg_time' => $completed->avg('duration_ms'),
+            'best_time' => $completed->min('challenge_attempts.duration_ms'),
+            'avg_time' => $completed->avg('challenge_attempts.duration_ms'),
         ];
     }
 
