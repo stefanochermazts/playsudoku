@@ -30,7 +30,10 @@ class AdminController extends Controller
             'total_puzzles' => Puzzle::count(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
+        // Privacy statistics
+        $privacyStats = app(\App\Services\ConsentService::class)->getConsentStatistics();
+        
+        return view('admin.dashboard', compact('stats', 'privacyStats'));
     }
 
     /**

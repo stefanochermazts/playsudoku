@@ -78,6 +78,17 @@ class ContactForm extends Component
                 Mail::to($adminEmail)->send(new ContactMessage($contactData));
             }
 
+            // Record consent for contact form processing
+            $consentService = app(\App\Services\ConsentService::class);
+            $consentService->recordConsent(
+                consents: [
+                    'contact_form' => true
+                ],
+                user: auth()->user(),
+                sessionId: session()->getId(),
+                request: request()
+            );
+
             // Invia email di conferma all'utente
             Mail::to($this->email)->send(new ContactConfirmation($contactData));
 

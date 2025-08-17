@@ -38,6 +38,17 @@ new #[Layout('layouts.site')] class extends Component
         
         event(new Registered($user = User::create($userData)));
 
+        // Record consent for account registration
+        $consentService = app(\App\Services\ConsentService::class);
+        $consentService->recordConsent(
+            consents: [
+                'registration' => true
+            ],
+            user: $user,
+            sessionId: session()->getId(),
+            request: request()
+        );
+
         Auth::login($user);
 
         // Redirect to localized dashboard if we're in a localized route

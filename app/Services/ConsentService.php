@@ -257,20 +257,25 @@ class ConsentService
             return;
         }
 
-        AuditLog::create([
-            'user_id' => $consent->user_id,
-            'action' => "consent_{$action}",
-            'model_type' => UserConsent::class,
-            'model_id' => $consent->id,
-            'old_values' => null,
-            'new_values' => $consent->toArray(),
-            'ip_address' => $request?->ip() ?? '127.0.0.1',
-            'user_agent' => $request?->userAgent(),
-            'metadata' => [
+        $description = match($action) {
+            'granted' => "Consenso {$consent->consent_type} concesso",
+            'withdrawn' => "Consenso {$consent->consent_type} ritirato",
+            'expired' => "Consenso {$consent->consent_type} scaduto",
+            default => "Azione consenso: {$action}",
+        };
+
+        AuditLog::logConsentAction(
+            action: "consent_{$action}",
+            description: $description,
+            target: $consent,
+            user: $consent->user,
+            metadata: [
                 'consent_type' => $consent->consent_type,
                 'consent_value' => $consent->consent_value,
                 'action' => $action,
-            ],
-        ]);
+                'ip_address' => $request?->ip() ?? '127.0.0.1',
+                'user_agent' => $request?->userAgent(),
+            ]
+        );
     }
 }

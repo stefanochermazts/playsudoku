@@ -152,6 +152,114 @@
                 </div>
             </div>
 
+            <!-- Privacy Statistics -->
+            <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-8 border border-neutral-200/50 dark:border-neutral-700/50 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">🍪 Gestione Privacy & GDPR</h2>
+                    <a href="{{ route('admin.consents.index') }}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium">
+                        Visualizza Dettagli
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- Total Consents -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-xl border border-blue-200 dark:border-blue-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-blue-700 dark:text-blue-300">Totale Consensi</p>
+                                <p class="text-xl font-bold text-blue-900 dark:text-blue-100">{{ $privacyStats['total'] ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Consents -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl border border-green-200 dark:border-green-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-green-700 dark:text-green-300">Attivi</p>
+                                <p class="text-xl font-bold text-green-900 dark:text-green-100">{{ $privacyStats['active'] ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Withdrawn Consents -->
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-xl border border-red-200 dark:border-red-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-red-700 dark:text-red-300">Ritirati</p>
+                                <p class="text-xl font-bold text-red-900 dark:text-red-100">{{ $privacyStats['withdrawn'] ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expired Consents -->
+                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 p-4 rounded-xl border border-yellow-200 dark:border-yellow-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">Scaduti</p>
+                                <p class="text-xl font-bold text-yellow-900 dark:text-yellow-100">{{ $privacyStats['expired'] ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Consents -->
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-xl border border-purple-200 dark:border-purple-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Analytics</p>
+                                <p class="text-xl font-bold text-purple-900 dark:text-purple-100">
+                                    @if(isset($privacyStats['by_type']['analytics'][1]))
+                                        {{ $privacyStats['by_type']['analytics'][1] }}
+                                    @else
+                                        0
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Rate -->
+                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 p-4 rounded-xl border border-indigo-200 dark:border-indigo-700">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300">Conformità</p>
+                                <p class="text-xl font-bold text-indigo-900 dark:text-indigo-100">{{ $privacyStats['compliance_rate'] ?? 0 }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div class="grid lg:grid-cols-2 gap-8">
                 
@@ -192,6 +300,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                 </svg>
                                 🛡️ Moderazione Anti-Cheat
+                            </div>
+                        </a>
+
+                        <a href="{{ route('admin.consents.index') }}" class="block w-full p-4 bg-white/10 dark:bg-neutral-800/50 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 font-semibold rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-all backdrop-blur-sm text-center">
+                            <div class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                🍪 Gestione Privacy
                             </div>
                         </a>
                     </div>

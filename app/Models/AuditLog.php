@@ -74,6 +74,7 @@ class AuditLog extends Model
     public const EVENT_AUTH = 'auth_event';
     public const EVENT_MODERATION = 'moderation';
     public const EVENT_SYSTEM = 'system_event';
+    public const EVENT_CONSENT = 'consent_event';
 
     /**
      * Severity levels constants
@@ -192,6 +193,28 @@ class AuditLog extends Model
             $changes,
             [],
             self::SEVERITY_WARNING
+        );
+    }
+
+    /**
+     * Log evento di consenso
+     */
+    public static function logConsentAction(
+        string $action,
+        string $description,
+        ?Model $target = null,
+        ?User $user = null,
+        array $metadata = []
+    ): self {
+        return self::createLog(
+            self::EVENT_CONSENT,
+            $action,
+            $description,
+            $user,
+            $target,
+            [],
+            $metadata,
+            self::SEVERITY_INFO
         );
     }
 

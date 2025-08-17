@@ -1,0 +1,5 @@
+[33m8641b1f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mv1-continued[m[33m)[m Friends, clubs e badge
+[33mdf8bc96[m � RISOLTO COMPLETAMENTE: Errore htmlspecialchars() array nei template archive
+[33m7a32c3b[m � CLEANUP FINALE: Rimossi log debug da WeeklyBoardController
+[33m7dce450[m � CLEANUP: Rimossi tutti gli elementi debug
+[33m294e1e4[m � FIX CRITICO: Ripristinati controlli sicurezza per htmlspecialchars()

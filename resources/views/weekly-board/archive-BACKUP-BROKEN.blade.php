@@ -43,7 +43,7 @@
                                 <div class="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-300">
                                     @if($challenge->puzzle)
                                         <span class="flex items-center">
-                                            <span class="mr-2">{{ __('app.difficulty') }}:</span>
+                                            <span class="mr-2">{{ __('app.board.difficulty') }}:</span>
                                             <span class="px-2 py-1 rounded text-xs font-medium
                                                 @switch($challenge->puzzle->difficulty ?? 'normal')
                                                     @case('easy') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 @break
@@ -59,7 +59,7 @@
                                         
                                         <span>{{ __('app.seed') }}: <code class="font-mono">{{ $challenge->puzzle->seed ?? 'N/A' }}</code></span>
                                     @else
-                                        <span>{{ __('app.difficulty') }}: N/A</span>
+                                        <span>{{ __('app.board.difficulty') }}: N/A</span>
                                     @endif
                                     
                                     <span>{{ __('app.participants') }}: {{ (int) $challenge->attempts->where('valid', true)->unique('user_id')->count() }}</span>

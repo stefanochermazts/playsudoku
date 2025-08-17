@@ -37,11 +37,19 @@ class UserConsent extends Model
     public const TYPE_ESSENTIAL = 'essential';
     public const TYPE_ANALYTICS = 'analytics';
     public const TYPE_MARKETING = 'marketing';
+    public const TYPE_CONTACT_FORM = 'contact_form';
+    public const TYPE_REGISTRATION = 'registration';
+    public const TYPE_PRIVACY_SETTINGS = 'privacy_settings';
+    public const TYPE_NEWSLETTER = 'newsletter';
 
     public const TYPES = [
         self::TYPE_ESSENTIAL,
         self::TYPE_ANALYTICS,
         self::TYPE_MARKETING,
+        self::TYPE_CONTACT_FORM,
+        self::TYPE_REGISTRATION,
+        self::TYPE_PRIVACY_SETTINGS,
+        self::TYPE_NEWSLETTER,
     ];
 
     /**
@@ -147,7 +155,11 @@ class UserConsent extends Model
             self::TYPE_ESSENTIAL => 'Cookie Essenziali',
             self::TYPE_ANALYTICS => 'Cookie Analytics',
             self::TYPE_MARKETING => 'Cookie Marketing',
-            default => ucfirst($this->consent_type),
+            self::TYPE_CONTACT_FORM => 'Form di Contatto',
+            self::TYPE_REGISTRATION => 'Registrazione Account',
+            self::TYPE_PRIVACY_SETTINGS => 'Impostazioni Privacy',
+            self::TYPE_NEWSLETTER => 'Newsletter',
+            default => ucfirst(str_replace('_', ' ', $this->consent_type)),
         };
     }
 

@@ -100,14 +100,14 @@ class FriendsRankingController extends Controller
             return [
                 'position' => $index + 1,
                 'user' => User::find($item->user_id),
-                'total_challenges' => $item->total_challenges,
-                'completed_challenges' => $item->completed_challenges,
+                'total_challenges' => (int) $item->total_challenges,
+                'completed_challenges' => (int) $item->completed_challenges,
                 'completion_rate' => $item->total_challenges > 0 ? 
-                    round(($item->completed_challenges / $item->total_challenges) * 100, 1) : 0,
-                'avg_time' => $item->avg_time,
-                'best_time' => $item->best_time,
-                'avg_errors' => round($item->avg_errors, 1),
-                'total_hints' => $item->total_hints,
+                    round(((int) $item->completed_challenges / (int) $item->total_challenges) * 100, 1) : 0,
+                'avg_time' => $item->avg_time ? (float) $item->avg_time : null,
+                'best_time' => $item->best_time ? (int) $item->best_time : null,
+                'avg_errors' => $item->avg_errors ? round((float) $item->avg_errors, 1) : 0,
+                'total_hints' => (int) $item->total_hints,
             ];
         })->toArray();
     }
@@ -149,7 +149,7 @@ class FriendsRankingController extends Controller
             'total_friends' => $totalFriends,
             'active_friends' => $activeFriends - 1, // Escludi l'utente corrente se attivo
             'total_challenges' => $totalChallenges,
-            'avg_completion_rate' => round($avgCompletionRate ?? 0, 1),
+            'avg_completion_rate' => round((float) ($avgCompletionRate ?? 0), 1),
         ];
     }
 
@@ -198,10 +198,10 @@ class FriendsRankingController extends Controller
             'completed' => $completed->count(),
             'completion_rate' => $attempts->count() > 0 ? 
                 round(($completed->count() / $attempts->count()) * 100, 1) : 0,
-            'best_time' => $completed->min('duration_ms'),
-            'avg_time' => $completed->avg('duration_ms'),
-            'total_errors' => $attempts->sum('errors_count'),
-            'total_hints' => $attempts->sum('hints_used'),
+            'best_time' => $completed->min('duration_ms') ? (int) $completed->min('duration_ms') : null,
+            'avg_time' => $completed->avg('duration_ms') ? (float) $completed->avg('duration_ms') : null,
+            'total_errors' => $attempts->sum('errors_count') ? (int) $attempts->sum('errors_count') : 0,
+            'total_hints' => $attempts->sum('hints_used') ? (int) $attempts->sum('hints_used') : 0,
         ];
     }
 

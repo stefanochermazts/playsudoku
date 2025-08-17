@@ -73,7 +73,9 @@
 
             {{-- Actions Bar --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6 p-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    
+                    {{-- Primary Actions --}}
                     <div class="flex flex-col sm:flex-row gap-4">
                         <form method="POST" action="{{ route('admin.consents.cleanup') }}" class="inline">
                             @csrf
@@ -89,6 +91,115 @@
                             📊 Statistiche API
                         </a>
                     </div>
+
+                    {{-- Export Actions --}}
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="relative" x-data="{ showExport: false }">
+                            <button @click="showExport = !showExport" 
+                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium">
+                                📥 Export Dati
+                            </button>
+                            
+                            <div x-show="showExport" 
+                                 @click.away="showExport = false"
+                                 x-transition
+                                 class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-4 z-10">
+                                
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Export Consensi</h4>
+                                
+                                <form method="POST" action="{{ route('admin.consents.export') }}" class="space-y-3">
+                                    @csrf
+                                    
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Formato</label>
+                                            <select name="format" class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                                <option value="csv">CSV</option>
+                                                <option value="json">JSON</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
+                                            <select name="type" class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                                <option value="">Tutti</option>
+                                                <option value="essential">Cookie Essenziali</option>
+                                                <option value="analytics">Cookie Analytics</option>
+                                                <option value="marketing">Cookie Marketing</option>
+                                                <option value="contact_form">Form di Contatto</option>
+                                                <option value="registration">Registrazione</option>
+                                                <option value="privacy_settings">Impostazioni Privacy</option>
+                                                <option value="newsletter">Newsletter</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Da</label>
+                                            <input type="date" name="date_from" 
+                                                   class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">A</label>
+                                            <input type="date" name="date_to" 
+                                                   class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" 
+                                            class="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-xs font-medium">
+                                        📥 Esporta
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {{-- GDPR User Export --}}
+                        <div class="relative" x-data="{ showUserExport: false }">
+                            <button @click="showUserExport = !showUserExport" 
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium">
+                                👤 Export GDPR Utente
+                            </button>
+                            
+                            <div x-show="showUserExport" 
+                                 @click.away="showUserExport = false"
+                                 x-transition
+                                 class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-4 z-10">
+                                
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Export Dati Utente GDPR</h4>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Esporta tutti i dati di un utente per richieste GDPR</p>
+                                
+                                <form method="POST" action="{{ route('admin.consents.export-user') }}" class="space-y-3">
+                                    @csrf
+                                    
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Utente</label>
+                                        <select name="user_id" required class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                            <option value="">Seleziona utente...</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Formato</label>
+                                        <select name="format" class="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                            <option value="json">JSON</option>
+                                            <option value="csv">CSV</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" 
+                                            class="w-full px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs font-medium">
+                                        👤 Esporta Dati Utente
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -101,9 +212,13 @@
                         <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo Consenso</label>
                         <select name="type" id="type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                             <option value="">Tutti i tipi</option>
-                            <option value="essential" {{ request('type') === 'essential' ? 'selected' : '' }}>Essenziali</option>
-                            <option value="analytics" {{ request('type') === 'analytics' ? 'selected' : '' }}>Analytics</option>
-                            <option value="marketing" {{ request('type') === 'marketing' ? 'selected' : '' }}>Marketing</option>
+                            <option value="essential" {{ request('type') === 'essential' ? 'selected' : '' }}>Cookie Essenziali</option>
+                            <option value="analytics" {{ request('type') === 'analytics' ? 'selected' : '' }}>Cookie Analytics</option>
+                            <option value="marketing" {{ request('type') === 'marketing' ? 'selected' : '' }}>Cookie Marketing</option>
+                            <option value="contact_form" {{ request('type') === 'contact_form' ? 'selected' : '' }}>Form di Contatto</option>
+                            <option value="registration" {{ request('type') === 'registration' ? 'selected' : '' }}>Registrazione</option>
+                            <option value="privacy_settings" {{ request('type') === 'privacy_settings' ? 'selected' : '' }}>Impostazioni Privacy</option>
+                            <option value="newsletter" {{ request('type') === 'newsletter' ? 'selected' : '' }}>Newsletter</option>
                         </select>
                     </div>
 
@@ -185,7 +300,11 @@
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                             {{ $consent->consent_type === 'essential' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '' }}
                                             {{ $consent->consent_type === 'analytics' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                            {{ $consent->consent_type === 'marketing' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : '' }}">
+                                            {{ $consent->consent_type === 'marketing' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : '' }}
+                                            {{ $consent->consent_type === 'contact_form' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : '' }}
+                                            {{ $consent->consent_type === 'registration' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' : '' }}
+                                            {{ $consent->consent_type === 'privacy_settings' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' : '' }}
+                                            {{ $consent->consent_type === 'newsletter' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}">
                                             {{ $consent->display_name }}
                                         </span>
                                     </td>

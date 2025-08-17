@@ -27,7 +27,7 @@
                 
                 <div class="space-y-3">
                     <div class="flex justify-between">
-                        <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.difficulty') }}:</span>
+                        <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.board.difficulty') }}:</span>
                         <span class="px-2 py-1 rounded text-sm font-medium
                             @switch($challenge->puzzle->difficulty)
                                 @case('easy') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 @break

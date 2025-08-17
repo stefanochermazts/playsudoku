@@ -49,6 +49,17 @@ class PrivacyController extends Controller
 
         $user->update($validated);
 
+        // Record consent for privacy settings update
+        $consentService = app(\App\Services\ConsentService::class);
+        $consentService->recordConsent(
+            consents: [
+                'privacy_settings' => true
+            ],
+            user: $user,
+            sessionId: session()->getId(),
+            request: $request
+        );
+
         return redirect()->route('localized.privacy.index', ['locale' => app()->getLocale()])
                         ->with('success', __('app.privacy.settings_updated'));
     }

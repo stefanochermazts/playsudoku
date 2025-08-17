@@ -24,7 +24,7 @@
                             <span class="text-neutral-900 dark:text-white font-medium">#{{ $weeklyChallenge->id }} — {{ $weeklyChallenge->title ?? 'Weekly' }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.difficulty') }}:</span>
+                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.board.difficulty') }}:</span>
                             <span class="px-3 py-1 rounded-full text-sm font-medium
                                 @switch($weeklyChallenge->puzzle->difficulty)
                                     @case('easy') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 @break
@@ -88,7 +88,7 @@
                     @if($leaderboard && $leaderboard->count() > 0)
                         <div class="space-y-3">
                             @foreach($leaderboard->take(10) as $index => $attempt)
-                                @php($isCurrentUser = auth()->check() && (is_array($attempt) ? ((int)($attempt['user_id'] ?? 0) === auth()->id()) : ($attempt->user_id === auth()->id())))
+                                @php($isCurrentUser = auth()->check() && ((int)($attempt['user_id'] ?? 0) === auth()->id()))
                                 <div class="flex items-center justify-between {{ $isCurrentUser ? 'bg-primary-50 dark:bg-primary-900/20 rounded-md px-2 py-1' : '' }}">
                                     <div class="flex items-center space-x-3">
                                         <span class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium
@@ -99,15 +99,15 @@
                                         ">
                                             {{ $index + 1 }}
                                         </span>
-                                        <span class="text-neutral-900 dark:text-white font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : '' }}">{{ is_array($attempt) ? ($attempt['user_name'] ?? '—') : ($attempt->user?->name ?? '—') }}</span>
+                                        <span class="text-neutral-900 dark:text-white font-medium {{ $isCurrentUser ? 'text-primary-700 dark:text-primary-300' : '' }}">{{ $attempt['user_name'] ?? '—' }}</span>
                                     </div>
                                     <div class="text-right">
                                         <div class="font-mono text-sm text-neutral-900 dark:text-white">
-                                            {{ is_array($attempt) ? ($attempt['formatted_duration'] ?? '-') : ($attempt->getFormattedDuration()) }}
+                                            {{ $attempt['formatted_duration'] ?? '-' }}
                                         </div>
-                                        @if(!is_array($attempt))
+                                        @if(isset($attempt['completed_at']))
                                             <div class="text-xs text-neutral-500 dark:text-neutral-400">
-                                                {{ $attempt->completed_at?->format('M j') }}
+                                                {{ \Carbon\Carbon::parse($attempt['completed_at'])->format('M j') }}
                                             </div>
                                         @endif
                                     </div>

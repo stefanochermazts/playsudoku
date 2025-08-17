@@ -186,6 +186,10 @@ Route::get('profile', function (Request $request) {
     return redirect()->route('localized.profile', ['locale' => $locale]);
 })->middleware(['auth'])->name('profile');
 
+// Consent API routes
+Route::post('/api/consent', [App\Http\Controllers\ConsentController::class, 'store'])->name('consent.store');
+Route::get('/api/consent/status', [App\Http\Controllers\ConsentController::class, 'status'])->name('consent.status');
+
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
@@ -200,13 +204,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('/users/{user}', [App\Http\Controllers\Admin\AdminController::class, 'destroyUser'])->name('users.destroy');
     Route::post('/users/{user}/impersonate', [App\Http\Controllers\Admin\AdminController::class, 'impersonate'])->name('users.impersonate');
     
-    // Consent management (GDPR)
+    // Consent management (GDPR) - specific routes BEFORE parameterized routes
     Route::get('/consents', [App\Http\Controllers\Admin\ConsentController::class, 'index'])->name('consents.index');
-    Route::get('/consents/{consent}', [App\Http\Controllers\Admin\ConsentController::class, 'show'])->name('consents.show');
-    Route::post('/consents/{consent}/withdraw', [App\Http\Controllers\Admin\ConsentController::class, 'withdraw'])->name('consents.withdraw');
     Route::get('/consents/statistics', [App\Http\Controllers\Admin\ConsentController::class, 'statistics'])->name('consents.statistics');
     Route::post('/consents/export', [App\Http\Controllers\Admin\ConsentController::class, 'export'])->name('consents.export');
+    Route::post('/consents/export-user', [App\Http\Controllers\Admin\ConsentController::class, 'exportUserData'])->name('consents.export-user');
     Route::post('/consents/cleanup', [App\Http\Controllers\Admin\ConsentController::class, 'cleanup'])->name('consents.cleanup');
+    Route::get('/consents/{consent}', [App\Http\Controllers\Admin\ConsentController::class, 'show'])->name('consents.show');
+    Route::post('/consents/{consent}/withdraw', [App\Http\Controllers\Admin\ConsentController::class, 'withdraw'])->name('consents.withdraw');
     Route::get('/users/{user}/consents', [App\Http\Controllers\Admin\ConsentController::class, 'userConsents'])->name('users.consents');
     
     // Challenge management
