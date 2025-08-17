@@ -139,58 +139,7 @@
                 window.currentTheme = theme;
             @endauth
             
-            // Funzione per toggle del tema
-            window.toggleTheme = function() {
-                const currentTheme = window.currentTheme || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
-                @auth
-                    // Per utenti autenticati, salva sul server
-                    fetch('/api/user/preferences', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({ theme: newTheme })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Applica il nuovo tema
-                            if (newTheme === 'dark') {
-                                document.documentElement.classList.add('dark');
-                            } else {
-                                document.documentElement.classList.remove('dark');
-                            }
-                            window.currentTheme = newTheme;
-                            
-                            // Salva anche in localStorage come backup
-                            localStorage.setItem('theme', newTheme);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Errore nel salvataggio del tema:', error);
-                        // Fallback: salva solo in localStorage
-                        localStorage.setItem('theme', newTheme);
-                        if (newTheme === 'dark') {
-                            document.documentElement.classList.add('dark');
-                        } else {
-                            document.documentElement.classList.remove('dark');
-                        }
-                        window.currentTheme = newTheme;
-                    });
-                @else
-                    // Per utenti non autenticati, usa solo localStorage
-                    localStorage.setItem('theme', newTheme);
-                    if (newTheme === 'dark') {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                    window.currentTheme = newTheme;
-                @endauth
-            };
+            // La funzione toggleTheme è definita più avanti nel file
         })();
     </script>
 </head>
@@ -474,13 +423,16 @@
                 // Applica il tema immediatamente nell'UI
                 if (isDark) {
                     document.documentElement.classList.remove('dark');
-                    lightIcon.classList.remove('hidden');
-                    darkIcon.classList.add('hidden');
+                    if (lightIcon) lightIcon.classList.remove('hidden');
+                    if (darkIcon) darkIcon.classList.add('hidden');
                 } else {
                     document.documentElement.classList.add('dark');
-                    lightIcon.classList.add('hidden');
-                    darkIcon.classList.remove('hidden');
+                    if (lightIcon) lightIcon.classList.add('hidden');
+                    if (darkIcon) darkIcon.classList.remove('hidden');
                 }
+                
+                // Aggiorna la variabile globale
+                window.currentTheme = newTheme;
                 
                 // Salva sempre nel localStorage
                 localStorage.setItem('theme', newTheme);
@@ -506,6 +458,8 @@
                     if (response.ok) {
                         const data = await response.json();
                         console.log('Tema salvato:', data.message);
+                    } else {
+                        console.warn('Errore risposta server per salvataggio tema');
                     }
                 } catch (error) {
                     console.warn('Errore salvataggio tema nel database:', error);
