@@ -545,12 +545,23 @@ class SudokuBoard extends Component
             // NON avviare timer automaticamente - si avvia al primo input
             $this->timerRunning = false;
             
+            // Ricomputa completion percentage
+            $this->computeCompletion();
+            
             $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
         } catch (\Exception $e) {
             $this->lastAction = "Errore caricamento puzzle: " . $e->getMessage();
         } finally {
             $this->isLoading = false;
+            
+            // Forza il re-render del componente
+            $this->skipRender = false;
+            
+            // Emetti l'evento dopo che il componente è stato re-renderizzato
             $this->dispatch('puzzle-loaded'); // Evento per sincronizzazione UI
+            
+            // Emetti anche un JavaScript script che verrà eseguito dopo il render
+            $this->js('setTimeout(() => { window.dispatchEvent(new CustomEvent("sudoku-rendering-complete")); }, 150);');
         }
     }
 

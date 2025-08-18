@@ -2,7 +2,5 @@
 declare(strict_types=1);
 
 return [
-    'forgot_intro' => 'Forgot your password? No problem. Enter your email address and we will send you a reset link.',
+    'forgot_intro' => 'Passwort vergessen? Kein Problem. Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Reset-Link.',
 ];
-
-

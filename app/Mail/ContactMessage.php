@@ -22,8 +22,14 @@ class ContactMessage extends Mailable
 
     public function envelope(): Envelope
     {
+        $locale = $this->contactData['locale'] ?? app()->getLocale();
+        app()->setLocale($locale);
+        $subject = __('mail.contact.subject_admin', [
+            'app' => config('app.name'),
+            'subject' => $this->contactData['subject'] ?? ''
+        ]);
         return new Envelope(
-            subject: '[PlaySudoku] Nuovo messaggio di contatto: ' . $this->contactData['subject'],
+            subject: $subject,
             replyTo: [
                 $this->contactData['email']
             ]

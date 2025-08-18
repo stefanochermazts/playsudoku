@@ -62,13 +62,16 @@ final class DifficultyRater implements DifficultyRaterInterface
         $weights = [
             'naked_singles' => 1,
             'hidden_singles' => 4,
-            'locked_candidates' => 25,
+            'locked_candidates_pointing' => 20,
+            'locked_candidates_claiming' => 25,
             'naked_pairs' => 50,
             'hidden_pairs' => 60,
             'naked_triples' => 100,
             'hidden_triples' => 120,
             'x_wing' => 150,
             'swordfish' => 200,
+            'coloring' => 250,
+            'simple_chains' => 300,
             'guessing_required' => 1000,
         ];
         
@@ -148,16 +151,25 @@ final class DifficultyRater implements DifficultyRaterInterface
             // Aggiorna candidati prima delle tecniche avanzate
             $currentGrid = $this->updateAllCandidates($currentGrid);
 
-            // 3. Locked Candidates
-            [$currentGrid, $found, $stepList] = $this->findLockedCandidates($currentGrid);
+            // 3. Locked Candidates Pointing
+            [$currentGrid, $found, $stepList] = $this->findLockedCandidatesPointing($currentGrid);
             if ($found > 0) {
-                $techniques['locked_candidates'] = ($techniques['locked_candidates'] ?? 0) + $found;
+                $techniques['locked_candidates_pointing'] = ($techniques['locked_candidates_pointing'] ?? 0) + $found;
                 $steps = array_merge($steps, $stepList);
                 $progress = true;
                 continue;
             }
 
-            // 4. Naked Pairs
+            // 4. Locked Candidates Claiming
+            [$currentGrid, $found, $stepList] = $this->findLockedCandidatesClaiming($currentGrid);
+            if ($found > 0) {
+                $techniques['locked_candidates_claiming'] = ($techniques['locked_candidates_claiming'] ?? 0) + $found;
+                $steps = array_merge($steps, $stepList);
+                $progress = true;
+                continue;
+            }
+
+            // 5. Naked Pairs
             [$currentGrid, $found, $stepList] = $this->findNakedPairs($currentGrid);
             if ($found > 0) {
                 $techniques['naked_pairs'] = ($techniques['naked_pairs'] ?? 0) + $found;
@@ -166,7 +178,7 @@ final class DifficultyRater implements DifficultyRaterInterface
                 continue;
             }
 
-            // 5. Hidden Pairs
+            // 6. Hidden Pairs
             [$currentGrid, $found, $stepList] = $this->findHiddenPairs($currentGrid);
             if ($found > 0) {
                 $techniques['hidden_pairs'] = ($techniques['hidden_pairs'] ?? 0) + $found;
@@ -175,10 +187,28 @@ final class DifficultyRater implements DifficultyRaterInterface
                 continue;
             }
 
-            // 6. Naked Triples (solo se necessario)
+            // 7. Naked Triples
             [$currentGrid, $found, $stepList] = $this->findNakedTriples($currentGrid);
             if ($found > 0) {
                 $techniques['naked_triples'] = ($techniques['naked_triples'] ?? 0) + $found;
+                $steps = array_merge($steps, $stepList);
+                $progress = true;
+                continue;
+            }
+
+            // 8. X-Wing
+            [$currentGrid, $found, $stepList] = $this->findXWing($currentGrid);
+            if ($found > 0) {
+                $techniques['x_wing'] = ($techniques['x_wing'] ?? 0) + $found;
+                $steps = array_merge($steps, $stepList);
+                $progress = true;
+                continue;
+            }
+
+            // 9. Coloring (tecniche avanzate)
+            [$currentGrid, $found, $stepList] = $this->findColoring($currentGrid);
+            if ($found > 0) {
+                $techniques['coloring'] = ($techniques['coloring'] ?? 0) + $found;
                 $steps = array_merge($steps, $stepList);
                 $progress = true;
                 continue;
@@ -433,13 +463,16 @@ final class DifficultyRater implements DifficultyRaterInterface
         $weights = [
             'naked_singles' => 1,
             'hidden_singles' => 4,
-            'locked_candidates' => 25,
+            'locked_candidates_pointing' => 20,
+            'locked_candidates_claiming' => 25,
             'naked_pairs' => 50,
             'hidden_pairs' => 60,
             'naked_triples' => 100,
             'hidden_triples' => 120,
             'x_wing' => 150,
             'swordfish' => 200,
+            'coloring' => 250,
+            'simple_chains' => 300,
             'guessing_required' => 1000,
         ];
         
@@ -457,5 +490,167 @@ final class DifficultyRater implements DifficultyRaterInterface
         }
         
         return $score;
+    }
+
+    /**
+     * Trova Locked Candidates Pointing
+     * 
+     * @return array{Grid, int, array<string>}
+     */
+    private function findLockedCandidatesPointing(Grid $grid): array
+    {
+        $newGrid = $grid;
+        $found = 0;
+        $steps = [];
+
+        // Implementazione semplificata per l'analisi
+        for ($boxRow = 0; $boxRow < 3; $boxRow++) {
+            for ($boxCol = 0; $boxCol < 3; $boxCol++) {
+                for ($value = 1; $value <= 9; $value++) {
+                    $result = $this->checkPointingInBox($grid, $boxRow, $boxCol, $value);
+                    if ($result['found']) {
+                        $newGrid = $result['grid'];
+                        $found++;
+                        $steps[] = "Locked Candidates Pointing: valore {$value} in box ({$boxRow},{$boxCol})";
+                    }
+                }
+            }
+        }
+
+        return [$newGrid, $found, $steps];
+    }
+
+    /**
+     * Trova Locked Candidates Claiming
+     * 
+     * @return array{Grid, int, array<string>}
+     */
+    private function findLockedCandidatesClaiming(Grid $grid): array
+    {
+        $newGrid = $grid;
+        $found = 0;
+        $steps = [];
+
+        // Implementazione semplificata per l'analisi
+        // Controlla righe
+        for ($row = 0; $row < 9; $row++) {
+            for ($value = 1; $value <= 9; $value++) {
+                $result = $this->checkClaimingInRow($grid, $row, $value);
+                if ($result['found']) {
+                    $newGrid = $result['grid'];
+                    $found++;
+                    $steps[] = "Locked Candidates Claiming: valore {$value} in riga {$row}";
+                }
+            }
+        }
+
+        // Controlla colonne
+        for ($col = 0; $col < 9; $col++) {
+            for ($value = 1; $value <= 9; $value++) {
+                $result = $this->checkClaimingInColumn($grid, $col, $value);
+                if ($result['found']) {
+                    $newGrid = $result['grid'];
+                    $found++;
+                    $steps[] = "Locked Candidates Claiming: valore {$value} in colonna {$col}";
+                }
+            }
+        }
+
+        return [$newGrid, $found, $steps];
+    }
+
+    /**
+     * Trova X-Wing patterns
+     * 
+     * @return array{Grid, int, array<string>}
+     */
+    private function findXWing(Grid $grid): array
+    {
+        $newGrid = $grid;
+        $found = 0;
+        $steps = [];
+
+        // Implementazione semplificata per l'analisi
+        for ($value = 1; $value <= 9; $value++) {
+            // Cerca X-Wing nelle righe
+            $result = $this->checkXWingInRows($grid, $value);
+            if ($result['found']) {
+                $newGrid = $result['grid'];
+                $found++;
+                $steps[] = "X-Wing: valore {$value} pattern in righe";
+            }
+
+            // Cerca X-Wing nelle colonne
+            $result = $this->checkXWingInColumns($grid, $value);
+            if ($result['found']) {
+                $newGrid = $result['grid'];
+                $found++;
+                $steps[] = "X-Wing: valore {$value} pattern in colonne";
+            }
+        }
+
+        return [$newGrid, $found, $steps];
+    }
+
+    /**
+     * Trova tecniche di Coloring
+     * 
+     * @return array{Grid, int, array<string>}
+     */
+    private function findColoring(Grid $grid): array
+    {
+        $newGrid = $grid;
+        $found = 0;
+        $steps = [];
+
+        // Implementazione semplificata per l'analisi
+        for ($value = 1; $value <= 9; $value++) {
+            $result = $this->checkColoringForValue($grid, $value);
+            if ($result['found']) {
+                $newGrid = $result['grid'];
+                $found++;
+                $steps[] = "Coloring: eliminazioni per valore {$value}";
+            }
+        }
+
+        return [$newGrid, $found, $steps];
+    }
+
+    // Metodi helper semplificati per l'analisi
+
+    private function checkPointingInBox(Grid $grid, int $boxRow, int $boxCol, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
+    }
+
+    private function checkClaimingInRow(Grid $grid, int $row, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
+    }
+
+    private function checkClaimingInColumn(Grid $grid, int $col, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
+    }
+
+    private function checkXWingInRows(Grid $grid, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
+    }
+
+    private function checkXWingInColumns(Grid $grid, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
+    }
+
+    private function checkColoringForValue(Grid $grid, int $value): array
+    {
+        // Implementazione semplificata - ritorna sempre non trovato per ora
+        return ['found' => false, 'grid' => $grid];
     }
 }

@@ -362,6 +362,11 @@ class SudokuBoardOptimizer {
         this.pendingUpdates.clear();
         
         console.log('🧹 Cache cleaned, size:', this.cellCache.size);
+        
+        // Emetti evento per sincronizzazione UI
+        window.dispatchEvent(new CustomEvent('sudoku-cache-cleaned', {
+            detail: { cacheSize: this.cellCache.size }
+        }));
     }
 
     /**
@@ -398,11 +403,23 @@ class SudokuBoardOptimizer {
         if (window.Livewire) {
             window.sudokuOptimizer = new SudokuBoardOptimizer();
             
-            // Hook nei lifecycle di Livewire
-            window.Livewire.hook('component.init', () => {
-                console.log('🔄 Livewire component initialized, refreshing optimizations');
-                window.sudokuOptimizer?.setupRenderOptimization();
-            });
+                    // Hook nei lifecycle di Livewire
+        window.Livewire.hook('component.init', () => {
+            console.log('🔄 Livewire component initialized, refreshing optimizations');
+            window.sudokuOptimizer?.setupRenderOptimization();
+        });
+        
+        // Hook per cleanup dopo aggiornamenti
+        window.Livewire.hook('morph.updated', (el, component) => {
+            if (component && (component.name === 'sudoku-board' || component.fingerprint?.name === 'sudoku-board')) {
+                // Cleanup della cache dopo ogni aggiornamento della board
+                setTimeout(() => {
+                    if (window.sudokuOptimizer) {
+                        window.sudokuOptimizer.cleanupCache();
+                    }
+                }, 500); // Attendi che il DOM sia stabilizzato
+            }
+        });
             
         } else {
             // Retry se Livewire non ancora caricato

@@ -22,12 +22,10 @@ class ContactConfirmation extends Mailable
 
     public function envelope(): Envelope
     {
-        $locale = $this->contactData['locale'] ?? 'en';
-        
-        // Subject localizzato
-        $subject = $locale === 'it' 
-            ? 'Conferma ricezione messaggio - PlaySudoku'
-            : 'Message received confirmation - PlaySudoku';
+        $locale = $this->contactData['locale'] ?? app()->getLocale();
+        app()->setLocale($locale);
+        // Subject localizzato via lang files
+        $subject = __('mail.contact.subject_user', ['app' => config('app.name')]);
 
         return new Envelope(
             subject: $subject

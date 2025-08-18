@@ -252,12 +252,11 @@ function showButtonLoading(difficulty) {
         if (text) text.classList.add('hidden');
     }
     
-    // Timeout di sicurezza per nascondere loading dopo 5 secondi
+    // Timeout di sicurezza solo per logging, NON riabilita i pulsanti
     clearTimeout(window.loadingTimeout);
     window.loadingTimeout = setTimeout(() => {
-        hideButtonLoading();
-        if (window.APP_DEBUG) console.log('⏰ Loading timeout - pulsanti riabilitati');
-    }, 5000);
+        if (window.APP_DEBUG) console.log('⏰ Loading timeout raggiunto - ma i pulsanti rimangono disabilitati fino agli eventi');
+    }, 10000);
 }
 
 function hideButtonLoading() {
@@ -277,27 +276,56 @@ function hideButtonLoading() {
 
 // Listener per eventi Livewire
 document.addEventListener('livewire:init', () => {
-    // Ascolta i cambiamenti di stato del componente
+    let lastLoadingState = null;
+    
+    // Ascolta i cambiamenti di stato del componente dopo ogni morph
     Livewire.hook('morph.updated', (el, component) => {
-        if (component && component.name === 'sudoku-board') {
+        if (component && (component.name === 'sudoku-board' || component.fingerprint?.name === 'sudoku-board')) {
+            try {
             // Controlla se isLoading è false nel componente
-            if (component.get && !component.get('isLoading')) {
+                const currentLoadingState = component.get ? component.get('isLoading') : null;
+                
+                // Se lo stato di loading è cambiato da true a false
+                if (lastLoadingState === true && currentLoadingState === false) {
+                    // Ritarda leggermente per assicurarsi che il DOM sia aggiornato
+                    setTimeout(() => {
                 hideButtonLoading();
-                if (window.APP_DEBUG) console.log('✅ Loading completato - pulsanti riabilitati');
+                        if (window.APP_DEBUG) console.log('✅ Loading completato dopo morph - pulsanti riabilitati');
+                    }, 100);
+                }
+                
+                lastLoadingState = currentLoadingState;
+            } catch (e) {
+                if (window.APP_DEBUG) console.log('Errore nel controllo loading state:', e);
             }
         }
     });
     
-    // Ascolta eventi custom per sincronizzazione immediata
-    window.addEventListener('sudoku-loading-complete', () => {
-        hideButtonLoading();
-        if (window.APP_DEBUG) console.log('🎯 Evento custom loading-complete ricevuto');
+    // Ascolta evento Livewire di puzzle caricato (backup)
+    Livewire.on('puzzle-loaded', () => {
+        // Ritarda un po' di più per essere sicuri
+        setTimeout(() => {
+            hideButtonLoading();
+            if (window.APP_DEBUG) console.log('🎯 Puzzle caricato - pulsanti riabilitati dopo delay');
+        }, 200);
     });
     
-    // Ascolta evento Livewire di puzzle caricato
-    Livewire.on('puzzle-loaded', () => {
+    // Ascolta evento personalizzato emesso dalla board quando il DOM è aggiornato
+    window.addEventListener('sudoku-board-updated', () => {
         hideButtonLoading();
-        if (window.APP_DEBUG) console.log('🎯 Puzzle caricato - pulsanti riabilitati immediatamente');
+        if (window.APP_DEBUG) console.log('🎯 Board DOM aggiornata - pulsanti riabilitati');
+    });
+    
+    // Ascolta evento di rendering completato emesso dal componente Livewire
+    window.addEventListener('sudoku-rendering-complete', () => {
+        hideButtonLoading();
+        if (window.APP_DEBUG) console.log('🎯 Rendering board completato - pulsanti riabilitati');
+    });
+    
+    // Ascolta evento di cache cleanup - il vero indicatore che il processo è finito
+    window.addEventListener('sudoku-cache-cleaned', (event) => {
+        hideButtonLoading();
+        if (window.APP_DEBUG) console.log('🎯 Cache pulita, processo completato - pulsanti riabilitati (cache size:', event.detail.cacheSize, ')');
     });
 });
 

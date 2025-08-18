@@ -107,6 +107,12 @@ new class extends Component
                         <x-dropdown-link :href="url('/it')">
                             IT
                         </x-dropdown-link>
+                        <x-dropdown-link :href="url('/de')">
+                            DE
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="url('/es')">
+                            ES
+                        </x-dropdown-link>
                     </x-slot>
                 </x-dropdown>
 

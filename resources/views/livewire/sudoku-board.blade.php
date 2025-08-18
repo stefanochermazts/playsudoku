@@ -788,6 +788,15 @@
         }
     });
     
+    // Livewire hook per notificare quando il componente è aggiornato
+    @this.on('puzzle-loaded', () => {
+        // Attendi che il re-render sia completato
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('sudoku-board-updated'));
+            if (window.APP_DEBUG) console.log('🎯 Board aggiornata dopo puzzle-loaded - evento emesso');
+        }, 100);
+    });
+    
     // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         if (sudokuTimerInterval) {

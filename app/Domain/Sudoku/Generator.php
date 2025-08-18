@@ -296,15 +296,8 @@ final class Generator implements GeneratorInterface
             ]);
         }
         
-        // Genera lista di valori possibili
-        $values = $this->getShuffledValues();
-        $validValues = [];
-        
-        foreach ($values as $value) {
-            if ($this->validator->canPlaceValue($grid, $row, $col, $value)) {
-                $validValues[] = $value;
-            }
-        }
+        // Genera lista di valori possibili ordinata per efficacia
+        $validValues = $this->getOptimalValueOrder($grid, $row, $col);
         
         // Debug se nessun valore valido (ridotto)
         if (empty($validValues)) {
@@ -329,21 +322,302 @@ final class Generator implements GeneratorInterface
     
     /**
      * Trova la cella vuota con il minor numero di valori possibili (MCV heuristic)
-     * Versione semplificata per evitare overhead di memoria
+     * Implementazione ottimizzata per migliorare le performance di generazione
      */
     private function findMostConstrainedCell(Grid $grid): ?array
     {
-        // Trova semplicemente la prima cella vuota per ora (strategia semplice ma funzionale)
+        $bestCell = null;
+        $minCandidates = 10; // Più di 9 per inizializzare
+        $bestCandidateCount = 0;
+        
+        // Prima passata: cerca celle con 2 candidati (molto efficiente)
         for ($row = 0; $row < 9; $row++) {
             for ($col = 0; $col < 9; $col++) {
                 $cell = $grid->getCell($row, $col);
                 if ($cell->isEmpty()) {
+                    $candidateCount = $this->countValidValues($grid, $row, $col);
+                    
+                    // Se troviamo una cella con 2 candidati, prendiamola subito
+                    if ($candidateCount === 2) {
                     return [$row, $col];
+                    }
+                    
+                    // Tieni traccia della migliore cella trovata finora
+                    if ($candidateCount < $minCandidates) {
+                        $minCandidates = $candidateCount;
+                        $bestCell = [$row, $col];
+                        $bestCandidateCount = $candidateCount;
+                    }
                 }
             }
         }
         
-        return null; // Griglia completa
+        // Se non abbiamo celle vuote, la griglia è completa
+        if ($bestCell === null) {
+            return null;
+        }
+        
+        // Se la miglior cella ha 1 candidato, ritornala (naked single)
+        if ($bestCandidateCount === 1) {
+            return $bestCell;
+        }
+        
+        // Se la miglior cella ha 3+ candidati, cerca con euristica aggiuntiva
+        if ($bestCandidateCount >= 3) {
+            $improvedCell = $this->findCellWithBestHeuristics($grid, $minCandidates);
+            if ($improvedCell !== null) {
+                return $improvedCell;
+            }
+        }
+        
+        return $bestCell;
+    }
+
+    /**
+     * Applica euristiche aggiuntive per scegliere la migliore cella tra quelle con pochi candidati
+     */
+    private function findCellWithBestHeuristics(Grid $grid, int $maxCandidates): ?array
+    {
+        $candidates = [];
+        
+        // Raccoglie tutte le celle con il numero minimo di candidati
+        for ($row = 0; $row < 9; $row++) {
+            for ($col = 0; $col < 9; $col++) {
+                $cell = $grid->getCell($row, $col);
+                if ($cell->isEmpty()) {
+                    $candidateCount = $this->countValidValues($grid, $row, $col);
+                    if ($candidateCount === $maxCandidates) {
+                        $candidates[] = [
+                            'row' => $row,
+                            'col' => $col,
+                            'score' => $this->calculateCellHeuristicScore($grid, $row, $col)
+                        ];
+                    }
+                }
+            }
+        }
+        
+        if (empty($candidates)) {
+            return null;
+        }
+        
+        // Ordina per punteggio euristico (più alto = migliore)
+        usort($candidates, fn($a, $b) => $b['score'] <=> $a['score']);
+        
+        return [$candidates[0]['row'], $candidates[0]['col']];
+    }
+
+    /**
+     * Calcola un punteggio euristico per una cella basato su:
+     * - Numero di celle vuote nella riga/colonna/box
+     * - Presenza di celle con pochi candidati nelle vicinanze
+     */
+    private function calculateCellHeuristicScore(Grid $grid, int $row, int $col): int
+    {
+        $score = 0;
+        
+        // Bonus per righe/colonne/box con molte celle vuote (più constraining)
+        $emptyInRow = $this->countEmptyCellsInRow($grid, $row);
+        $emptyInCol = $this->countEmptyCellsInColumn($grid, $col);
+        $emptyInBox = $this->countEmptyCellsInBox($grid, intval($row / 3), intval($col / 3));
+        
+        $score += ($emptyInRow + $emptyInCol + $emptyInBox) * 2;
+        
+        // Bonus per vicinanza a celle con pochi candidati
+        $nearbyConstrainedCells = $this->countNearbyConstrainedCells($grid, $row, $col);
+        $score += $nearbyConstrainedCells * 5;
+        
+        return $score;
+    }
+
+    /**
+     * Conta rapidamente i valori validi per una cella senza generare l'intero set di candidati
+     */
+    private function countValidValues(Grid $grid, int $row, int $col): int
+    {
+        $usedValues = [];
+        
+        // Raccogli valori usati nella riga
+        for ($c = 0; $c < 9; $c++) {
+            $value = $grid->getCell($row, $c)->value;
+            if ($value !== null) {
+                $usedValues[$value] = true;
+            }
+        }
+        
+        // Raccogli valori usati nella colonna
+        for ($r = 0; $r < 9; $r++) {
+            $value = $grid->getCell($r, $col)->value;
+            if ($value !== null) {
+                $usedValues[$value] = true;
+            }
+        }
+        
+        // Raccogli valori usati nel box
+        $boxStartRow = intval($row / 3) * 3;
+        $boxStartCol = intval($col / 3) * 3;
+        for ($r = $boxStartRow; $r < $boxStartRow + 3; $r++) {
+            for ($c = $boxStartCol; $c < $boxStartCol + 3; $c++) {
+                $value = $grid->getCell($r, $c)->value;
+                if ($value !== null) {
+                    $usedValues[$value] = true;
+                }
+            }
+        }
+        
+        // Conta valori disponibili
+        return 9 - count($usedValues);
+    }
+
+    private function countEmptyCellsInRow(Grid $grid, int $row): int
+    {
+        $count = 0;
+        for ($col = 0; $col < 9; $col++) {
+            if ($grid->getCell($row, $col)->isEmpty()) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    private function countEmptyCellsInColumn(Grid $grid, int $col): int
+    {
+        $count = 0;
+        for ($row = 0; $row < 9; $row++) {
+            if ($grid->getCell($row, $col)->isEmpty()) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    private function countEmptyCellsInBox(Grid $grid, int $boxRow, int $boxCol): int
+    {
+        $count = 0;
+        $startRow = $boxRow * 3;
+        $startCol = $boxCol * 3;
+        
+        for ($r = $startRow; $r < $startRow + 3; $r++) {
+            for ($c = $startCol; $c < $startCol + 3; $c++) {
+                if ($grid->getCell($r, $c)->isEmpty()) {
+                    $count++;
+                }
+            }
+        }
+        return $count;
+    }
+
+    private function countNearbyConstrainedCells(Grid $grid, int $targetRow, int $targetCol): int
+    {
+        $constrainedCount = 0;
+        
+        // Controlla celle nella stessa riga
+        for ($col = 0; $col < 9; $col++) {
+            if ($col !== $targetCol && $grid->getCell($targetRow, $col)->isEmpty()) {
+                $candidateCount = $this->countValidValues($grid, $targetRow, $col);
+                if ($candidateCount <= 3) {
+                    $constrainedCount++;
+                }
+            }
+        }
+        
+        // Controlla celle nella stessa colonna
+        for ($row = 0; $row < 9; $row++) {
+            if ($row !== $targetRow && $grid->getCell($row, $targetCol)->isEmpty()) {
+                $candidateCount = $this->countValidValues($grid, $row, $targetCol);
+                if ($candidateCount <= 3) {
+                    $constrainedCount++;
+                }
+            }
+        }
+        
+        // Controlla celle nello stesso box
+        $boxStartRow = intval($targetRow / 3) * 3;
+        $boxStartCol = intval($targetCol / 3) * 3;
+        for ($r = $boxStartRow; $r < $boxStartRow + 3; $r++) {
+            for ($c = $boxStartCol; $c < $boxStartCol + 3; $c++) {
+                if (($r !== $targetRow || $c !== $targetCol) && $grid->getCell($r, $c)->isEmpty()) {
+                    $candidateCount = $this->countValidValues($grid, $r, $c);
+                    if ($candidateCount <= 3) {
+                        $constrainedCount++;
+                    }
+                }
+            }
+        }
+        
+        return $constrainedCount;
+    }
+
+    /**
+     * Ottiene l'ordine ottimale dei valori da provare per una cella
+     * Basato su LCV (Least Constraining Value) heuristic
+     */
+    private function getOptimalValueOrder(Grid $grid, int $row, int $col): array
+    {
+        $values = $this->getShuffledValues();
+        $validValues = [];
+        
+        // Prima filtra solo i valori validi
+        foreach ($values as $value) {
+            if ($this->validator->canPlaceValue($grid, $row, $col, $value)) {
+                $validValues[] = [
+                    'value' => $value,
+                    'constraint_score' => $this->calculateValueConstraintScore($grid, $row, $col, $value)
+                ];
+            }
+        }
+        
+        // Ordina per constraint score (meno constraining first = LCV)
+        usort($validValues, fn($a, $b) => $a['constraint_score'] <=> $b['constraint_score']);
+        
+        // Estrai solo i valori ordinati
+        return array_map(fn($item) => $item['value'], $validValues);
+    }
+
+    /**
+     * Calcola quanto un valore è "constraining" per le celle vicine
+     * Punteggio più basso = meno constraining = meglio provare per primo
+     */
+    private function calculateValueConstraintScore(Grid $grid, int $row, int $col, int $value): int
+    {
+        $constraintScore = 0;
+        
+        // Conta quante celle vuote nella riga perderebbero questo valore come candidato
+        for ($c = 0; $c < 9; $c++) {
+            if ($c !== $col && $grid->getCell($row, $c)->isEmpty()) {
+                if ($this->validator->canPlaceValue($grid, $row, $c, $value)) {
+                    $remainingCandidates = $this->countValidValues($grid, $row, $c) - 1;
+                    // Penalizza di più se riduce molto le opzioni
+                    $constraintScore += $remainingCandidates <= 2 ? 10 : 1;
+                }
+            }
+        }
+        
+        // Conta quante celle vuote nella colonna perderebbero questo valore come candidato
+        for ($r = 0; $r < 9; $r++) {
+            if ($r !== $row && $grid->getCell($r, $col)->isEmpty()) {
+                if ($this->validator->canPlaceValue($grid, $r, $col, $value)) {
+                    $remainingCandidates = $this->countValidValues($grid, $r, $col) - 1;
+                    $constraintScore += $remainingCandidates <= 2 ? 10 : 1;
+                }
+            }
+        }
+        
+        // Conta quante celle vuote nel box perderebbero questo valore come candidato
+        $boxStartRow = intval($row / 3) * 3;
+        $boxStartCol = intval($col / 3) * 3;
+        for ($r = $boxStartRow; $r < $boxStartRow + 3; $r++) {
+            for ($c = $boxStartCol; $c < $boxStartCol + 3; $c++) {
+                if (($r !== $row || $c !== $col) && $grid->getCell($r, $c)->isEmpty()) {
+                    if ($this->validator->canPlaceValue($grid, $r, $c, $value)) {
+                        $remainingCandidates = $this->countValidValues($grid, $r, $c) - 1;
+                        $constraintScore += $remainingCandidates <= 2 ? 10 : 1;
+                    }
+                }
+            }
+        }
+        
+        return $constraintScore;
     }
 
     /**
@@ -365,9 +639,9 @@ final class Generator implements GeneratorInterface
             }
             
             $cell = $currentGrid->getCell($row, $col);
-            if ($cell->hasValue() && !$cell->isGiven) {
-                // Prova a rimuovere la cella
-                $testGrid = $currentGrid->clearCell($row, $col);
+            if ($cell->hasValue()) {
+                // Prova a rimuovere la cella (forza la rimozione anche se è given)
+                $testGrid = $this->forceRemoveCell($currentGrid, $row, $col);
                 
                 // Verifica che la soluzione rimanga unica
                 if ($this->validator->hasUniqueSolution($testGrid)) {
@@ -381,7 +655,7 @@ final class Generator implements GeneratorInterface
                     // Verifica che tutte le posizioni simmetriche possano essere rimosse
                     $tempGrid = $currentGrid;
                     foreach ($symmetricPositions as [$sRow, $sCol]) {
-                        $testGrid = $tempGrid->clearCell($sRow, $sCol);
+                        $testGrid = $this->forceRemoveCell($tempGrid, $sRow, $sCol);
                         if (!$this->validator->hasUniqueSolution($testGrid)) {
                             $allCanRemove = false;
                             break;
@@ -612,6 +886,21 @@ final class Generator implements GeneratorInterface
         
         // Rimuovi celle mantenendo il pattern
         return $this->removeCells($completeGrid, 56); // 25 givens
+    }
+
+    /**
+     * Forza la rimozione di una cella anche se è given
+     */
+    private function forceRemoveCell(Grid $grid, int $row, int $col): Grid
+    {
+        // Ottieni l'array della griglia
+        $gridArray = $grid->toArray();
+        
+        // Imposta la cella come null
+        $gridArray[$row][$col] = null;
+        
+        // Crea una nuova griglia
+        return Grid::fromArray($gridArray);
     }
 
     /**

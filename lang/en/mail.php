@@ -53,4 +53,9 @@ return [
         'outro_2' => 'Good luck and may the best player win!',
         'salutation' => 'The :app Team',
     ],
+
+    'contact' => [
+        'subject_admin' => '[ :app ] New contact message: :subject',
+        'subject_user' => 'Message received confirmation - :app',
+    ],
 ];

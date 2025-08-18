@@ -149,18 +149,26 @@
 		                 </svg>
 		                 @php
 		                     $currentPath = request()->path();
-		                     $startsWithLocale = preg_match('/^(en|it)(\/?|$)/', $currentPath) === 1;
-		                     $pathEn = $startsWithLocale ? preg_replace('/^(en|it)(?=\/|$)/', 'en', $currentPath) : 'en';
-		                     $pathIt = $startsWithLocale ? preg_replace('/^(en|it)(?=\/|$)/', 'it', $currentPath) : 'it';
+		                                          $startsWithLocale = preg_match('/^(en|it|de|es)(\/?|$)/', $currentPath) === 1;
+                     $pathEn = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'en', $currentPath) : 'en';
+                     $pathIt = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'it', $currentPath) : 'it';
 		                 @endphp
-		                 <div class="flex space-x-1">
-		                     <a href="{{ url($pathIt) }}" 
-		                        @click="menuOpen = false"
-		                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'it' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">IT</a>
-		                     <a href="{{ url($pathEn) }}" 
-		                        @click="menuOpen = false"
-		                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'en' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">EN</a>
-		                 </div>
+		                                  <div class="flex space-x-1">
+                     <a href="{{ url($pathEn) }}" 
+                        @click="menuOpen = false"
+                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'en' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">EN</a>
+                     <a href="{{ url($pathIt) }}" 
+                        @click="menuOpen = false"
+                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'it' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">IT</a>
+                     @php($pathDe = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'de', $currentPath) : 'de')
+                     @php($pathEs = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'es', $currentPath) : 'es')
+                     <a href="{{ url($pathDe) }}" 
+                        @click="menuOpen = false"
+                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'de' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">DE</a>
+                     <a href="{{ url($pathEs) }}" 
+                        @click="menuOpen = false"
+                        class="px-1.5 py-0.5 text-xs rounded transition-colors {{ app()->getLocale() === 'es' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700' }}">ES</a>
+                 </div>
 		             </div>
 		             
 		             <!-- Privacy moved to Profile page -->

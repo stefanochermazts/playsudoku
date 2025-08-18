@@ -204,11 +204,15 @@
                         <!-- Language switcher per guest -->
                         <div class="flex items-center space-x-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
                             @php($currentPath = request()->path())
-                            @php($startsWithLocale = preg_match('/^(en|it)(\/?|$)/', $currentPath) === 1)
-                            @php($pathEn = $startsWithLocale ? preg_replace('/^(en|it)(?=\/|$)/', 'en', $currentPath) : 'en')
-                            @php($pathIt = $startsWithLocale ? preg_replace('/^(en|it)(?=\/|$)/', 'it', $currentPath) : 'it')
-                            <a href="{{ url($pathEn) }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
-                            <a href="{{ url($pathIt) }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                            @php($startsWithLocale = preg_match('/^(en|it|de|es)(\/?|$)/', $currentPath) === 1)
+                            @php($pathEn = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'en', $currentPath) : 'en')
+                            @php($pathIt = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'it', $currentPath) : 'it')
+                            @php($pathDe = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'de', $currentPath) : 'de')
+                            @php($pathEs = $startsWithLocale ? preg_replace('/^(en|it|de|es)(?=\/|$)/', 'es', $currentPath) : 'es')
+                            <a href="{{ url($pathEn) }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
+                            <a href="{{ url($pathIt) }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                            <a href="{{ url($pathDe) }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'de' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">DE</a>
+                            <a href="{{ url($pathEs) }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'es' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">ES</a>
                         </div>
 
                         <!-- Theme toggle per guest -->
@@ -288,8 +292,10 @@
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-neutral-600 dark:text-neutral-300">{{ __('app.nav.language') }}</span>
                         <div class="flex items-center space-x-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
-                            <a href="{{ url('/en') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
-                            <a href="{{ url('/it') }}" class="px-3 py-1 text-sm font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                            <a href="{{ url('/en') }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">EN</a>
+                            <a href="{{ url('/it') }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'it' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">IT</a>
+                            <a href="{{ url('/de') }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'de' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">DE</a>
+                            <a href="{{ url('/es') }}" class="px-2 py-1 text-xs font-medium rounded-md {{ app()->getLocale() === 'es' ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400' }} transition-all">ES</a>
                         </div>
                     </div>
                     
