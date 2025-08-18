@@ -30,12 +30,18 @@ class MetaService
 
         $this->meta = [
             'title' => $appName,
-            'description' => $locale === 'it' 
-                ? 'Gioca a Sudoku online gratis! Sfide quotidiane, classifiche competitive, modalità allenamento e analizzatore puzzle. La piattaforma Sudoku più completa per principianti ed esperti.'
-                : 'Play Sudoku online for free! Daily challenges, competitive leaderboards, training mode and puzzle analyzer. The most complete Sudoku platform for beginners and experts.',
-            'keywords' => $locale === 'it'
-                ? 'sudoku, puzzle, gioco, online, gratis, sfide, classifica, allenamento, brain training'
-                : 'sudoku, puzzle, game, online, free, challenges, leaderboard, training, brain training',
+            'description' => match($locale) {
+                'it' => 'Gioca a Sudoku online gratis! Sfide quotidiane, classifiche competitive, modalità allenamento e analizzatore puzzle. La piattaforma Sudoku più completa per principianti ed esperti.',
+                'de' => 'Spielen Sie Sudoku kostenlos online! Tägliche Herausforderungen, Bestenlisten, Trainingsmodus und Puzzle-Analysator. Die vollständigste Sudoku-Plattform für Anfänger und Experten.',
+                'es' => '¡Juega Sudoku gratis en línea! Desafíos diarios, clasificaciones competitivas, modo entrenamiento y analizador de puzzles. La plataforma de Sudoku más completa para principiantes y expertos.',
+                default => 'Play Sudoku online for free! Daily challenges, competitive leaderboards, training mode and puzzle analyzer. The most complete Sudoku platform for beginners and experts.',
+            },
+            'keywords' => match($locale) {
+                'it' => 'sudoku, puzzle, gioco, online, gratis, sfide, classifica, allenamento, brain training',
+                'de' => 'sudoku, puzzle, spiel, online, kostenlos, herausforderungen, bestenliste, training, gehirntraining',
+                'es' => 'sudoku, puzzle, juego, en línea, gratis, desafíos, clasificación, entrenamiento, ejercicio mental',
+                default => 'sudoku, puzzle, game, online, free, challenges, leaderboard, training, brain training',
+            },
             'author' => 'PlaySudoku',
             'robots' => 'index, follow',
             'viewport' => 'width=device-width, initial-scale=1.0',
@@ -48,12 +54,22 @@ class MetaService
             'og:type' => 'website',
             'og:url' => url()->current(),
             'og:site_name' => $appName,
-            'og:locale' => $locale === 'it' ? 'it_IT' : 'en_US',
+            'og:locale' => match($locale) {
+                'it' => 'it_IT',
+                'de' => 'de_DE', 
+                'es' => 'es_ES',
+                default => 'en_US',
+            },
             'og:image' => url('img/playsudoku_club.png'),
             'og:image:type' => 'image/png',
             'og:image:width' => '1200',
             'og:image:height' => '630',
-            'og:image:alt' => $locale === 'it' ? 'PlaySudoku - Gioca a Sudoku Online' : 'PlaySudoku - Play Sudoku Online',
+            'og:image:alt' => match($locale) {
+                'it' => 'PlaySudoku - Gioca a Sudoku Online',
+                'de' => 'PlaySudoku - Spielen Sie Sudoku Online',
+                'es' => 'PlaySudoku - Juega Sudoku en Línea',
+                default => 'PlaySudoku - Play Sudoku Online',
+            },
         ];
 
         $this->twitterCard = [
@@ -62,7 +78,12 @@ class MetaService
             'twitter:description' => $this->meta['description'],
             'twitter:site' => '@PlaySudoku',
             'twitter:image' => url('img/playsudoku_club.png'),
-            'twitter:image:alt' => $locale === 'it' ? 'PlaySudoku - Gioca a Sudoku Online' : 'PlaySudoku - Play Sudoku Online',
+            'twitter:image:alt' => match($locale) {
+                'it' => 'PlaySudoku - Gioca a Sudoku Online',
+                'de' => 'PlaySudoku - Spielen Sie Sudoku Online',
+                'es' => 'PlaySudoku - Juega Sudoku en Línea',
+                default => 'PlaySudoku - Play Sudoku Online',
+            },
         ];
 
         $this->schemaOrg = [

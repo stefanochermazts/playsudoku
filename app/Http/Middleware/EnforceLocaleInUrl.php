@@ -11,7 +11,7 @@ class EnforceLocaleInUrl
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $supported = (array) config('app.supported_locales', ['en','it']);
+        $supported = (array) config('app.supported_locales', ['en','it','de','es']);
         $first = $request->segment(1);
 
         if (! in_array($first, $supported, true)) {
@@ -19,8 +19,14 @@ class EnforceLocaleInUrl
             if (! is_string($preferred) || ! in_array($preferred, $supported, true)) {
                 $preferred = 'en';
                 $accept = (string) $request->header('Accept-Language', '');
+                
+                // Detect browser language preference
                 if (preg_match('/\bit\b/i', $accept)) {
                     $preferred = 'it';
+                } elseif (preg_match('/\bde\b/i', $accept)) {
+                    $preferred = 'de';
+                } elseif (preg_match('/\bes\b/i', $accept)) {
+                    $preferred = 'es';
                 }
             }
 

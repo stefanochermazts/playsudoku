@@ -12,17 +12,15 @@ Route::get('/', function (Request $request) {
     if (app()->environment('testing')) {
         return view('welcome');
     }
-    $supported = (array) config('app.supported_locales', ['en', 'it']);
+    $supported = (array) config('app.supported_locales', ['en', 'it', 'de', 'es']);
     $browserLocale = substr($request->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
     $locale = in_array($browserLocale, $supported, true) ? $browserLocale : config('app.locale', 'en');
     return redirect($locale);
 });
 
 // Gruppo opzionale con prefisso locale per contenuti tradotti.
-Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it'], 'middleware' => ['setlocale']], function () {
-    Route::get('/', function ($locale) {
-        return view('home');
-    })->name('localized.home');
+Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'middleware' => ['setlocale']], function () {
+    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('localized.home');
 
     Route::get('dashboard', function ($locale) {
         return view('dashboard-livewire');

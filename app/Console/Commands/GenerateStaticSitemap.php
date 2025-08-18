@@ -23,7 +23,7 @@ class GenerateStaticSitemap extends Command
      */
     protected $description = 'Generate static sitemap.xml and robots.txt files for SEO';
 
-    private array $locales = ['it', 'en'];
+    private array $locales = ['en', 'it', 'de', 'es'];
     private string $sitemapPath;
     private string $robotsPath;
 
