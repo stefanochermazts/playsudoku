@@ -49,6 +49,11 @@ class MetaService
             'og:url' => url()->current(),
             'og:site_name' => $appName,
             'og:locale' => $locale === 'it' ? 'it_IT' : 'en_US',
+            'og:image' => url('img/playsudoku_club.png'),
+            'og:image:type' => 'image/png',
+            'og:image:width' => '1200',
+            'og:image:height' => '630',
+            'og:image:alt' => $locale === 'it' ? 'PlaySudoku - Gioca a Sudoku Online' : 'PlaySudoku - Play Sudoku Online',
         ];
 
         $this->twitterCard = [
@@ -56,6 +61,8 @@ class MetaService
             'twitter:title' => $appName,
             'twitter:description' => $this->meta['description'],
             'twitter:site' => '@PlaySudoku',
+            'twitter:image' => url('img/playsudoku_club.png'),
+            'twitter:image:alt' => $locale === 'it' ? 'PlaySudoku - Gioca a Sudoku Online' : 'PlaySudoku - Play Sudoku Online',
         ];
 
         $this->schemaOrg = [
@@ -89,6 +96,12 @@ class MetaService
         if (isset($options['url'])) {
             $this->openGraph['og:url'] = $options['url'];
             $this->meta['canonical'] = $options['url'];
+        }
+
+        // Preserve default social image unless overridden
+        if (isset($options['image'])) {
+            $this->openGraph['og:image'] = $options['image'];
+            $this->twitterCard['twitter:image'] = $options['image'];
         }
 
         $this->twitterCard['twitter:title'] = $title;
