@@ -137,8 +137,15 @@ return [
         'help' => 'Aiuto',
         'contact' => 'Contatti',
         'privacy' => 'Privacy',
+        'cookie_preferences' => 'Gestisci Cookie',
         'terms' => 'Termini',
         'rights' => 'Tutti i diritti riservati.',
+    ],
+
+    // Cookie Preferences
+    'cookie_preferences' => [
+        'floating_button_title' => 'Gestisci Preferenze Cookie',
+        'floating_button_tooltip' => 'Modifica le tue preferenze sui cookie',
     ],
     'dashboard' => [
         'title' => 'Bacheca Utente',
@@ -457,6 +464,7 @@ return [
         'sudoku_in_progress' => 'Sudoku in corso, completato al :percentage%.',
         'errors_detected' => ':count errori rilevati.',
         'hints_used' => ':count suggerimenti utilizzati.',
+        'difficulty' => 'Difficoltà',
     ],
 
     // Sudoku Hints and Techniques translations
@@ -712,6 +720,18 @@ return [
                 'description' => 'Trova amici, crea club privati e sfida la tua cerchia in classifiche esclusive. Connettiti con altri appassionati!',
                 'cta' => 'Esplora le Funzioni Social',
             ],
+            
+            'badges' => [
+                'title' => '🏅 Badges',
+                'description' => 'Sblocca badge per traguardi: serie quotidiane, livelli di difficoltà completati, tempi record e obiettivi stagionali. Mostra i progressi nel profilo.',
+                'cta' => 'Vedi i tuoi badges',
+            ],
+            
+            'privacy' => [
+                'title' => '🔒 Privacy',
+                'description' => 'Controllo totale sui tuoi dati: consenso esplicito, analytics anonimizzati, possibilità di revoca in qualsiasi momento. Conforme GDPR.',
+                'cta' => 'Informativa Privacy',
+            ],
         ],
 
         // Social proof
@@ -783,12 +803,12 @@ return [
             
             'how_to_play' => [
                 'question' => 'Come si gioca a Sudoku su PlaySudoku?',
-                'answer' => 'Seleziona una cella vuota e inserisci un numero da 1 a 9. Ogni riga, colonna e riquadro 3x3 deve contenere tutti i numeri da 1 a 9 senza ripetizioni.',
+                'answer' => 'Giocare a Sudoku è semplice e divertente!\n\n• Seleziona una cella vuota e inserisci un numero da 1 a 9\n• Ogni riga deve contenere tutti i numeri da 1 a 9 senza ripetizioni\n• Ogni colonna deve contenere tutti i numeri da 1 a 9 senza ripetizioni\n• Ogni riquadro 3x3 deve contenere tutti i numeri da 1 a 9 senza ripetizioni\n\nUsa il nostro sistema di suggerimenti per imparare tecniche avanzate e migliorare!',
             ],
             
             'difficulties' => [
                 'question' => 'Quali livelli di difficoltà sono disponibili?',
-                'answer' => 'Offriamo 5 livelli: Facile, Medio, Difficile, Esperto e Insano. Ogni livello è bilanciato per fornire la giusta sfida.',
+                'answer' => 'Offriamo 5 livelli di difficoltà accuratamente bilanciati:\n\n• **Facile** - Perfetto per principianti\n• **Medio** - Livello standard per giocatori casuali\n• **Difficile** - Per giocatori esperti\n• **Esperto** - Richiede tecniche avanzate\n• **Insano** - Solo per veri maestri di Sudoku\n\nOgni livello è progettato per offrire la sfida perfetta per le tue competenze.',
             ],
             
             'competitive' => [

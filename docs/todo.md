@@ -459,18 +459,3 @@ Deliverable: sistema gamification (prima iterazione) con badge e stagioni base, 
 
 ---
 
-### Fase 21 — Deploy & Observability
-- [ ] Env staging e production (Laravel Forge o analogo); Postgres gestito, Redis, storage S3
-- [ ] Config logging strutturato, error tracking (Sentry) e metrics (Prometheus/Grafana o Laravel Telescope in staging)
-- [ ] Script deploy zero‑downtime, migrazioni sicure
-
-Deliverable: app online con monitoring e alert di base.
-
----
-
-### Accettazione MVP (estratto)
-- [ ] Concluso una sfida daily valida → tempo in classifica entro 1s con tie‑break corretto
-- [ ] Con finestra scaduta, nuovi tentativi non validi; profilo mostra best time personale
-- [ ] Board completamente navigabile da tastiera; screen reader annuncia celle, candidati e conflitti
-
-

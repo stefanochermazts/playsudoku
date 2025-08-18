@@ -28,6 +28,14 @@ Schedule::command('challenge:generate-weekly')
     ->emailOutputOnFailure(config('mail.from.address'))
     ->appendOutputTo(storage_path('logs/scheduler.log'));
 
+// Attivazione sfide programmate - ogni 5 minuti
+Schedule::command('challenge:activate-scheduled')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(5)
+    ->onOneServer()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/scheduler.log'));
+
 // Cleanup tentativi incompleti - ogni notte alle 02:00
 Schedule::command('challenge:cleanup', [
     '--days' => config('sudoku.scheduling.cleanup_incomplete_days', 7)
@@ -62,6 +70,14 @@ Schedule::command('consent:cleanup')
     ->emailOutputOnFailure(config('mail.from.address'))
     ->appendOutputTo(storage_path('logs/scheduler.log'));
 
+// Generazione sitemap statica - ogni giorno alle 02:00
+Schedule::command('sitemap:generate --force')
+    ->dailyAt('02:00')
+    ->withoutOverlapping(30)
+    ->onOneServer()
+    ->emailOutputOnFailure(config('mail.from.address'))
+    ->appendOutputTo(storage_path('logs/scheduler.log'));
+
 // ==========================================
 // 🔍 SCHEDULING DIAGNOSTICS  
 // ==========================================
@@ -74,8 +90,10 @@ Artisan::command('schedule:status', function () {
     $schedules = [
         'Sfida Giornaliera' => 'Ogni giorno alle ' . config('sudoku.scheduling.daily_time', '00:00'),
         'Sfida Settimanale' => 'Ogni lunedì alle ' . config('sudoku.scheduling.weekly_time', '00:00'),
+        'Attivazione Sfide' => 'Ogni 5 minuti (scheduled → active)',
         'Cleanup Database' => 'Ogni notte alle 02:00',
         'Cleanup Consensi GDPR' => 'Ogni lunedì alle 01:00',
+        'Generazione Sitemap' => 'Ogni giorno alle 02:00',
         'Ottimizzazione' => 'Ogni domenica alle 03:00',
         'Analisi Anomalie' => 'Ogni ora',
     ];

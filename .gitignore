@@ -42,3 +42,7 @@ rr
 # Dusk
 /tests/Browser/screenshots/
 /tests/Browser/console/
+
+# SEO Files (Generated automatically)
+/public/sitemap.xml
+/public/robots.txt

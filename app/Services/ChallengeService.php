@@ -48,8 +48,8 @@ class ChallengeService
             return Challenge::create([
                 'puzzle_id' => $puzzle->id,
                 'type' => 'daily',
-                'starts_at' => $startDate->startOfDay(),
-                'ends_at' => $startDate->endOfDay(),
+                'starts_at' => $startDate->copy()->startOfDay(),
+                'ends_at' => $startDate->copy()->endOfDay(),
                 'visibility' => 'public',
                 'status' => 'scheduled',
                 'created_by' => $this->getSystemUserId(),
@@ -82,8 +82,8 @@ class ChallengeService
             return Challenge::create([
                 'puzzle_id' => $puzzle->id,
                 'type' => 'weekly',
-                'starts_at' => $startDate->startOfWeek(),
-                'ends_at' => $startDate->endOfWeek(),
+                'starts_at' => $startDate->copy()->startOfWeek(),
+                'ends_at' => $startDate->copy()->endOfWeek(),
                 'visibility' => 'public',
                 'status' => 'scheduled',
                 'created_by' => $this->getSystemUserId(),

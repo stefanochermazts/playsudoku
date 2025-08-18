@@ -141,8 +141,15 @@ return [
         'help' => 'Help',
         'contact' => 'Contact',
         'privacy' => 'Privacy',
+        'cookie_preferences' => 'Manage Cookies',
         'terms' => 'Terms',
         'rights' => 'All rights reserved.',
+    ],
+
+    // Cookie Preferences
+    'cookie_preferences' => [
+        'floating_button_title' => 'Manage Cookie Preferences',
+        'floating_button_tooltip' => 'Change your cookie preferences',
     ],
     'dashboard' => [
         'title' => 'User Dashboard',
@@ -461,6 +468,7 @@ return [
         'sudoku_in_progress' => 'Sudoku in progress, :percentage% completed.',
         'errors_detected' => ':count errors detected.',
         'hints_used' => ':count hints used.',
+        'difficulty' => 'Difficulty',
     ],
 
     // Sudoku Hints and Techniques translations
@@ -716,6 +724,18 @@ return [
                 'description' => 'Find friends, create private clubs and challenge your circle in exclusive leaderboards. Connect with fellow enthusiasts!',
                 'cta' => 'Explore Social Features',
             ],
+            
+            'badges' => [
+                'title' => '🏅 Badges',
+                'description' => 'Unlock badges for achievements: daily streaks, difficulty levels completed, record times and seasonal goals. Show progress in your profile.',
+                'cta' => 'View Your Badges',
+            ],
+            
+            'privacy' => [
+                'title' => '🔒 Privacy',
+                'description' => 'Complete control over your data: explicit consent, anonymized analytics, revocation anytime. GDPR compliant for a secure experience.',
+                'cta' => 'Privacy Policy',
+            ],
         ],
 
         // Social proof
@@ -787,12 +807,12 @@ return [
             
             'how_to_play' => [
                 'question' => 'How do I play Sudoku on PlaySudoku?',
-                'answer' => 'Select an empty cell and enter a number from 1 to 9. Each row, column and 3x3 box must contain all numbers from 1 to 9 without repetition.',
+                'answer' => 'Playing Sudoku is simple and fun!\n\n• Select an empty cell and enter a number from 1 to 9\n• Each row must contain all numbers from 1 to 9 without repetition\n• Each column must contain all numbers from 1 to 9 without repetition\n• Each 3x3 box must contain all numbers from 1 to 9 without repetition\n\nUse our hint system to learn advanced techniques and improve your skills!',
             ],
             
             'difficulties' => [
                 'question' => 'What difficulty levels are available?',
-                'answer' => 'We offer 5 levels: Easy, Medium, Hard, Expert and Insane. Each level is balanced to provide the right challenge.',
+                'answer' => 'We offer 5 carefully balanced difficulty levels:\n\n• **Easy** - Perfect for beginners\n• **Medium** - Standard level for casual players\n• **Hard** - For experienced players\n• **Expert** - Advanced techniques required\n• **Insane** - Only for true Sudoku masters\n\nEach level is designed to provide the perfect challenge for your skill level.',
             ],
             
             'competitive' => [

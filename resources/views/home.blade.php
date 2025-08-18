@@ -223,6 +223,52 @@
                         </a>
                     @endguest
                 </div>
+                
+                {{-- Badges Feature --}}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+                    <div class="text-4xl mb-4">🏅</div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                        {{ __('app.homepage.features.badges.title') }}
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        {{ __('app.homepage.features.badges.description') }}
+                    </p>
+                    @guest
+                        <a href="{{ route('register') }}" 
+                           class="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300">
+                            {{ __('app.homepage.features.badges.cta') }}
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <a href="{{ route('localized.badges.index', ['locale' => app()->getLocale()]) }}" 
+                           class="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300">
+                            {{ __('app.homepage.features.badges.cta') }}
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    @endguest
+                </div>
+
+                {{-- Privacy Feature --}}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                        {{ __('app.homepage.features.privacy.title') }}
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        {{ __('app.homepage.features.privacy.description') }}
+                    </p>
+                    <a href="{{ route('localized.privacy', ['locale' => app()->getLocale()]) }}" 
+                       class="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300">
+                        {{ __('app.homepage.features.privacy.cta') }}
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -317,27 +363,7 @@
                     <p class="text-gray-600 dark:text-gray-300">{{ __('app.homepage.benefits.stress.description') }}</p>
                 </div>
 
-                {{-- Badges Feature --}}
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l2.39 4.84 5.34.78-3.86 3.76.91 5.32L12 14.77l-4.78 2.51.91-5.32L4.27 7.62l5.34-.78L12 2z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Badges</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Sblocca badge per traguardi: serie quotidiane, livelli di difficoltà completati, tempi record e obiettivi stagionali. Mostra i progressi nel profilo e confrontati con gli amici.</p>
-                </div>
 
-                {{-- Privacy Feature --}}
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11zm0 0c-4.418 0-8 2.239-8 5v2a2 2 0 002 2h12a2 2 0 002-2v-2c0-2.761-3.582-5-8-5z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Privacy</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Controllo totale sui tuoi dati: consenso esplicito, analytics anonimizzati, possibilità di revoca in qualsiasi momento. Conforme GDPR per un’esperienza sicura.</p>
-                </div>
             </div>
         </div>
     </section>
@@ -446,17 +472,24 @@
                 </p>
             </div>
             
-            <div class="space-y-6" x-data="{ activeTab: null }">
+            <div class="space-y-4" x-data="{ activeTab: null }">
                 @php $faqItems = ['how_to_play', 'difficulties', 'competitive', 'free', 'mobile', 'hints']; @endphp
                 @foreach($faqItems as $index => $item)
-                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden">
-                    <button class="w-full px-6 py-4 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" 
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                    <button class="w-full px-8 py-6 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" 
                             @click="activeTab = activeTab === {{ $index }} ? null : {{ $index }}">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                {{ __('app.homepage.faq.' . $item . '.question') }}
-                            </h3>
-                            <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-200" 
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ __('app.homepage.faq.' . $item . '.question') }}
+                                </h3>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 transform transition-transform duration-200 flex-shrink-0 ml-4" 
                                  :class="{ 'rotate-180': activeTab === {{ $index }} }" 
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -464,16 +497,36 @@
                         </div>
                     </button>
                     <div x-show="activeTab === {{ $index }}" 
+                         x-cloak
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 transform -translate-y-2"
                          x-transition:enter-end="opacity-100 transform translate-y-0"
                          x-transition:leave="transition ease-in duration-150"
                          x-transition:leave-start="opacity-100 transform translate-y-0"
                          x-transition:leave-end="opacity-0 transform -translate-y-2"
-                         class="px-6 pb-4">
-                        <p class="text-gray-600 dark:text-gray-300">
-                            {{ __('app.homepage.faq.' . $item . '.answer') }}
-                        </p>
+                         class="px-8 pb-8 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                        <div class="pt-6">
+                            <div class="prose prose-gray dark:prose-invert prose-lg max-w-none">
+                                <div class="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
+                                    @php
+                                        $answer = __('app.homepage.faq.' . $item . '.answer');
+                                        
+                                        // Step 1: Convert literal \n characters to actual newlines
+                                        $answer = str_replace(['\n\n', '\n'], ["\n\n", "\n"], $answer);
+                                        
+                                        // Step 2: Convert markdown-style bold text
+                                        $answer = preg_replace('/\*\*(.*?)\*\*/', '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>', $answer);
+                                        
+                                        // Step 3: Convert bullet points to HTML structure
+                                        $answer = preg_replace('/^• (.+)$/m', '<div class="flex items-start space-x-3 my-2"><div class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div><div>$1</div></div>', $answer);
+                                        
+                                        // Step 4: Convert actual newlines to break tags (do this last)
+                                        $answer = str_replace(["\n\n", "\n"], ['<br><br>', '<br>'], $answer);
+                                    @endphp
+                                    {!! $answer !!}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @endforeach
