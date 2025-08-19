@@ -30,8 +30,18 @@ class RedisController extends Controller
             if (config('cache.default') === 'redis') {
                 $redis = Redis::connection();
                 
-                // Ottieni tutte le chiavi con namespace playsudoku
-                $keys = $redis->keys('playsudoku:*');
+                // Ottieni tutte le chiavi con prefisso rilevato automaticamente
+                $actualPrefix = $this->detectActualCachePrefix($redis);
+                $keys = $redis->keys($actualPrefix . '*');
+                
+                // Se non trova chiavi con il prefisso rilevato, prova altri pattern
+                if (empty($keys)) {
+                    $fallbackPatterns = ['playsudoku:*', '*cache*', 'laravel_cache:*'];
+                    foreach ($fallbackPatterns as $pattern) {
+                        $keys = $redis->keys($pattern);
+                        if (!empty($keys)) break;
+                    }
+                }
                 $deletedCount = 0;
                 
                 if (!empty($keys)) {
@@ -101,8 +111,20 @@ class RedisController extends Controller
         try {
             if (config('cache.default') === 'redis') {
                 $redis = Redis::connection();
-                $pattern = "playsudoku:{$type}:*";
-                $keys = $redis->keys($pattern);
+                
+                $actualPrefix = $this->detectActualCachePrefix($redis);
+                $patterns = [
+                    "{$actualPrefix}{$type}:*",
+                    "playsudoku:{$type}:*",
+                    "*{$type}*"
+                ];
+                
+                $keys = [];
+                foreach ($patterns as $pattern) {
+                    $patternKeys = $redis->keys($pattern);
+                    $keys = array_merge($keys, $patternKeys);
+                }
+                $keys = array_unique($keys);
                 $deletedCount = 0;
                 
                 if (!empty($keys)) {
@@ -159,8 +181,16 @@ class RedisController extends Controller
             $redis = Redis::connection();
             $info = $redis->info();
             
-            // Conta chiavi per namespace playsudoku
-            $allKeys = $redis->keys('playsudoku:*');
+            // Conta chiavi con prefisso reale rilevato automaticamente
+            $actualPrefix = $this->detectActualCachePrefix($redis);
+            $allKeys = $redis->keys($actualPrefix . '*');
+            if (empty($allKeys)) {
+                // Fallback: cerca qualsiasi chiave cache-like
+                $allKeys = $redis->keys('*cache*');
+                if (empty($allKeys)) {
+                    $allKeys = $redis->keys('*');
+                }
+            }
             $totalKeys = count($allKeys);
             
             // Analizza memoria utilizzata
@@ -198,19 +228,37 @@ class RedisController extends Controller
             }
 
             $redis = Redis::connection();
+            
+            // Rileva automaticamente il prefisso reale utilizzato
+            $actualPrefix = $this->detectActualCachePrefix($redis);
+            
             $cacheTypes = ['leaderboard', 'challenge', 'user', 'puzzle', 'stats'];
             $usage = [];
 
             foreach ($cacheTypes as $type) {
-                $pattern = "playsudoku:{$type}:*";
-                $keys = $redis->keys($pattern);
+                // Prova vari pattern possibili
+                $patterns = [
+                    "{$actualPrefix}{$type}:*",
+                    "playsudoku:{$type}:*",
+                    "*{$type}*",
+                    "{$actualPrefix}*{$type}*"
+                ];
                 
-                $keyCount = count($keys);
-                $sampleKeys = array_slice($keys, 0, 5); // Prime 5 chiavi come esempio
+                $allKeys = [];
+                foreach ($patterns as $pattern) {
+                    $keys = $redis->keys($pattern);
+                    $allKeys = array_merge($allKeys, $keys);
+                }
+                
+                // Rimuovi duplicati
+                $allKeys = array_unique($allKeys);
+                
+                $keyCount = count($allKeys);
+                $sampleKeys = array_slice($allKeys, 0, 5);
                 
                 // Ottieni TTL per alcune chiavi campione
                 $ttlData = [];
-                foreach (array_slice($keys, 0, 3) as $key) {
+                foreach (array_slice($allKeys, 0, 3) as $key) {
                     $ttl = $redis->ttl($key);
                     if ($ttl > 0) {
                         $ttlData[] = $ttl;
@@ -222,11 +270,13 @@ class RedisController extends Controller
                 $usage[$type] = [
                     'description' => $this->getCacheTypeDescription($type),
                     'key_count' => $keyCount,
-                    'sample_keys' => array_map(function($key) {
-                        return str_replace('playsudoku:', '', $key);
+                    'sample_keys' => array_map(function($key) use ($actualPrefix) {
+                        // Rimuovi il prefisso per visualizzazione più pulita
+                        return str_replace([$actualPrefix, 'playsudoku:'], '', $key);
                     }, $sampleKeys),
                     'avg_ttl_seconds' => $avgTtl,
                     'avg_ttl_human' => $avgTtl ? $this->formatSeconds($avgTtl) : null,
+                    'patterns_used' => $patterns[0], // Mostra quale pattern ha funzionato
                 ];
             }
 
@@ -263,6 +313,52 @@ class RedisController extends Controller
             return round($seconds / 60) . "m";
         } else {
             return round($seconds / 3600, 1) . "h";
+        }
+    }
+
+    /**
+     * Rileva automaticamente il prefisso cache reale utilizzato
+     */
+    private function detectActualCachePrefix($redis): string
+    {
+        try {
+            // Crea una chiave di test per rilevare il prefisso reale
+            $testKey = 'test_prefix_detection_' . time();
+            cache()->put($testKey, 'test', 10);
+            
+            // Cerca la chiave appena creata per vedere come è stata memorizzata
+            $allKeys = $redis->keys('*' . $testKey . '*');
+            
+            if (!empty($allKeys)) {
+                $actualKey = $allKeys[0];
+                $prefix = str_replace($testKey, '', $actualKey);
+                
+                // Pulisci la chiave di test
+                cache()->forget($testKey);
+                
+                return $prefix;
+            }
+            
+            // Fallback: cerca pattern comuni esistenti
+            $commonPrefixes = [
+                'laravel_cache:',
+                'playsudoku:',
+                config('app.name', 'laravel') . '_cache:',
+                ''
+            ];
+            
+            foreach ($commonPrefixes as $prefix) {
+                $keys = $redis->keys($prefix . '*');
+                if (!empty($keys)) {
+                    return $prefix;
+                }
+            }
+            
+            return 'playsudoku:'; // Default fallback
+            
+        } catch (\Exception $e) {
+            Log::warning('Errore rilevamento prefisso cache', ['error' => $e->getMessage()]);
+            return 'playsudoku:'; // Default fallback
         }
     }
 }
