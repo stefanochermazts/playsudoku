@@ -205,6 +205,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('/users/{user}', [App\Http\Controllers\Admin\AdminController::class, 'destroyUser'])->name('users.destroy');
     Route::post('/users/{user}/impersonate', [App\Http\Controllers\Admin\AdminController::class, 'impersonate'])->name('users.impersonate');
     
+    // Redis management
+    Route::get('/redis', [App\Http\Controllers\Admin\RedisController::class, 'index'])->name('redis.index');
+    Route::post('/redis/reset', [App\Http\Controllers\Admin\RedisController::class, 'reset'])->name('redis.reset');
+    Route::post('/redis/reset-type/{type}', [App\Http\Controllers\Admin\RedisController::class, 'resetByType'])->name('redis.reset-type');
+    
     // Consent management (GDPR) - specific routes BEFORE parameterized routes
     Route::get('/consents', [App\Http\Controllers\Admin\ConsentController::class, 'index'])->name('consents.index');
     Route::get('/consents/statistics', [App\Http\Controllers\Admin\ConsentController::class, 'statistics'])->name('consents.statistics');
