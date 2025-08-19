@@ -163,9 +163,21 @@
                         <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-700">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-semibold text-neutral-900 dark:text-white capitalize">{{ $type }}</h3>
-                                <span class="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-3 py-1 rounded-full text-sm font-medium">
-                                    {{ $data['key_count'] }} chiavi
-                                </span>
+                                <div class="flex space-x-2">
+                                    <span class="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-3 py-1 rounded-full text-sm font-medium">
+                                        {{ $data['key_count'] }} totali
+                                    </span>
+                                    @if(isset($data['active_keys']) && $data['active_keys'] > 0)
+                                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm font-medium">
+                                            {{ $data['active_keys'] }} attive
+                                        </span>
+                                    @endif
+                                    @if(isset($data['expired_keys']) && $data['expired_keys'] > 0)
+                                        <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full text-sm font-medium">
+                                            {{ $data['expired_keys'] }} scadute
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                             
                             <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">{{ $data['description'] }}</p>
@@ -197,16 +209,26 @@
                                 </div>
                             @endif
                             
-                            <!-- Reset parziale per tipo -->
+                            @if($data['key_count'] > 0)
+                            <!-- Info per categoria -->
                             <div class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-600">
-                                <button onclick="resetCacheType('{{ $type }}')" 
-                                        class="w-full text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 
-                                               hover:bg-red-200 dark:hover:bg-red-900/50 px-3 py-2 rounded-lg 
-                                               border border-red-200 dark:border-red-800 transition-colors
-                                               focus:outline-none focus:ring-2 focus:ring-red-500">
-                                    🗑️ Reset {{ ucfirst($type) }}
-                                </button>
+                                <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                                    @if($type === 'laravel_cache')
+                                        <p class="mb-2">📝 Queste sono cache create dal CacheService (hashate da Laravel per sicurezza)</p>
+                                    @elseif($type === 'framework')
+                                        <p class="mb-2">⚙️ Cache interne di Laravel (schedule, configurazioni, ecc.)</p>
+                                    @elseif($type === 'queues')
+                                        <p class="mb-2">📤 Code di lavoro per task asincroni</p>
+                                    @endif
+                                    
+                                    @if($data['expired_keys'] > 0)
+                                        <p class="text-orange-600 dark:text-orange-400">
+                                            ⚠️ {{ $data['expired_keys'] }} chiavi scadute (verranno rimosse automaticamente)
+                                        </p>
+                                    @endif
+                                </div>
                             </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -220,8 +242,10 @@
                 <div class="bg-white/80 dark:bg-neutral-800/80 p-6 rounded-xl border border-red-200 dark:border-red-700">
                     <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-4">Reset Completo Redis</h3>
                     <p class="text-red-700 dark:text-red-300 mb-6">
-                        Questa operazione rimuoverà <strong>tutte le chiavi cache</strong> del sito (namespace: playsudoku:*).
+                        Questa operazione rimuoverà <strong>tutte le chiavi cache Laravel</strong> del sito (prefisso: playsudoku_prod_laravel_cache_*).
                         L'operazione è irreversibile e comporterà il reload di tutte le cache dal database.
+                        <br><br>
+                        <strong>Include:</strong> Cache applicazione, statistiche, leaderboard, sessioni framework.
                     </p>
                     
                     <div class="flex items-center space-x-4">
@@ -291,35 +315,9 @@
             });
         }
 
-        function resetCacheType(type) {
-            if (confirm(`Resettare tutte le cache di tipo "${type}"?\n\nQuesta operazione rimuoverà tutte le chiavi cache di questo tipo.`)) {
-                fetch(`{{ url('admin/redis/reset-type') }}/${type}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ confirm: true })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`✅ ${data.message}`);
-                        location.reload();
-                    } else {
-                        alert(`❌ Errore: ${data.message}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('❌ Errore di rete durante il reset');
-                });
-            }
-        }
-
-        // Auto-refresh ogni 30 secondi per aggiornare le statistiche
+        // Auto-refresh ogni 60 secondi per aggiornare le statistiche
         setTimeout(() => {
             location.reload();
-        }, 30000);
+        }, 60000);
     </script>
 </x-site-layout>

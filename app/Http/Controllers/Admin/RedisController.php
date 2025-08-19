@@ -232,51 +232,83 @@ class RedisController extends Controller
             // Rileva automaticamente il prefisso reale utilizzato
             $actualPrefix = $this->detectActualCachePrefix($redis);
             
-            $cacheTypes = ['leaderboard', 'challenge', 'user', 'puzzle', 'stats'];
+            // Laravel cripta i nomi delle chiavi cache, quindi analizziamo per categoria
+            $categories = [
+                'laravel_cache' => [
+                    'pattern' => $actualPrefix . '*',
+                    'description' => 'Cache applicazione Laravel (chiavi hashate)',
+                    'exclude_patterns' => ['*schedule*', '*framework*']
+                ],
+                'framework' => [
+                    'pattern' => $actualPrefix . 'framework/*',
+                    'description' => 'Cache framework Laravel (schedule, ecc.)',
+                    'exclude_patterns' => []
+                ],
+                'queues' => [
+                    'pattern' => '*queues*',
+                    'description' => 'Code di lavoro Redis',
+                    'exclude_patterns' => []
+                ],
+                'sessions' => [
+                    'pattern' => '*session*',
+                    'description' => 'Sessioni utente',
+                    'exclude_patterns' => []
+                ]
+            ];
+            
             $usage = [];
 
-            foreach ($cacheTypes as $type) {
-                // Prova vari pattern possibili
-                $patterns = [
-                    "{$actualPrefix}{$type}:*",
-                    "playsudoku:{$type}:*",
-                    "*{$type}*",
-                    "{$actualPrefix}*{$type}*"
-                ];
+            foreach ($categories as $type => $config) {
+                $allKeys = $redis->keys($config['pattern']);
                 
-                $allKeys = [];
-                foreach ($patterns as $pattern) {
-                    $keys = $redis->keys($pattern);
-                    $allKeys = array_merge($allKeys, $keys);
+                // Filtra chiavi da escludere
+                foreach ($config['exclude_patterns'] as $excludePattern) {
+                    $excludeKeys = $redis->keys($excludePattern);
+                    $allKeys = array_diff($allKeys, $excludeKeys);
                 }
                 
-                // Rimuovi duplicati
-                $allKeys = array_unique($allKeys);
+                // Se è laravel_cache, rimuovi anche framework e queues
+                if ($type === 'laravel_cache') {
+                    $frameworkKeys = $redis->keys($actualPrefix . 'framework/*');
+                    $allKeys = array_diff($allKeys, $frameworkKeys);
+                }
                 
                 $keyCount = count($allKeys);
                 $sampleKeys = array_slice($allKeys, 0, 5);
                 
-                // Ottieni TTL per alcune chiavi campione
+                // Analizza TTL
                 $ttlData = [];
-                foreach (array_slice($allKeys, 0, 3) as $key) {
+                $activeKeys = 0;
+                $expiredKeys = 0;
+                
+                foreach (array_slice($allKeys, 0, 10) as $key) {
                     $ttl = $redis->ttl($key);
                     if ($ttl > 0) {
                         $ttlData[] = $ttl;
+                        $activeKeys++;
+                    } elseif ($ttl === -2) {
+                        $expiredKeys++;
                     }
                 }
                 
                 $avgTtl = !empty($ttlData) ? round(array_sum($ttlData) / count($ttlData)) : null;
                 
                 $usage[$type] = [
-                    'description' => $this->getCacheTypeDescription($type),
+                    'description' => $config['description'],
                     'key_count' => $keyCount,
+                    'active_keys' => $activeKeys,
+                    'expired_keys' => $expiredKeys,
                     'sample_keys' => array_map(function($key) use ($actualPrefix) {
-                        // Rimuovi il prefisso per visualizzazione più pulita
-                        return str_replace([$actualPrefix, 'playsudoku:'], '', $key);
+                        // Mostra nome completo ma evidenzia la parte importante
+                        if (strlen($key) > 80) {
+                            $start = substr($key, 0, 40);
+                            $end = substr($key, -20);
+                            return $start . '...' . $end;
+                        }
+                        return str_replace($actualPrefix, '', $key);
                     }, $sampleKeys),
                     'avg_ttl_seconds' => $avgTtl,
-                    'avg_ttl_human' => $avgTtl ? $this->formatSeconds($avgTtl) : null,
-                    'patterns_used' => $patterns[0], // Mostra quale pattern ha funzionato
+                    'avg_ttl_human' => $avgTtl ? $this->formatSeconds($avgTtl) : 'N/A',
                 ];
             }
 
@@ -322,28 +354,25 @@ class RedisController extends Controller
     private function detectActualCachePrefix($redis): string
     {
         try {
-            // Crea una chiave di test per rilevare il prefisso reale
-            $testKey = 'test_prefix_detection_' . time();
-            cache()->put($testKey, 'test', 10);
+            // Laravel usa prefissi configurabili - rileva da configurazione
+            $redisPrefix = config('database.redis.options.prefix', '');
+            $cachePrefix = config('cache.prefix', 'laravel_cache_');
             
-            // Cerca la chiave appena creata per vedere come è stata memorizzata
-            $allKeys = $redis->keys('*' . $testKey . '*');
+            // Costruisci il prefisso completo utilizzato da Laravel
+            $fullPrefix = $redisPrefix . $cachePrefix;
             
-            if (!empty($allKeys)) {
-                $actualKey = $allKeys[0];
-                $prefix = str_replace($testKey, '', $actualKey);
-                
-                // Pulisci la chiave di test
-                cache()->forget($testKey);
-                
-                return $prefix;
+            // Verifica che esistano chiavi con questo prefisso
+            $keys = $redis->keys($fullPrefix . '*');
+            if (!empty($keys)) {
+                return $fullPrefix;
             }
             
             // Fallback: cerca pattern comuni esistenti
             $commonPrefixes = [
-                'laravel_cache:',
+                'playsudoku_prod_laravel_cache_',
+                'laravel_cache_',
+                'playsudoku_prod_',
                 'playsudoku:',
-                config('app.name', 'laravel') . '_cache:',
                 ''
             ];
             
@@ -354,11 +383,11 @@ class RedisController extends Controller
                 }
             }
             
-            return 'playsudoku:'; // Default fallback
+            return $fullPrefix; // Usa quello configurato anche se vuoto
             
         } catch (\Exception $e) {
             Log::warning('Errore rilevamento prefisso cache', ['error' => $e->getMessage()]);
-            return 'playsudoku:'; // Default fallback
+            return 'playsudoku_prod_laravel_cache_'; // Prefisso noto dal debug
         }
     }
 }
