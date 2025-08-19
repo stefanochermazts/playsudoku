@@ -627,6 +627,46 @@
                 this.preventDragDrop();
                 this.preventDevTools();
                 this.addVisualWarnings();
+                this.improveMobileTouch();
+            },
+            
+            improveMobileTouch() {
+                // Migliora responsività touch su mobile in modalità competitiva
+                const board = document.querySelector('.sudoku-grid');
+                if (board && 'ontouchstart' in window) {
+                    let touchStartTime = 0;
+                    let touchStartX = 0;
+                    let touchStartY = 0;
+                    
+                    board.addEventListener('touchstart', (e) => {
+                        touchStartTime = Date.now();
+                        if (e.touches.length > 0) {
+                            touchStartX = e.touches[0].clientX;
+                            touchStartY = e.touches[0].clientY;
+                        }
+                    }, { passive: true });
+                    
+                    board.addEventListener('touchend', (e) => {
+                        const touchDuration = Date.now() - touchStartTime;
+                        
+                        // Se è un tap veloce (<200ms) e senza movimento significativo
+                        if (touchDuration < 200 && e.changedTouches.length > 0) {
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const touchEndY = e.changedTouches[0].clientY;
+                            const deltaX = Math.abs(touchEndX - touchStartX);
+                            const deltaY = Math.abs(touchEndY - touchStartY);
+                            
+                            // Se movimento molto piccolo, trattalo come click diretto
+                            if (deltaX < 10 && deltaY < 10) {
+                                const target = e.target.closest('[role="gridcell"]');
+                                if (target) {
+                                    // Forza il click immediato invece di aspettare
+                                    target.click();
+                                }
+                            }
+                        }
+                    }, { passive: true });
+                }
             },
             
             preventCopyPaste() {
@@ -671,14 +711,21 @@
             preventSelection() {
                 const board = document.querySelector('.sudoku-grid');
                 if (board) {
-                    board.style.userSelect = 'none';
-                    board.style.webkitUserSelect = 'none';
-                    board.style.mozUserSelect = 'none';
-                    board.style.msUserSelect = 'none';
+                    // Impedisci selezione solo del testo delle celle, non dell'intera board
+                    const cells = board.querySelectorAll('[role="gridcell"]');
+                    cells.forEach(cell => {
+                        cell.style.userSelect = 'none';
+                        cell.style.webkitUserSelect = 'none';
+                        cell.style.mozUserSelect = 'none';
+                        cell.style.msUserSelect = 'none';
+                    });
                     
                     board.addEventListener('selectstart', (e) => {
-                        e.preventDefault();
-                        return false;
+                        // Blocca solo selezione sulle celle, non sui contenitori
+                        if (e.target.matches('[role="gridcell"]') || e.target.closest('[role="gridcell"]')) {
+                            e.preventDefault();
+                            return false;
+                        }
                     }, true);
                 }
             },
@@ -688,9 +735,12 @@
                 if (board) {
                     ['dragstart', 'drag', 'dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
                         board.addEventListener(event, (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            return false;
+                            // Permetti scroll naturale su touch, blocca solo drag di elementi
+                            if (e.target.matches('[role="gridcell"]') || e.target.closest('[role="gridcell"]')) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return false;
+                            }
                         }, true);
                     });
                 }
@@ -959,6 +1009,18 @@
 .competitive-mode {
     -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
     tap-highlight-color: rgba(0,0,0,0) !important;
+}
+
+/* Migliora scroll touch in modalità competitiva */
+.competitive-mode .relative.overflow-x-auto {
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-x pan-y !important;
+}
+
+/* Assicura che le celle mantengano il touch normale */
+.competitive-mode [role="gridcell"] {
+    touch-action: manipulation !important;
 }
 
 /* Impedisce zoom su dispositivi mobili durante il gioco competitivo */
