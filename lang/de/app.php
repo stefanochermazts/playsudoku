@@ -740,27 +740,27 @@ return [
 
         // Social proof
         'social_proof' => [
-            'title' => 'Join the Community',
-            'subtitle' => 'Thousands of players compete daily on PlaySudoku',
-            'stat_active_today' => ':count Active Players Today',
-            'stat_completed_today' => ':count Challenges Completed Today',
-            'stat_avg_time' => ':time min Average Time',
-            'stat_best_time_today' => 'Best Time Today: :time min',
+            'title' => 'Der Community beitreten',
+            'subtitle' => 'Tausende von Spielern konkurrieren täglich auf PlaySudoku',
+            'stat_active_today' => ':count aktive Spieler heute',
+            'stat_completed_today' => ':count Herausforderungen heute abgeschlossen',
+            'stat_avg_time' => ':time min Durchschnittszeit',
+            'stat_best_time_today' => 'Beste Zeit heute: :time min',
         ],
 
         // Benefits section
         'benefits' => [
-            'title' => 'Sudoku Benefits for Your Mind',
-            'subtitle' => 'Sudoku is not just a game: it\'s brain training',
+            'title' => 'Sudoku-Vorteile für Ihren Geist',
+            'subtitle' => 'Sudoku ist nicht nur ein Spiel: Es ist Gehirntraining',
             
             'memory' => [
-                'title' => 'Improves Memory',
-                'description' => 'Sudoku stimulates working memory and helps keep your mind sharp as you age.',
+                'title' => 'Verbessert das Gedächtnis',
+                'description' => 'Sudoku stimuliert das Arbeitsgedächtnis und hilft, den Geist im Alter scharf zu halten.',
             ],
             
             'logic' => [
-                'title' => 'Develops Logical Thinking',
-                'description' => 'Solve complex puzzles while developing deductive reasoning and problem-solving skills.',
+                'title' => 'Entwickelt logisches Denken',
+                'description' => 'Lösen Sie komplexe Rätsel und entwickeln Sie dabei deduktives Denken und Problemlösungsfähigkeiten.',
             ],
             
             'concentration' => [
@@ -802,56 +802,56 @@ return [
 
         // FAQ Section
         'faq' => [
-            'title' => 'Frequently Asked Questions',
-            'subtitle' => 'Everything you need to know about PlaySudoku',
+            'title' => 'Häufig gestellte Fragen',
+            'subtitle' => 'Alles was Sie über PlaySudoku wissen müssen',
             
             'how_to_play' => [
-                'question' => 'How do I play Sudoku on PlaySudoku?',
-                'answer' => 'Playing Sudoku is simple and fun!\n\n• Select an empty cell and enter a number from 1 to 9\n• Each row must contain all numbers from 1 to 9 without repetition\n• Each column must contain all numbers from 1 to 9 without repetition\n• Each 3x3 box must contain all numbers from 1 to 9 without repetition\n\nUse our hint system to learn advanced techniques and improve your skills!',
+                'question' => 'Wie spiele ich Sudoku auf PlaySudoku?',
+                'answer' => 'Sudoku spielen ist einfach und macht Spaß!\n\n• Wählen Sie eine leere Zelle aus und geben Sie eine Zahl von 1 bis 9 ein\n• Jede Zeile muss alle Zahlen von 1 bis 9 ohne Wiederholung enthalten\n• Jede Spalte muss alle Zahlen von 1 bis 9 ohne Wiederholung enthalten\n• Jeder 3x3-Block muss alle Zahlen von 1 bis 9 ohne Wiederholung enthalten\n\nNutzen Sie unser Hinweis-System, um fortgeschrittene Techniken zu lernen und Ihre Fähigkeiten zu verbessern!',
             ],
             
             'difficulties' => [
-                'question' => 'What difficulty levels are available?',
-                'answer' => 'We offer 5 carefully balanced difficulty levels:\n\n• **Easy** - Perfect for beginners\n• **Medium** - Standard level for casual players\n• **Hard** - For experienced players\n• **Expert** - Advanced techniques required\n• **Insane** - Only for true Sudoku masters\n\nEach level is designed to provide the perfect challenge for your skill level.',
+                'question' => 'Welche Schwierigkeitsgrade sind verfügbar?',
+                'answer' => 'Wir bieten 5 sorgfältig ausgewogene Schwierigkeitsgrade:\n\n• **Einfach** - Perfekt für Anfänger\n• **Normal** - Standard-Level für Gelegenheitsspieler\n• **Schwer** - Für erfahrene Spieler\n• **Experte** - Fortgeschrittene Techniken erforderlich\n• **Wahnsinnig** - Nur für echte Sudoku-Meister\n\nJeder Level ist darauf ausgelegt, die perfekte Herausforderung für Ihr Können zu bieten.',
             ],
             
             'competitive' => [
-                'question' => 'How do competitive challenges work?',
-                'answer' => 'All players solve the same puzzle. The winner is who completes it in the shortest time with fewer errors. Integrated anti-cheat system.',
+                'question' => 'Wie funktionieren kompetitive Herausforderungen?',
+                'answer' => 'Alle Spieler lösen dasselbe Puzzle. Der Gewinner ist, wer es in der kürzesten Zeit mit weniger Fehlern löst. Integriertes Anti-Cheat-System.',
             ],
             
             'free' => [
-                'question' => 'Is PlaySudoku really free?',
-                'answer' => 'Yes! All basic features are free. Registration unlocks advanced features like statistics and leaderboards.',
+                'question' => 'Ist PlaySudoku wirklich kostenlos?',
+                'answer' => 'Ja! Alle Grundfunktionen sind kostenlos. Die Registrierung schaltet erweiterte Funktionen wie Statistiken und Bestenlisten frei.',
             ],
             
             'mobile' => [
-                'question' => 'Can I play on mobile?',
-                'answer' => 'Absolutely! PlaySudoku is optimized for all devices: smartphones, tablets and desktop.',
+                'question' => 'Kann ich auf dem Handy spielen?',
+                'answer' => 'Absolut! PlaySudoku ist für alle Geräte optimiert: Smartphones, Tablets und Desktop.',
             ],
             
             'hints' => [
-                'question' => 'Are hints available?',
-                'answer' => 'Yes, training mode includes smart hints and explanations of solving techniques.',
+                'question' => 'Sind Hinweise verfügbar?',
+                'answer' => 'Ja, der Trainingsmodus enthält intelligente Hinweise und Erklärungen von Lösungstechniken.',
             ],
         ],
 
         // Testimonials
         'testimonials' => [
-            'title' => 'What Our Users Say',
-            'marco' => 'PlaySudoku revolutionized my way of playing. The competitive challenges are engaging and the system is perfect!',
-            'sarah' => 'Amazing platform! The training mode helped me improve so much. Now I can solve expert puzzles confidently.',
-            'giovanni' => 'The analyzer mode is fantastic for learning new techniques. Highly recommended!',
+            'title' => 'Was unsere Nutzer sagen',
+            'marco' => 'PlaySudoku revolutionierte meine Art zu spielen. Die kompetitiven Herausforderungen sind fesselnd und das System ist perfekt!',
+            'sarah' => 'Fantastische Plattform! Der Trainingsmodus hat mir sehr geholfen, mich zu verbessern. Jetzt kann ich Experten-Puzzles selbstbewusst lösen.',
+            'giovanni' => 'Der Analysator-Modus ist fantastisch zum Erlernen neuer Techniken. Sehr empfehlenswert!',
         ],
 
         // Call to action sections
         'cta' => [
-            'register_now' => 'Sign Up Free',
-            'start_training' => 'Start Training',
-            'join_challenge' => 'Join Challenges',
-            'try_analyzer' => 'Try Analyzer',
-            'learn_more' => 'Learn More',
-            'get_started' => 'Get Started',
+            'register_now' => 'Kostenlos anmelden',
+            'start_training' => 'Training starten',
+            'join_challenge' => 'Herausforderungen beitreten',
+            'try_analyzer' => 'Analysator testen',
+            'learn_more' => 'Mehr erfahren',
+            'get_started' => 'Loslegen',
         ],
     ],
 

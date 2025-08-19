@@ -766,10 +766,11 @@ final class Generator implements GeneratorInterface
     {
         return match (strtolower($difficulty)) {
             'easy', 'facile' => ['min' => 36, 'max' => 46],
-            'medium', 'medio' => ['min' => 28, 'max' => 35],
+            'normal', 'medium', 'medio' => ['min' => 28, 'max' => 35],
             'hard', 'difficile' => ['min' => 22, 'max' => 27],
             'expert', 'esperto' => ['min' => 17, 'max' => 21],
-            default => ['min' => 25, 'max' => 35], // Default: medium
+            'crazy' => ['min' => 12, 'max' => 16],
+            default => ['min' => 25, 'max' => 35], // Default: normal
         };
     }
 

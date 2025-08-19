@@ -1,4 +1,21 @@
 <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+    <!-- Banner Modalità Allenamento per sfide scadute -->
+    @if($isArchivedChallenge)
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center justify-center space-x-3">
+                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-center">
+                        <p class="font-semibold">⏰ Modalità Allenamento</p>
+                        <p class="text-sm opacity-90">Sfida scaduta - Il completamento non influenzerà le classifiche competitive</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Header Challenge Info -->
     <div class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -17,7 +34,11 @@
                         <div class="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-300">
                             <span>{{ ucfirst($challenge->puzzle->difficulty) }}</span>
                             <span>•</span>
-                            <span>{{ __('app.challenges.ends_in') }}: {{ $challenge->ends_at->diffForHumans() }}</span>
+                            @if($isArchivedChallenge)
+                                <span class="text-amber-600 dark:text-amber-400 font-medium">{{ __('Modalità Allenamento') }}</span>
+                            @else
+                                <span>{{ __('app.challenges.ends_in') }}: {{ $challenge->ends_at->diffForHumans() }}</span>
+                            @endif
                             @if(!$hintsAllowed)
                                 <span>•</span>
                                 <span class="text-orange-600 dark:text-orange-400">{{ __('app.challenges.not_allowed') }}</span>
@@ -169,16 +190,30 @@
                     <p class="text-neutral-600 dark:text-neutral-300 mb-6">
                         Hai concluso il sudoku con questo tempo: <strong>{{ $this->getFormattedTime() }}</strong> e con <strong>{{ $errorCount }}</strong> errori.
                     </p>
-                    <div class="flex space-x-3">
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
-                           class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
-                            Torna alle Sfide
-                        </a>
-                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
-                           class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
-                            {{ __('app.dashboard.view_leaderboard') }}
-                        </a>
-                    </div>
+                    @if($isArchivedChallenge)
+                        {{-- Modalità allenamento: solo pulsante per tornare alle sfide --}}
+                        <div class="text-center">
+                            <p class="text-amber-600 dark:text-amber-400 mb-4 text-sm">
+                                🏆 Completamento in modalità allenamento - Non influenzerà le classifiche
+                            </p>
+                            <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                               class="inline-block px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-colors">
+                                Torna alle Sfide
+                            </a>
+                        </div>
+                    @else
+                        {{-- Modalità competitiva: pulsanti normali con leaderboard --}}
+                        <div class="flex space-x-3">
+                            <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                               class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
+                                Torna alle Sfide
+                            </a>
+                            <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                               class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
+                                {{ __('app.dashboard.view_leaderboard') }}
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

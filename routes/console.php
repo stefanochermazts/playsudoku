@@ -55,7 +55,7 @@ Schedule::command('performance:optimize')
     ->appendOutputTo(storage_path('logs/scheduler.log'));
 
 // Analisi anomalie - ogni ora
-Schedule::command('challenge:analyze-anomalies')
+Schedule::command('sudoku:analyze-anomalies')
     ->hourly()
     ->withoutOverlapping(10)
     ->onOneServer()

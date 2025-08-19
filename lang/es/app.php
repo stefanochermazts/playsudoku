@@ -698,43 +698,43 @@ return [
 
         // Features showcase
         'features' => [
-            'title' => 'Why Choose PlaySudoku?',
-            'subtitle' => 'The most complete platform for Sudoku enthusiasts',
+            'title' => '¿Por qué elegir PlaySudoku?',
+            'subtitle' => 'La plataforma más completa para entusiastas del Sudoku',
             
             'training' => [
-                'title' => '🎯 Training Mode',
-                'description' => 'Improve your skills with variable difficulty puzzles, smart hints and solving technique analysis.',
-                'cta' => 'Start Training',
+                'title' => '🎯 Modo Entrenamiento',
+                'description' => 'Mejora tus habilidades con puzzles de dificultad variable, pistas inteligentes y análisis de técnicas de resolución.',
+                'cta' => 'Comenzar Entrenamiento',
             ],
             
             'competitive' => [
-                'title' => '🏆 Competitive Challenges',
-                'description' => 'Challenge players worldwide with identical puzzles. Real-time leaderboards and advanced anti-cheat system.',
-                'cta' => 'Join Challenges',
+                'title' => '🏆 Desafíos Competitivos',
+                'description' => 'Desafía jugadores de todo el mundo con puzzles idénticos. Clasificaciones en tiempo real y sistema anti-trampa avanzado.',
+                'cta' => 'Unirse a Desafíos',
             ],
             
             'analyzer' => [
-                'title' => '🔍 Advanced Analyzer',
-                'description' => 'Upload any Sudoku puzzle and discover all the techniques needed to solve it step by step.',
-                'cta' => 'Try Analyzer',
+                'title' => '🔍 Analizador Avanzado',
+                'description' => 'Sube cualquier puzzle de Sudoku y descubre todas las técnicas necesarias para resolverlo paso a paso.',
+                'cta' => 'Probar Analizador',
             ],
             
             'social' => [
-                'title' => '👥 Friends & Clubs',
-                'description' => 'Find friends, create private clubs and challenge your circle in exclusive leaderboards. Connect with fellow enthusiasts!',
-                'cta' => 'Explore Social Features',
+                'title' => '👥 Amigos y Clubs',
+                'description' => 'Encuentra amigos, crea clubs privados y desafía tu círculo en clasificaciones exclusivas. ¡Conecta con otros entusiastas!',
+                'cta' => 'Explorar Funciones Sociales',
             ],
             
             'badges' => [
-                'title' => '🏅 Badges',
-                'description' => 'Unlock badges for achievements: daily streaks, difficulty levels completed, record times and seasonal goals. Show progress in your profile.',
-                'cta' => 'View Your Badges',
+                'title' => '🏅 Insignias',
+                'description' => 'Desbloquea insignias por logros: rachas diarias, niveles de dificultad completados, tiempos récord y objetivos estacionales. Muestra tu progreso en el perfil.',
+                'cta' => 'Ver Tus Insignias',
             ],
             
             'privacy' => [
-                'title' => '🔒 Privacy',
-                'description' => 'Complete control over your data: explicit consent, anonymized analytics, revocation anytime. GDPR compliant for a secure experience.',
-                'cta' => 'Privacy Policy',
+                'title' => '🔒 Privacidad',
+                'description' => 'Control completo sobre tus datos: consentimiento explícito, análisis anonimizados, revocación en cualquier momento. Cumple con GDPR para una experiencia segura.',
+                'cta' => 'Política de Privacidad',
             ],
         ],
 
