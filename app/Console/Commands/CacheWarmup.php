@@ -82,8 +82,8 @@ class CacheWarmup extends Command
                 $this->line("   ✅ Dettagli sfida {$challenge->id}: " . ($details ? 'OK' : 'vuoti'));
                 
                 // Partecipazione
-                $participation = $cacheService->getChallengeParticipation($challenge->id);
-                $this->line("   ✅ Partecipazione sfida {$challenge->id}: {$participation['total']} utenti");
+                $participation = $cacheService->getChallengeParticipationStats($challenge->id);
+                $this->line("   ✅ Partecipazione sfida {$challenge->id}: {$participation['total_attempts']} tentativi, {$participation['unique_participants']} utenti");
             }
             
         } catch (\Exception $e) {
