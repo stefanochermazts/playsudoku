@@ -146,6 +146,9 @@ function loadEmptyBoard() {
 function loadPuzzle(difficulty) {
     if (window.APP_DEBUG) console.log('🎯 Tentativo di caricare puzzle con difficoltà:', difficulty);
     
+    // FERMA IMMEDIATAMENTE IL TIMER prima di fare qualsiasi altra cosa
+    window.dispatchEvent(new CustomEvent('stop-timer'));
+    
     // Mostra loading sui pulsanti
     showButtonLoading(difficulty);
     

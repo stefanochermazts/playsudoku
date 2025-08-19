@@ -513,14 +513,14 @@
             }
         }
 
-        // Event listeners per stato timer
+                // Event listeners per stato timer
         window.addEventListener('start-timer', () => { 
             running = true; 
             lastUpdateMs = Date.now(); 
             startUiTimer(); 
         });
         window.addEventListener('stop-timer', () => { 
-            running = false; 
+            running = false;
             stopUiTimer();
             // Mostra tempo finale con centesimi
             if (timerEl) {
@@ -536,23 +536,22 @@
             }
         });
         
-        // Event listener per reset timer quando viene caricato nuovo puzzle
-        document.addEventListener('livewire:dispatched', (event) => {
-            if (event.detail.name === 'puzzle-loaded') {
-                if (window.APP_DEBUG) console.log('🔄 SudokuBoard: Reset timer per nuovo puzzle');
-                
-                // Reset variabili timer JavaScript
-                baseMs = 0;
-                running = false;
-                lastUpdateMs = Date.now();
-                
-                // Ferma timer UI
-                stopUiTimer();
-                
-                // Aggiorna display timer a 00:00
-                if (timerEl) {
-                    timerEl.textContent = '00:00';
+        // Listener semplice per reset timer quando viene caricato nuovo puzzle
+        window.addEventListener('livewire:updated', function() {
+            try {
+                const component = @this;
+                if (component && component.timeElapsed === 0 && !component.timerRunning) {
+                    // Il backend ha resettato - sincronizza JavaScript
+                    baseMs = 0;
+                    running = false;
+                    lastUpdateMs = Date.now();
+                    stopUiTimer();
+                    if (timerEl) {
+                        timerEl.textContent = '00:00';
+                    }
                 }
+            } catch (error) {
+                // Ignora errori silenziosamente
             }
         });
         
