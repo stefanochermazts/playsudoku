@@ -66,6 +66,10 @@
                                 class="px-4 py-2 rounded-lg border font-medium transition-colors {{ $status === 'completed' ? 'bg-secondary-100 border-secondary-300 text-secondary-700 dark:bg-secondary-900 dark:border-secondary-700 dark:text-secondary-300' : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700' }}">
                             {{ __('app.challenges.completed') }}
                         </button>
+                        <button wire:click="setStatus('training')"
+                                class="px-4 py-2 rounded-lg border font-medium transition-colors {{ $status === 'training' ? 'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900 dark:border-amber-700 dark:text-amber-300' : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700' }}">
+                            🎯 {{ __('app.challenges.training') }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -83,10 +87,27 @@
                     $isActive = $challenge->status === 'active' && !$isExpired;
                 @endphp
                 
-                <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white/80 dark:hover:bg-neutral-800/80 transition-all">
+                {{-- Sfondo distintivo per sfide scadute (modalità allenamento) --}}
+                <div class="@if($isExpired) bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-900/30 dark:to-orange-900/30 border-amber-200/60 dark:border-amber-700/40 hover:from-amber-100/80 hover:to-orange-100/80 dark:hover:from-amber-900/40 dark:hover:to-orange-900/40 @else bg-white/70 dark:bg-neutral-800/70 border-neutral-200/50 dark:border-neutral-700/50 hover:bg-white/80 dark:hover:bg-neutral-800/80 @endif backdrop-blur-sm rounded-2xl p-6 border transition-all relative overflow-hidden">
+                    @if($isExpired)
+                        {{-- Pattern decorativo per modalità allenamento --}}
+                        <div class="absolute top-0 right-0 w-20 h-20 opacity-10">
+                            <svg class="w-full h-full text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    @endif
                     <!-- Header -->
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
+                            @if($isExpired)
+                                {{-- Badge "Modalità Allenamento" sopra al titolo a sinistra --}}
+                                <div class="mb-2">
+                                    <span class="px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-full shadow-sm">
+                                        ⏰ {{ __('app.challenges.training') }}
+                                    </span>
+                                </div>
+                            @endif
                             <div class="flex items-center space-x-2 mb-2">
                                 @if($challenge->type === 'daily')
                                     <span class="text-2xl">🌅</span>
@@ -173,11 +194,19 @@
                                 <span class="text-green-700 dark:text-green-300 font-medium">{{ __('app.challenges.completed') }}</span>
                             </div>
                         @elseif(!$isActive)
-                            <div class="flex items-center justify-center p-3 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-lg">
-                                <span class="text-gray-600 dark:text-gray-400 font-medium">
-                                    {{ $isExpired ? __('app.challenges.expired') : __('app.challenges.not_started_yet') }}
-                                </span>
-                            </div>
+                            @if($isExpired)
+                                {{-- Modalità allenamento per sfide scadute --}}
+                                <a href="{{ route('localized.challenges.play', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}"
+                                   class="w-full px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all transform hover:scale-105 text-center block">
+                                    🎯 {{ __('app.challenges.play_training_mode') }}
+                                </a>
+                            @else
+                                <div class="flex items-center justify-center p-3 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-lg">
+                                    <span class="text-gray-600 dark:text-gray-400 font-medium">
+                                        {{ __('app.challenges.not_started_yet') }}
+                                    </span>
+                                </div>
+                            @endif
                         @else
                             <button wire:click="startChallenge({{ $challenge->id }})"
                                     class="w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all transform hover:scale-105">

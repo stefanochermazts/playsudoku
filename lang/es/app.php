@@ -177,6 +177,15 @@ return [
         'view_all_challenges' => 'Todos los Desafíos',
         'view_leaderboard' => 'Clasificaciones',
         'refresh_data' => 'Actualizar',
+        'challenge_info' => 'Información del desafío',
+        'type_label' => 'Tipo:',
+        'difficulty_label' => 'Dificultad:',
+        'expires_label' => 'Expira:',
+        'time_limit_label' => 'Límite de tiempo:',
+        'actions' => 'Acciones',
+        'pause_save' => 'Pausar y Guardar',
+        'progress' => 'Progreso',
+        'completion_label' => 'Finalización:',
         'never' => 'Nunca',
         'minutes_short' => 'min',
         'seconds_short' => 'seg',
@@ -194,6 +203,12 @@ return [
         'not_started' => 'No iniciado',
         'in_progress' => 'En progreso',
         'completed' => 'Completado',
+        'training' => 'Entrenamiento',
+        'training_mode' => 'Modo Entrenamiento',
+        'training_mode_description' => 'Desafío expirado - La finalización no afectará las clasificaciones competitivas',
+        'training_completion_message' => 'Finalización en modo entrenamiento - No afectará las clasificaciones',
+        'back_to_challenges' => 'Volver a Desafíos',
+        'play_training_mode' => 'Jugar en Modo Entrenamiento',
         'daily_challenge' => 'Desafío Diario',
         'weekly_challenge' => 'Desafío Semanal',
         'custom_challenge' => 'Desafío Personalizado',
@@ -308,6 +323,11 @@ return [
         'expires_label' => 'Expira:',
         'time_label' => 'Tiempo:',
         'challenge_info' => 'Información del desafío',
+        'type_label' => 'Tipo:',
+        'time_limit_label' => 'Límite de tiempo:',
+        'pause_save' => 'Pausar y Guardar',
+        'progress' => 'Progreso',
+        'completion_label' => 'Finalización:',
         'challenge_completed' => '¡Desafío completado!',
         'view_leaderboard' => 'Ver clasificación',
         'game_time' => 'Tiempo de juego',
@@ -352,11 +372,18 @@ return [
     
     // Difficulty levels
     'difficulty' => [
-        'easy' => 'Easy',
+        'easy' => 'Fácil',
         'normal' => 'Normal',
-        'hard' => 'Hard',
-        'expert' => 'Expert',
-        'crazy' => 'Crazy',
+        'hard' => 'Difícil',
+        'expert' => 'Experto',
+        'crazy' => 'Extremo',
+    ],
+
+    // Challenge types
+    'challenge_types' => [
+        'daily' => 'Diaria',
+        'weekly' => 'Semanal',
+        'custom' => 'Personalizada',
     ],
 
     
