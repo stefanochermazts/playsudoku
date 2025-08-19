@@ -21,11 +21,13 @@
     
     {{-- SEO Meta Tags via MetaService --}}
     @php
-        // Initialize MetaService
+        // Get MetaService singleton (may already be configured by controller)
         $metaService = app(App\Services\MetaService::class);
         
         // Handle backward compatibility with existing $seoTitle and $seoDescription
-        if (isset($seoTitle) || isset($seoDescription)) {
+        // Only override if specific SEO data is provided AND MetaService hasn't been configured yet
+        if ((isset($seoTitle) || isset($seoDescription)) && 
+            !$metaService->isConfigured()) {
             $metaService->setPage(
                 $seoTitle ?? __('app.app_name'),
                 $seoDescription ?? __('app.meta.description'),

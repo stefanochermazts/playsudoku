@@ -11,6 +11,7 @@
         $openGraph = $meta['openGraph'] ?? [];
         $twitterCard = $meta['twitterCard'] ?? [];
         $schemaOrg = $meta['schemaOrg'] ?? [];
+        $hreflang = $meta['hreflang'] ?? [];
     } catch (\Exception $e) {
         // Fallback meta tags
         $metaTags = [
@@ -24,6 +25,7 @@
         $openGraph = [];
         $twitterCard = [];
         $schemaOrg = [];
+        $hreflang = [];
         \Log::warning('Failed to load meta tags: ' . $e->getMessage());
     }
 @endphp
@@ -40,6 +42,11 @@
 @if(isset($metaTags['canonical']))
 <link rel="canonical" href="{{ $metaTags['canonical'] }}">
 @endif
+
+{{-- Hreflang Tags --}}
+@foreach($hreflang as $lang => $url)
+<link rel="alternate" hreflang="{{ $lang }}" href="{{ $url }}">
+@endforeach
 
 {{-- Open Graph Tags --}}
 @foreach($openGraph as $property => $content)

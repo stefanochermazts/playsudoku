@@ -14,6 +14,8 @@ class MetaService
     private array $openGraph = [];
     private array $twitterCard = [];
     private array $schemaOrg = [];
+    private array $hreflang = [];
+    private bool $isConfigured = false;
 
     public function __construct()
     {
@@ -28,8 +30,16 @@ class MetaService
         $locale = app()->getLocale();
         $appName = __('app.app_name');
 
+        // SEO optimized titles (max 60 characters)
+        $seoTitle = match($locale) {
+            'it' => 'Sudoku Online Gratis | Gioca Sudoku Facili e Difficili',
+            'de' => 'Sudoku Online Kostenlos | Leichte & Schwere Rätsel',
+            'es' => 'Sudoku Online Gratis | Juega Sudokus Fáciles y Difíciles',
+            default => 'Play Sudoku Online Free | Easy & Hard Sudoku Puzzles',
+        };
+
         $this->meta = [
-            'title' => $appName,
+            'title' => $seoTitle,
             'description' => match($locale) {
                 'it' => 'Gioca a Sudoku online gratis! Sfide quotidiane, classifiche competitive, modalità allenamento e analizzatore puzzle. La piattaforma Sudoku più completa per principianti ed esperti.',
                 'de' => 'Spielen Sie Sudoku kostenlos online! Tägliche Herausforderungen, Bestenlisten, Trainingsmodus und Puzzle-Analysator. Die vollständigste Sudoku-Plattform für Anfänger und Experten.',
@@ -49,7 +59,7 @@ class MetaService
         ];
 
         $this->openGraph = [
-            'og:title' => $appName,
+            'og:title' => $seoTitle,
             'og:description' => $this->meta['description'],
             'og:type' => 'website',
             'og:url' => url()->current(),
@@ -74,7 +84,7 @@ class MetaService
 
         $this->twitterCard = [
             'twitter:card' => 'summary_large_image',
-            'twitter:title' => $appName,
+            'twitter:title' => $seoTitle,
             'twitter:description' => $this->meta['description'],
             'twitter:site' => '@PlaySudoku',
             'twitter:image' => url('img/playsudoku_club.png'),
@@ -85,6 +95,9 @@ class MetaService
                 default => 'PlaySudoku - Play Sudoku Online',
             },
         ];
+
+        // Initialize hreflang tags
+        $this->setHreflang();
 
         $this->schemaOrg = [
             '@context' => 'https://schema.org',
@@ -135,12 +148,24 @@ class MetaService
     public function setTraining(): void
     {
         $locale = app()->getLocale();
-        $title = __('app.training.title');
-        $description = $locale === 'it' 
-            ? 'Allenati gratuitamente con il nostro Sudoku interattivo. Difficoltà variabili, suggerimenti intelligenti e analisi delle tecniche di risoluzione.'
-            : 'Train for free with our interactive Sudoku. Variable difficulties, smart hints and solving technique analysis.';
+        
+        // SEO optimized titles for Training
+        $title = match($locale) {
+            'it' => 'Allenamento Sudoku Gratis | Migliora le Tue Abilità',
+            'de' => 'Kostenlos Sudoku Trainieren | Verbessern Sie Ihre Fähigkeiten',
+            'es' => 'Entrenamiento Sudoku Gratis | Mejora Tus Habilidades',
+            default => 'Free Sudoku Training | Improve Your Skills',
+        };
+        
+        $description = match($locale) {
+            'it' => 'Allenati gratuitamente con il nostro Sudoku interattivo. Difficoltà variabili, suggerimenti intelligenti e analisi delle tecniche di risoluzione.',
+            'de' => 'Trainieren Sie kostenlos mit unserem interaktiven Sudoku. Variable Schwierigkeiten, intelligente Tipps und Analyse der Lösungstechniken.',
+            'es' => 'Entrénate gratis con nuestro Sudoku interactivo. Dificultades variables, pistas inteligentes y análisis de técnicas de resolución.',
+            default => 'Train for free with our interactive Sudoku. Variable difficulties, smart hints and solving technique analysis.',
+        };
 
         $this->setPage($title, $description);
+        $this->isConfigured = true;
         
         $this->openGraph['og:type'] = 'article';
         $this->schemaOrg = [
@@ -160,12 +185,24 @@ class MetaService
     public function setAnalyzer(): void
     {
         $locale = app()->getLocale();
-        $title = __('app.analyzer.title');
-        $description = $locale === 'it' 
-            ? 'Analizza qualsiasi puzzle Sudoku con il nostro risolutore avanzato. Scopri tutte le tecniche necessarie per la risoluzione passo dopo passo.'
-            : 'Analyze any Sudoku puzzle with our advanced solver. Discover all the techniques needed for step-by-step resolution.';
+        
+        // SEO optimized titles for Analyzer
+        $title = match($locale) {
+            'it' => 'Analizzatore Sudoku | Risolvi Ogni Puzzle Facilmente',
+            'de' => 'Sudoku Analysator | Lösen Sie Jedes Rätsel Einfach',
+            'es' => 'Analizador Sudoku | Resuelve Cualquier Puzzle Fácilmente',
+            default => 'Sudoku Analyzer | Solve Any Puzzle Easily',
+        };
+        
+        $description = match($locale) {
+            'it' => 'Analizza qualsiasi puzzle Sudoku con il nostro risolutore avanzato. Scopri tutte le tecniche necessarie per la risoluzione passo dopo passo.',
+            'de' => 'Analysieren Sie jedes Sudoku-Rätsel mit unserem fortschrittlichen Löser. Entdecken Sie alle Techniken für die schrittweise Lösung.',
+            'es' => 'Analiza cualquier puzzle Sudoku con nuestro solucionador avanzado. Descubre todas las técnicas necesarias para la resolución paso a paso.',
+            default => 'Analyze any Sudoku puzzle with our advanced solver. Discover all the techniques needed for step-by-step resolution.',
+        };
 
         $this->setPage($title, $description);
+        $this->isConfigured = true;
         
         $this->openGraph['og:type'] = 'article';
         $this->schemaOrg = [
@@ -187,15 +224,23 @@ class MetaService
         $difficulty = ucfirst($challenge->puzzle->difficulty ?? 'medium');
         $type = ucfirst($challenge->type);
         
-        $title = $locale === 'it' 
-            ? "Sfida Sudoku {$type} - Difficoltà {$difficulty}"
-            : "Sudoku Challenge {$type} - {$difficulty} Difficulty";
-            
-        $description = $locale === 'it'
-            ? "Partecipa alla sfida Sudoku {$type} di difficoltà {$difficulty}. Competizione in tempo reale con classifica globale."
-            : "Join the {$type} Sudoku challenge of {$difficulty} difficulty. Real-time competition with global leaderboard.";
+        // SEO optimized titles for Challenge (max 60 chars)
+        $title = match($locale) {
+            'it' => "Sfida Sudoku {$difficulty} | Competizione Online",
+            'de' => "Sudoku Herausforderung {$difficulty} | Online Wettbewerb",
+            'es' => "Desafío Sudoku {$difficulty} | Competición Online",
+            default => "Sudoku Challenge {$difficulty} | Online Competition",
+        };
+        
+        $description = match($locale) {
+            'it' => "Partecipa alla sfida Sudoku {$type} di difficoltà {$difficulty}. Competizione in tempo reale con classifica globale.",
+            'de' => "Nehmen Sie an der {$type} Sudoku-Herausforderung der Schwierigkeit {$difficulty} teil. Echtzeit-Wettbewerb mit globaler Bestenliste.",
+            'es' => "Únete al desafío Sudoku {$type} de dificultad {$difficulty}. Competición en tiempo real con clasificación global.",
+            default => "Join the {$type} Sudoku challenge of {$difficulty} difficulty. Real-time competition with global leaderboard.",
+        };
 
         $this->setPage($title, $description);
+        $this->isConfigured = true;
         
         $this->openGraph['og:type'] = 'article';
         $this->schemaOrg = [
@@ -219,15 +264,23 @@ class MetaService
         $difficulty = ucfirst($challenge->puzzle->difficulty ?? 'medium');
         $type = ucfirst($challenge->type);
         
-        $title = $locale === 'it' 
-            ? "Classifica Sfida #{$challenge->id} - {$type} {$difficulty}"
-            : "Challenge #{$challenge->id} Leaderboard - {$type} {$difficulty}";
-            
-        $description = $locale === 'it'
-            ? "Visualizza la classifica della sfida Sudoku {$type} di difficoltà {$difficulty}. Scopri i migliori tempi e le prestazioni dei giocatori."
-            : "View the leaderboard for the {$type} Sudoku challenge of {$difficulty} difficulty. Discover the best times and player performances.";
+        // SEO optimized titles for Leaderboard (max 60 chars)
+        $title = match($locale) {
+            'it' => "Classifica Sudoku {$difficulty} | Migliori Tempi",
+            'de' => "Sudoku Bestenliste {$difficulty} | Beste Zeiten",
+            'es' => "Clasificación Sudoku {$difficulty} | Mejores Tiempos",
+            default => "Sudoku Leaderboard {$difficulty} | Best Times",
+        };
+        
+        $description = match($locale) {
+            'it' => "Visualizza la classifica della sfida Sudoku {$type} di difficoltà {$difficulty}. Scopri i migliori tempi e le prestazioni dei giocatori.",
+            'de' => "Sehen Sie sich die Bestenliste der {$type} Sudoku-Herausforderung der Schwierigkeit {$difficulty} an. Entdecken Sie die besten Zeiten und Spielerleistungen.",
+            'es' => "Ve la clasificación del desafío Sudoku {$type} de dificultad {$difficulty}. Descubre los mejores tiempos y rendimientos de los jugadores.",
+            default => "View the leaderboard for the {$type} Sudoku challenge of {$difficulty} difficulty. Discover the best times and player performances.",
+        };
 
         $this->setPage($title, $description);
+        $this->isConfigured = true;
         
         $this->openGraph['og:type'] = 'article';
         $this->schemaOrg = [
@@ -248,7 +301,8 @@ class MetaService
             'meta' => $this->meta,
             'openGraph' => $this->openGraph,
             'twitterCard' => $this->twitterCard,
-            'schemaOrg' => $this->schemaOrg
+            'schemaOrg' => $this->schemaOrg,
+            'hreflang' => $this->hreflang
         ];
     }
 
@@ -282,5 +336,78 @@ class MetaService
     public function getSchemaOrg(): array
     {
         return $this->schemaOrg;
+    }
+
+    /**
+     * Set hreflang tags for all supported locales.
+     */
+    private function setHreflang(): void
+    {
+        $supportedLocales = config('app.supported_locales', ['en', 'it', 'de', 'es']);
+        $currentUrl = url()->current();
+        $currentLocale = app()->getLocale();
+        
+        // Remove locale from current URL to get base URL
+        $baseUrl = $this->getBaseUrlWithoutLocale($currentUrl, $currentLocale);
+        
+        // Add hreflang for each supported locale
+        foreach ($supportedLocales as $locale) {
+            $this->hreflang[$locale] = $baseUrl . '/' . $locale;
+        }
+        
+        // Add x-default pointing to English
+        $this->hreflang['x-default'] = $baseUrl . '/en';
+        
+        // Set canonical to current locale URL
+        $this->meta['canonical'] = $baseUrl . '/' . $currentLocale;
+    }
+
+    /**
+     * Get base URL without locale prefix.
+     */
+    private function getBaseUrlWithoutLocale(string $url, string $currentLocale): string
+    {
+        $baseUrl = config('app.url');
+        $path = str_replace($baseUrl, '', $url);
+        
+        // Remove leading slash and locale if present
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, $currentLocale . '/') || $path === $currentLocale) {
+            $path = substr($path, strlen($currentLocale));
+            $path = ltrim($path, '/');
+        }
+        
+        return $baseUrl . ($path ? '/' . $path : '');
+    }
+
+    /**
+     * Get hreflang tags.
+     */
+    public function getHreflang(): array
+    {
+        return $this->hreflang;
+    }
+
+    /**
+     * Update hreflang for specific URL path.
+     */
+    public function setCustomHreflang(string $pathWithoutLocale): void
+    {
+        $supportedLocales = config('app.supported_locales', ['en', 'it', 'de', 'es']);
+        $baseUrl = config('app.url');
+        
+        foreach ($supportedLocales as $locale) {
+            $this->hreflang[$locale] = $baseUrl . '/' . $locale . ($pathWithoutLocale ? '/' . $pathWithoutLocale : '');
+        }
+        
+        $this->hreflang['x-default'] = $baseUrl . '/en' . ($pathWithoutLocale ? '/' . $pathWithoutLocale : '');
+    }
+
+    /**
+     * Check if MetaService has been configured with specific page data.
+     */
+    public function isConfigured(): bool
+    {
+        return $this->isConfigured;
     }
 }

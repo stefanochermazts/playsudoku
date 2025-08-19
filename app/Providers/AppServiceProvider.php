@@ -34,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
         
         // Servizi applicativi
         $this->app->singleton(\App\Services\MoveValidationService::class);
+        
+        // MetaService come singleton per mantenere configurazione SEO attraverso l'app
+        $this->app->singleton(\App\Services\MetaService::class);
     }
 
     /**

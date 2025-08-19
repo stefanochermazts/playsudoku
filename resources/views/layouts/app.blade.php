@@ -12,17 +12,13 @@
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.svg') }}">
         <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
-        <title>{{ config('app.name', __('app.app_name')) }}</title>
-        @php($supported = config('app.supported_locales', ['en','it']))
-        @foreach($supported as $loc)
-            <link rel="alternate" href="{{ url('/'.$loc) }}" hreflang="{{ $loc }}">
-        @endforeach
-        <link rel="alternate" href="{{ url('/') }}" hreflang="x-default">
-        <meta name="description" content="{{ __('app.meta.description') }}">
-        <meta property="og:title" content="{{ __('app.app_name') }}">
-        <meta property="og:description" content="{{ __('app.meta.description') }}">
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="{{ url()->current() }}">
+        {{-- SEO Meta Tags via MetaService --}}
+        @php
+            // Initialize MetaService for app layout
+            $metaService = app(App\Services\MetaService::class);
+        @endphp
+        
+        @include('partials.meta-tags')
 
         <!-- Fonts: system-ui stack to avoid external font providers -->
 
