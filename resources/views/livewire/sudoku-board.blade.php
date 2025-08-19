@@ -536,6 +536,26 @@
             }
         });
         
+        // Event listener per reset timer quando viene caricato nuovo puzzle
+        document.addEventListener('livewire:dispatched', (event) => {
+            if (event.detail.name === 'puzzle-loaded') {
+                if (window.APP_DEBUG) console.log('🔄 SudokuBoard: Reset timer per nuovo puzzle');
+                
+                // Reset variabili timer JavaScript
+                baseMs = 0;
+                running = false;
+                lastUpdateMs = Date.now();
+                
+                // Ferma timer UI
+                stopUiTimer();
+                
+                // Aggiorna display timer a 00:00
+                if (timerEl) {
+                    timerEl.textContent = '00:00';
+                }
+            }
+        });
+        
         // Gestione focus accessibilità
         window.addEventListener('livewire:update', function() {
             // Sincronizza focus DOM con selezione Livewire

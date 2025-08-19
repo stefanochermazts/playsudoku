@@ -297,14 +297,18 @@
                 }
             })
             .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`✅ ${data.message}`);
-                    location.reload(); // Ricarica la pagina per aggiornare le statistiche
-                } else {
-                    alert(`❌ Errore: ${data.message}`);
-                }
-            })
+                            .then(data => {
+                    if (data.success) {
+                        let message = `✅ ${data.message}`;
+                        if (data.keys_found !== undefined && data.deleted_keys !== undefined) {
+                            message += `\n\n📊 Dettagli:\n• Chiavi trovate: ${data.keys_found}\n• Chiavi cancellate: ${data.deleted_keys}`;
+                        }
+                        alert(message);
+                        location.reload(); // Ricarica la pagina per aggiornare le statistiche
+                    } else {
+                        alert(`❌ Errore: ${data.message}`);
+                    }
+                })
             .catch(error => {
                 console.error('Error:', error);
                 alert('❌ Errore di rete durante il reset');

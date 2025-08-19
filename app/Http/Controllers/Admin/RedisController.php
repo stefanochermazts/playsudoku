@@ -30,34 +30,57 @@ class RedisController extends Controller
             if (config('cache.default') === 'redis') {
                 $redis = Redis::connection();
                 
-                // Ottieni tutte le chiavi con prefisso rilevato automaticamente
-                $actualPrefix = $this->detectActualCachePrefix($redis);
-                $keys = $redis->keys($actualPrefix . '*');
+                // Pattern noti dal debug: rimuovi solo chiavi cache Laravel
+                $targetPatterns = [
+                    'playsudoku_prod_laravel_cache_*',  // Cache applicazione (hashate)
+                    'playsudoku_prod_laravel_cache_framework/*', // Framework cache
+                ];
                 
-                // Se non trova chiavi con il prefisso rilevato, prova altri pattern
-                if (empty($keys)) {
-                    $fallbackPatterns = ['playsudoku:*', '*cache*', 'laravel_cache:*'];
-                    foreach ($fallbackPatterns as $pattern) {
-                        $keys = $redis->keys($pattern);
-                        if (!empty($keys)) break;
-                    }
-                }
+                $allKeys = [];
                 $deletedCount = 0;
                 
-                if (!empty($keys)) {
-                    $deletedCount = $redis->del($keys);
+                foreach ($targetPatterns as $pattern) {
+                    $keys = $redis->keys($pattern);
+                    if (!empty($keys)) {
+                        $allKeys = array_merge($allKeys, $keys);
+                    }
+                }
+                
+                // Rimuovi duplicati
+                $allKeys = array_unique($allKeys);
+                
+                // Log chiavi trovate per debug
+                Log::info('Redis reset - chiavi trovate', [
+                    'admin_user' => auth()->user()->email,
+                    'patterns_checked' => $targetPatterns,
+                    'keys_found' => count($allKeys),
+                    'sample_keys' => array_slice($allKeys, 0, 5),
+                    'timestamp' => now()
+                ]);
+                
+                // Cancella le chiavi in batch per evitare problemi di performance
+                if (!empty($allKeys)) {
+                    // Dividi in batch da 100 chiavi per evitare timeout
+                    $batches = array_chunk($allKeys, 100);
+                    
+                    foreach ($batches as $batch) {
+                        $deleted = $redis->del($batch);
+                        $deletedCount += $deleted;
+                    }
                 }
                 
                 Log::info('Redis reset completato dall\'admin', [
                     'admin_user' => auth()->user()->email,
+                    'total_keys_found' => count($allKeys),
                     'deleted_keys' => $deletedCount,
                     'timestamp' => now()
                 ]);
                 
                 return response()->json([
                     'success' => true,
-                    'message' => "Redis resettato con successo! Rimosse {$deletedCount} chiavi.",
-                    'deleted_keys' => $deletedCount
+                    'message' => "Redis resettato con successo! Trovate {" . count($allKeys) . "} chiavi, rimosse {$deletedCount}.",
+                    'deleted_keys' => $deletedCount,
+                    'keys_found' => count($allKeys)
                 ]);
             } else {
                 // Fallback per altri cache drivers
