@@ -513,19 +513,43 @@ class SudokuBoard extends Component
             $generator = app(\App\Domain\Sudoku\Contracts\GeneratorInterface::class);
             $validator = app(\App\Domain\Sudoku\Contracts\ValidatorInterface::class);
 
+            // Aumenta tentativi per difficoltà extreme (crazy)
+            $maxAttempts = ($difficulty === 'crazy') ? 30 : 15;
+            
             // Genera garantendo validità e unicità soluzione
             $attempts = 0;
-            $maxAttempts = 15;
             $puzzle = null;
             $isValid = false;
             $seed = 0;
             do {
                 $attempts++;
                 $seed = random_int(1000, 999999);
-                $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
-                $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
-                $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+                
+                try {
+                    $puzzle = $generator->generatePuzzleWithDifficulty($seed, $difficulty);
+                    $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
+                    $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+                } catch (\Exception $e) {
+                    // Se la generazione fallisce, prova con seed diverso
+                    $isValid = false;
+                    if ($difficulty === 'crazy' && $attempts > 20) {
+                        // Fallback per crazy: usa expert invece
+                        $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'expert');
+                        $noImpossibleCells = empty($validator->getValidationErrors($puzzle)['impossible_cells'] ?? []);
+                        $isValid = $validator->isValid($puzzle) && $validator->isSolvable($puzzle) && $validator->hasUniqueSolution($puzzle) && $noImpossibleCells;
+                    }
+                }
             } while(!$isValid && $attempts < $maxAttempts);
+
+            // Se anche dopo tutti i tentativi non è riuscito, usa expert come fallback finale
+            if (!$isValid && $difficulty === 'crazy') {
+                $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'expert');
+                $this->lastAction = "Fallback: caricato puzzle EXPERT invece di CRAZY (seed: {$seed})";
+            } elseif (!$isValid) {
+                // Ultimo fallback: puzzle medium
+                $puzzle = $generator->generatePuzzleWithDifficulty($seed, 'medium');
+                $this->lastAction = "Fallback: caricato puzzle MEDIUM (seed: {$seed}) - {$difficulty} fallito";
+            }
 
             $this->initialGrid = $puzzle->toArray();
             $this->grid = $puzzle->toArray();
@@ -548,7 +572,16 @@ class SudokuBoard extends Component
             // Ricomputa completion percentage
             $this->computeCompletion();
             
-            $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
+            // Messaggio informativo per difficoltà crazy
+            if ($difficulty === 'crazy') {
+                if ($attempts > 20) {
+                    $this->lastAction = "Caricato puzzle EXPERT (seed: {$seed}) - Crazy era troppo difficile da generare";
+                } else {
+                    $this->lastAction = "Caricato puzzle CRAZY estremo (seed: {$seed}) - Solo {$puzzle->countEmptyCells()} celle vuote!";
+                }
+            } else {
+                $this->lastAction = "Caricato nuovo puzzle {$difficulty} (seed: {$seed})";
+            }
         } catch (\Exception $e) {
             $this->lastAction = "Errore caricamento puzzle: " . $e->getMessage();
         } finally {

@@ -769,7 +769,8 @@ final class Generator implements GeneratorInterface
             'normal', 'medium', 'medio' => ['min' => 28, 'max' => 35],
             'hard', 'difficile' => ['min' => 22, 'max' => 27],
             'expert', 'esperto' => ['min' => 17, 'max' => 21],
-            'crazy' => ['min' => 12, 'max' => 16],
+            // Crazy: leggermente più fattibile (era 12-16, ora 15-19)
+            'crazy' => ['min' => 15, 'max' => 19],
             default => ['min' => 25, 'max' => 35], // Default: normal
         };
     }

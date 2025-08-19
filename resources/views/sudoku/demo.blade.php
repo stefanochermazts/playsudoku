@@ -75,10 +75,10 @@
                         </div>
                     </button>
                     <button id="btn-crazy" onclick="loadPuzzle('crazy')" 
-                            class="difficulty-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
-                                   focus:outline-none focus:ring-2 focus:ring-red-500 font-medium text-sm
-                                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500
-                                   flex items-center space-x-2">
+                            class="difficulty-btn px-4 py-2 bg-gradient-to-r from-red-600 to-purple-600 text-white rounded-lg 
+                                   hover:from-red-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-red-500 
+                                   font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed 
+                                   disabled:hover:from-red-600 disabled:hover:to-purple-600 flex items-center space-x-2">
                         <span class="btn-text">{{ __('app.training.difficulty_crazy') }}</span>
                         <div class="btn-spinner hidden">
                             <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -148,6 +148,11 @@ function loadPuzzle(difficulty) {
     
     // Mostra loading sui pulsanti
     showButtonLoading(difficulty);
+    
+    // Messaggio speciale per crazy difficulty
+    if (difficulty === 'crazy') {
+        console.log('⚠️ Caricamento puzzle CRAZY - Potrebbe richiedere più tempo...');
+    }
     
     // Metodo 1: Usa la funzione globale esposta dal componente
     if (typeof window.sudokuBoardLoadPuzzle === 'function') {
