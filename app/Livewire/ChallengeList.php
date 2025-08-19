@@ -14,7 +14,7 @@ class ChallengeList extends Component
     use WithPagination;
 
     public string $filter = 'all'; // all, daily, weekly, custom
-    public string $status = 'all'; // all, not_started, in_progress, completed
+    public string $status = 'all'; // all, not_started, in_progress, completed, training
     public Collection $userAttempts;
 
     public function mount(): void
@@ -47,11 +47,8 @@ class ChallengeList extends Component
     {
         $challenge = Challenge::findOrFail($challengeId);
         
-        // Verifica che la sfida sia attiva
-        if ($challenge->status !== 'active' || $challenge->ends_at <= now()) {
-            $this->dispatch('challenge-error', message: __('app.challenges.challenge_not_available'));
-            return;
-        }
+        // Nota: Rimuoviamo il controllo per permettere accesso a sfide scadute in modalità allenamento
+        // Il controllo della modalità allenamento è gestito nel componente ChallengePlay
 
         // Verifica se l'utente ha già completato questa sfida
         $existingAttempt = ChallengeAttempt::where('user_id', auth()->id())
@@ -98,6 +95,10 @@ class ChallengeList extends Component
                         ->filter(fn($attempt) => $attempt->completed_at)
                         ->keys();
                     $query->whereIn('id', $completedIds->all());
+                    break;
+                case 'training':
+                    // Filtra solo sfide scadute (modalità allenamento)
+                    $query->where('ends_at', '<=', now());
                     break;
             }
         }

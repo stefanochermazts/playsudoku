@@ -194,6 +194,12 @@ return [
         'not_started' => 'Not started',
         'in_progress' => 'In progress',
         'completed' => 'Completed',
+        'training' => 'Training',
+        'training_mode' => 'Training Mode',
+        'training_mode_description' => 'Expired challenge - Completion will not affect competitive leaderboards',
+        'training_completion_message' => 'Training mode completion - Will not affect leaderboards',
+        'back_to_challenges' => 'Back to Challenges',
+        'play_training_mode' => 'Play in Training Mode',
         'daily_challenge' => 'Daily Challenge',
         'weekly_challenge' => 'Weekly Challenge',
         'custom_challenge' => 'Custom Challenge',
@@ -308,6 +314,11 @@ return [
         'expires_label' => 'Expires:',
         'time_label' => 'Time:',
         'challenge_info' => 'Challenge Info',
+        'type_label' => 'Type:',
+        'time_limit_label' => 'Time limit:',
+        'pause_save' => 'Pause & Save',
+        'progress' => 'Progress',
+        'completion_label' => 'Completion:',
         'challenge_completed' => 'Challenge Completed!',
         'view_leaderboard' => 'View Leaderboard',
         'game_time' => 'Game Time',
@@ -357,6 +368,13 @@ return [
         'hard' => 'Hard',
         'expert' => 'Expert',
         'crazy' => 'Crazy',
+    ],
+
+    // Challenge types
+    'challenge_types' => [
+        'daily' => 'Daily',
+        'weekly' => 'Weekly',
+        'custom' => 'Custom',
     ],
 
     

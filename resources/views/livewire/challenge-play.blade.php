@@ -1,4 +1,21 @@
 <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+    <!-- Banner Modalità Allenamento per sfide scadute -->
+    @if($isArchivedChallenge)
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center justify-center space-x-3">
+                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-center">
+                        <p class="font-semibold">⏰ {{ __('app.challenges.training_mode') }}</p>
+                        <p class="text-sm opacity-90">{{ __('app.challenges.training_mode_description') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Header Challenge Info -->
     <div class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -15,9 +32,13 @@
                             {{ $challenge->title ?? __('app.challenges.' . $challenge->type . '_challenge') }}
                         </h1>
                         <div class="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-300">
-                            <span>{{ ucfirst($challenge->puzzle->difficulty) }}</span>
+                            <span>{{ __('app.difficulty.' . $challenge->puzzle->difficulty) }}</span>
                             <span>•</span>
-                            <span>{{ __('app.challenges.ends_in') }}: {{ $challenge->ends_at->diffForHumans() }}</span>
+                            @if($isArchivedChallenge)
+                                <span class="text-amber-600 dark:text-amber-400 font-medium">{{ __('app.challenges.training_mode') }}</span>
+                            @else
+                                <span>{{ __('app.challenges.ends_in') }}: {{ $challenge->ends_at->diffForHumans() }}</span>
+                            @endif
                             @if(!$hintsAllowed)
                                 <span>•</span>
                                 <span class="text-orange-600 dark:text-orange-400">{{ __('app.challenges.not_allowed') }}</span>
@@ -98,20 +119,20 @@
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">{{ __('app.dashboard.challenge_info') }}</h3>
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
-                            <span class="text-neutral-600 dark:text-neutral-300">Tipo:</span>
-                            <span class="font-medium text-neutral-900 dark:text-white">{{ ucfirst($challenge->type) }}</span>
+                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.type_label') }}</span>
+                            <span class="font-medium text-neutral-900 dark:text-white">{{ __('app.challenge_types.' . $challenge->type) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.difficulty_label') }}</span>
-                            <span class="font-medium text-neutral-900 dark:text-white">{{ ucfirst($challenge->puzzle->difficulty) }}</span>
+                            <span class="font-medium text-neutral-900 dark:text-white">{{ __('app.difficulty.' . $challenge->puzzle->difficulty) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-neutral-600 dark:text-neutral-300">Scade:</span>
+                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.expires_label') }}</span>
                             <span class="font-medium text-neutral-900 dark:text-white">{{ $challenge->ends_at->diffForHumans() }}</span>
                         </div>
                         @if(isset($timeLimit))
                             <div class="flex justify-between text-sm">
-                                <span class="text-neutral-600 dark:text-neutral-300">Limite tempo:</span>
+                                <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.time_limit_label') }}</span>
                                 <span class="font-medium text-orange-600 dark:text-orange-400">{{ intval($timeLimit / 60000) }} min</span>
                             </div>
                         @endif
@@ -121,11 +142,11 @@
                 <!-- Actions -->
                 @if(!$isCompleted)
                     <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50">
-                        <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Azioni</h3>
+                        <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">{{ __('app.dashboard.actions') }}</h3>
                         <div class="space-y-3">
                             <button onclick="pauseAndSaveChallenge()"
                                     class="w-full px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg text-orange-700 dark:text-orange-300 font-medium hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
-                                Pausa & Salva
+                                {{ __('app.dashboard.pause_save') }}
                             </button>
                         </div>
                     </div>
@@ -133,10 +154,10 @@
 
                 <!-- Progress -->
                 <div class="bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm rounded-2xl p-6 border border-neutral-200/50 dark:border-neutral-700/50">
-                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Progresso</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-4">{{ __('app.dashboard.progress') }}</h3>
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
-                            <span class="text-neutral-600 dark:text-neutral-300">Completamento:</span>
+                            <span class="text-neutral-600 dark:text-neutral-300">{{ __('app.dashboard.completion_label') }}</span>
                             <span class="font-medium text-neutral-900 dark:text-white">{{ $completionPercentage }}%</span>
                         </div>
                         <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
@@ -169,16 +190,30 @@
                     <p class="text-neutral-600 dark:text-neutral-300 mb-6">
                         Hai concluso il sudoku con questo tempo: <strong>{{ $this->getFormattedTime() }}</strong> e con <strong>{{ $errorCount }}</strong> errori.
                     </p>
-                    <div class="flex space-x-3">
-                        <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
-                           class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
-                            Torna alle Sfide
-                        </a>
-                        <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
-                           class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
-                            {{ __('app.dashboard.view_leaderboard') }}
-                        </a>
-                    </div>
+                    @if($isArchivedChallenge)
+                        {{-- Modalità allenamento: solo pulsante per tornare alle sfide --}}
+                        <div class="text-center">
+                            <p class="text-amber-600 dark:text-amber-400 mb-4 text-sm">
+                                🏆 {{ __('app.challenges.training_completion_message') }}
+                            </p>
+                            <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                               class="inline-block px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-colors">
+                                {{ __('app.challenges.back_to_challenges') }}
+                            </a>
+                        </div>
+                    @else
+                        {{-- Modalità competitiva: pulsanti normali con leaderboard --}}
+                        <div class="flex space-x-3">
+                            <a href="{{ app()->has('locale') && in_array(app()->getLocale(), ['en', 'it']) ? route('localized.challenges.index') : route('challenges.index') }}" 
+                               class="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors text-center">
+                                {{ __('app.challenges.back_to_challenges') }}
+                            </a>
+                            <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                               class="flex-1 px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-medium rounded-lg hover:from-primary-700 hover:to-secondary-700 transition-colors text-center">
+                                {{ __('app.dashboard.view_leaderboard') }}
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

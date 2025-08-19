@@ -48,14 +48,14 @@ class GenerateDailyChallenge extends Command
             }
         }
 
-        // Difficoltà ciclica: Easy (lunedì), Medium (martedì-mercoledì), Hard (giovedì-venerdì), Expert (sabato-domenica)
+        // Difficoltà ciclica: Easy (lunedì), Normal (martedì-mercoledì), Hard (giovedì-venerdì), Expert (sabato-domenica)
         $dayOfWeek = $today->dayOfWeek; // 0=domenica, 1=lunedì, ...
         $difficulty = match($dayOfWeek) {
             1 => 'easy',        // Lunedì
-            2, 3 => 'medium',   // Martedì-Mercoledì  
+            2, 3 => 'normal',   // Martedì-Mercoledì  
             4, 5 => 'hard',     // Giovedì-Venerdì
             6, 0 => 'expert',   // Sabato-Domenica
-            default => 'medium'
+            default => 'normal'
         };
 
         $this->info("🎯 Generazione sfida giornaliera:");

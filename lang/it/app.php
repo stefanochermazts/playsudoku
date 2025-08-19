@@ -190,6 +190,12 @@ return [
         'not_started' => 'Non iniziate',
         'in_progress' => 'In corso',
         'completed' => 'Completate',
+        'training' => 'Allenamento',
+        'training_mode' => 'Modalità Allenamento',
+        'training_mode_description' => 'Sfida scaduta - Il completamento non influenzerà le classifiche competitive',
+        'training_completion_message' => 'Completamento in modalità allenamento - Non influenzerà le classifiche',
+        'back_to_challenges' => 'Torna alle Sfide',
+        'play_training_mode' => 'Gioca in Modalità Allenamento',
         'daily_challenge' => 'Sfida Giornaliera',
         'weekly_challenge' => 'Sfida Settimanale',
         'custom_challenge' => 'Sfida Personalizzata',
@@ -304,6 +310,11 @@ return [
         'expires_label' => 'Scade:',
         'time_label' => 'Tempo:',
         'challenge_info' => 'Info Sfida',
+        'type_label' => 'Tipo:',
+        'time_limit_label' => 'Limite tempo:',
+        'pause_save' => 'Pausa & Salva',
+        'progress' => 'Progresso',
+        'completion_label' => 'Completamento:',
         'challenge_completed' => 'Sfida Completata!',
         'view_leaderboard' => 'Vedi Classifica',
         'game_time' => 'Tempo di gioco',
@@ -353,6 +364,13 @@ return [
         'hard' => 'Difficile',
         'expert' => 'Esperto',
         'crazy' => 'Folle',
+    ],
+
+    // Challenge types
+    'challenge_types' => [
+        'daily' => 'Giornaliera',
+        'weekly' => 'Settimanale',
+        'custom' => 'Personalizzata',
     ],
 
     

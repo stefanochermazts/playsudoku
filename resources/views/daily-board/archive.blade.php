@@ -34,7 +34,23 @@
         @if($challenges->count() > 0)
             <div class="space-y-6">
                 @foreach($challenges as $challenge)
-                    <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+                    @php($isExpired = $challenge->ends_at <= now())
+                    {{-- Sfondo distintivo per modalità allenamento (solo sfide scadute) --}}
+                    <div class="@if($isExpired) bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/50 @else bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 @endif rounded-xl shadow-sm p-6 relative overflow-hidden">
+                        @if($isExpired)
+                            {{-- Pattern decorativo per modalità allenamento --}}
+                            <div class="absolute top-0 right-0 w-24 h-24 opacity-10">
+                                <svg class="w-full h-full text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            {{-- Badge "Modalità Allenamento" --}}
+                            <div class="absolute top-3 right-3">
+                                <span class="px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-full shadow-sm">
+                                    ⏰ {{ __('app.challenges.training') }}
+                                </span>
+                            </div>
+                        @endif
                         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div class="mb-4 lg:mb-0">
                                 <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
@@ -106,10 +122,19 @@
                                             {{ __('app.view_details') }}
                                         </a>
                                     @else
-                                        <a href="{{ route('localized.daily-board.show', ['locale' => app()->getLocale(), 'date' => $challenge->starts_at->format('Y-m-d')]) }}" 
-                                           class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
-                                            {{ __('app.play_this_challenge') }}
-                                        </a>
+                                        @if($isExpired)
+                                            {{-- Modalità allenamento per sfide scadute --}}
+                                            <a href="{{ route('localized.challenges.play', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                                               class="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 dark:bg-gradient-to-r dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-300 rounded-md hover:from-amber-200 hover:to-orange-200 dark:hover:from-amber-900/50 dark:hover:to-orange-900/50 border border-amber-300 dark:border-amber-700">
+                                                🎯 {{ __('app.play_this_challenge') }}
+                                            </a>
+                                        @else
+                                            {{-- Modalità competitiva per sfide ancora attive --}}
+                                            <a href="{{ route('localized.challenges.play', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
+                                               class="px-3 py-1.5 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-md hover:bg-primary-200 dark:hover:bg-primary-900/50">
+                                                🏆 {{ __('app.play_this_challenge') }}
+                                            </a>
+                                        @endif
                                         <a href="{{ route('localized.leaderboard.show', ['locale' => app()->getLocale(), 'challenge' => $challenge->id]) }}" 
                                            class="px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600">
                                             {{ __('app.view_full_leaderboard') }}

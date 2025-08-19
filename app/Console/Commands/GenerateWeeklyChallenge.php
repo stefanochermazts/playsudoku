@@ -98,7 +98,7 @@ class GenerateWeeklyChallenge extends Command
     {
         return match($difficulty) {
             'easy' => 8,
-            'medium' => 15,
+            'normal' => 15,
             'hard' => 25,
             'expert' => 40,
             'crazy' => 60,

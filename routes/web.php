@@ -113,16 +113,18 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
             ->name('localized.daily-board.index');
         Route::get('/daily-board/archive', [\App\Http\Controllers\DailyBoardController::class, 'archive'])
             ->name('localized.daily-board.archive');
-        Route::get('/daily-board/{date}', [\App\Http\Controllers\DailyBoardController::class, 'show'])
-            ->name('localized.daily-board.show');
+        Route::get('/daily-board/{date}', function ($locale, $date) {
+            return app(\App\Http\Controllers\DailyBoardController::class)->show(request(), $date);
+        })->name('localized.daily-board.show');
             
         // Weekly Board routes
         Route::get('/weekly-board', [\App\Http\Controllers\WeeklyBoardController::class, 'index'])
             ->name('localized.weekly-board.index');
         Route::get('/weekly-board/archive', [\App\Http\Controllers\WeeklyBoardController::class, 'archive'])
             ->name('localized.weekly-board.archive');
-        Route::get('/weekly-board/{week}', [\App\Http\Controllers\WeeklyBoardController::class, 'show'])
-            ->name('localized.weekly-board.show');
+        Route::get('/weekly-board/{week}', function ($locale, $week) {
+            return app(\App\Http\Controllers\WeeklyBoardController::class)->show(request(), $week);
+        })->name('localized.weekly-board.show');
         
         // Friends page
         Route::get('/friends', [App\Http\Controllers\FriendshipController::class, 'index'])->name('localized.friends.index');

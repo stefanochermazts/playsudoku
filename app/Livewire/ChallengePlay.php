@@ -28,16 +28,15 @@ class ChallengePlay extends Component
     public bool $timerRunning = false;
     public bool $isCompleted = false;
     public bool $isReadOnly = false;
+    public bool $isArchivedChallenge = false;
     public array $conflicts = [];
 
     public function mount($challengeId): void
     {
         $this->challenge = Challenge::with('puzzle')->findOrFail((int) $challengeId);
         
-        // Verifica accesso alla sfida
-        if ($this->challenge->status !== 'active' || $this->challenge->ends_at <= now()) {
-            abort(403, 'Questa sfida non è più disponibile.');
-        }
+        // Determina se la sfida è in modalità allenamento (scaduta/non attiva)
+        $this->isArchivedChallenge = ($this->challenge->status !== 'active' || $this->challenge->ends_at <= now());
 
         // Carica o crea tentativo
         $this->loadOrCreateAttempt();
@@ -381,13 +380,18 @@ class ChallengePlay extends Component
         // Anti-abuso base: validazione risultato prima del salvataggio definitivo
         $isValid = true;
         
-        // 1) Tempo minimo ragionevole (evita submit istantanei/abusi)
+        // 1) Modalità allenamento: attempts su sfide scadute non sono competitivi
+        if ($this->isArchivedChallenge) {
+            $isValid = false;
+        }
+        
+        // 2) Tempo minimo ragionevole (evita submit istantanei/abusi)
         $minSeconds = 10; // configurabile se necessario
         if ($this->elapsedTime < $minSeconds) {
             $isValid = false;
         }
         
-        // 2) Confronto con soluzione del puzzle
+        // 3) Confronto con soluzione del puzzle
         $solution = $this->challenge->puzzle->solution;
         if (is_string($solution)) {
             $solution = json_decode($solution, true);
@@ -405,12 +409,12 @@ class ChallengePlay extends Component
             }
         }
         
-        // 3) Un solo completamento per tentativo (idempotenza)
+        // 4) Un solo completamento per tentativo (idempotenza)
         if ($this->attempt->completed_at !== null) {
             $isValid = false;
         }
         
-        // 4) Soglia pause: invalidare se pause totali > 70% del tempo reale
+        // 5) Soglia pause: invalidare se pause totali > 70% del tempo reale
         if ($this->attempt) {
             $realDurationMs = $this->attempt->started_at ? 
                 (int) abs($this->attempt->started_at->diffInMilliseconds(now())) : 
@@ -421,7 +425,7 @@ class ChallengePlay extends Component
             }
         }
         
-        // 5) Limite numero pause (max 5)
+        // 6) Limite numero pause (max 5)
         if (($this->attempt->pauses_count ?? 0) > 5) {
             $isValid = false;
         }
