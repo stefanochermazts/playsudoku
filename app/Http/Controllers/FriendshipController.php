@@ -47,13 +47,26 @@ class FriendshipController extends Controller
     public function search(Request $request): JsonResponse
     {
         $request->validate([
-            'query' => 'required|string|min:2|max:50',
+            'query' => 'required|string|min:2|max:100',
+            'limit' => 'sometimes|integer|min:1|max:50'
         ]);
+
+        $query = trim($request->input('query'));
+        $limit = (int) $request->input('limit', 20);
+
+        // Se la query è troppo breve, restituisci vuoto
+        if (strlen($query) < 2) {
+            return response()->json([
+                'users' => [],
+                'total' => 0,
+                'message' => 'Query di ricerca troppo breve (minimo 2 caratteri)'
+            ]);
+        }
 
         $results = $this->friendshipService->searchUsers(
             Auth::user(),
-            $request->input('query'),
-            20
+            $query,
+            $limit
         );
 
         return response()->json([
@@ -63,8 +76,11 @@ class FriendshipController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'profile_url' => route('users.profile', $user->id),
+                    'can_receive_requests' => $user->canReceiveFriendRequests(),
                 ];
-            })
+            }),
+            'total' => $results->count(),
+            'query' => $query
         ]);
     }
 

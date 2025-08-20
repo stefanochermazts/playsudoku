@@ -28,6 +28,9 @@
         <!-- Additional Styles -->
         @stack('styles')
         
+        <!-- Page-specific head content -->
+        @yield('head')
+        
         <!-- Analytics -->
         @include('partials.analytics')
     </head>
@@ -46,7 +49,11 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+                @if(isset($slot))
+                    {{ $slot }}
+                @else
+                    @yield('content')
+                @endif
             </main>
         </div>
         

@@ -142,27 +142,58 @@
                             </div>
                         </div>
                         
-                        {{-- Risultati ricerca remoti (opzionali) --}}
+                        {{-- Risultati ricerca remoti --}}
                         <template x-if="results.length > 0">
-                            <div class="mt-4 space-y-2">
-                                <template x-for="user in results" :key="user.id">
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
-                                        <div class="min-w-0 flex-1">
-                                            <div class="font-medium text-neutral-900 dark:text-white truncate" x-text="user.name"></div>
-                                            <div class="text-sm text-neutral-500 truncate" x-text="user.email"></div>
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                        🔍 Risultati di ricerca
+                                    </h3>
+                                    <span class="text-xs text-neutral-500" x-text="`${results.length} utenti trovati`"></span>
+                                </div>
+                                <div class="space-y-2">
+                                    <template x-for="user in results" :key="user.id">
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                            <div class="min-w-0 flex-1">
+                                                <div class="font-medium text-neutral-900 dark:text-white truncate" x-text="user.name"></div>
+                                                <div class="text-sm text-neutral-500 truncate" x-text="user.email"></div>
+                                                <div class="text-xs text-green-600 dark:text-green-400">
+                                                    ✅ Accetta richieste di amicizia
+                                                </div>
+                                            </div>
+                                            <button @click="sendFriendRequest(user.id)"
+                                                    class="px-3 py-1 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm whitespace-nowrap">
+                                                {{ __('app.friends.send_request') }}
+                                            </button>
                                         </div>
-                                        <button @click="sendFriendRequest(user.id)"
-                                                class="px-3 py-1 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm whitespace-nowrap">
-                                            {{ __('app.friends.send_request') }}
-                                        </button>
-                                    </div>
-                                </template>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                         
-                        <div x-show="loading" class="mt-4 text-center text-neutral-500">
-                            {{ __('app.friends.searching') }}...
+                        {{-- Loading --}}
+                        <div x-show="loading" class="mt-4 text-center">
+                            <div class="inline-flex items-center px-4 py-2 text-sm text-neutral-600 dark:text-neutral-300">
+                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                🔍 Ricerca in corso...
+                            </div>
                         </div>
+                        
+                        {{-- Nessun risultato --}}
+                        <template x-if="!loading && query.trim().length >= 2 && results.length === 0">
+                            <div class="mt-4 text-center py-6">
+                                <div class="text-neutral-400 mb-2">🔍</div>
+                                <div class="text-sm text-neutral-600 dark:text-neutral-300">
+                                    Nessun utente trovato per "<span x-text="query" class="font-medium"></span>"
+                                </div>
+                                <div class="text-xs text-neutral-500 mt-1">
+                                    Solo utenti che accettano richieste di amicizia vengono mostrati
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -240,16 +271,76 @@
                 results: [],
                 loading: false,
                 filterTerm: '',
+                searchTimeout: null,
                 
                 filterLists() {
-                    // Usa la query come filtro locale, senza chiamate remote
-                    this.filterTerm = this.query.trim().toLowerCase();
-                    // Filtra dinamicamente gli elementi nelle 2 sezioni (suggerimenti sono filtrati via x-show appena sopra)
+                    // Se la query è vuota, pulisci i risultati e mostra suggerimenti locali
+                    const trimmedQuery = this.query.trim();
+                    if (trimmedQuery.length === 0) {
+                        this.results = [];
+                        this.filterTerm = '';
+                        this.showLocalSuggestions();
+                        return;
+                    }
+                    
+                    // Se la query è troppo breve, filtra solo suggerimenti locali
+                    if (trimmedQuery.length < 2) {
+                        this.filterTerm = trimmedQuery.toLowerCase();
+                        this.results = [];
+                        this.showLocalSuggestions();
+                        return;
+                    }
+                    
+                    // Debounce per la ricerca remota
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(() => {
+                        this.searchRemoteUsers(trimmedQuery);
+                    }, 300);
+                },
+                
+                showLocalSuggestions() {
+                    // Filtra dinamicamente i suggerimenti locali
                     document.querySelectorAll('[data-friend-item]').forEach(el => {
                         const name = (el.getAttribute('data-name') || '').toLowerCase();
                         const email = (el.getAttribute('data-email') || '').toLowerCase();
                         el.style.display = (!this.filterTerm || name.includes(this.filterTerm) || email.includes(this.filterTerm)) ? '' : 'none';
                     });
+                },
+                
+                async searchRemoteUsers(query) {
+                    this.loading = true;
+                    this.filterTerm = query.toLowerCase();
+                    
+                    // Nascondi i suggerimenti locali quando cerchi
+                    document.querySelectorAll('[data-friend-item]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    
+                    try {
+                        const response = await fetch(`/api/friends/search?query=${encodeURIComponent(query)}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            this.results = data.users || [];
+                        } else {
+                            console.error('Errore ricerca:', data.message);
+                            this.results = [];
+                            showNotification(data.message || 'Errore durante la ricerca', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Errore rete:', error);
+                        this.results = [];
+                        showNotification('Errore di connessione durante la ricerca', 'error');
+                    } finally {
+                        this.loading = false;
+                    }
                 },
                 
                 async sendFriendRequest(userId) {

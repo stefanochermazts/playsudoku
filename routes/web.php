@@ -167,6 +167,22 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
         // altre rotte protette
     });
     
+    // Editorial System - Frontend Routes (Localized - Public)
+    Route::get('/articles', [App\Http\Controllers\ArticleController::class, 'index'])
+         ->name('localized.articles.index');
+    
+    Route::get('/articles/search', [App\Http\Controllers\ArticleController::class, 'search'])
+         ->name('localized.articles.search');
+    
+    Route::get('/articles/feed', [App\Http\Controllers\ArticleController::class, 'feed'])
+         ->name('localized.articles.feed');
+    
+    Route::get('/articles/{category}', [App\Http\Controllers\ArticleController::class, 'category'])
+         ->name('localized.articles.category');
+    
+    Route::get('/articles/{category}/{article}', [App\Http\Controllers\ArticleController::class, 'show'])
+         ->name('localized.articles.show');
+    
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';
 });
@@ -366,7 +382,8 @@ Route::middleware(['localized-auth'])->group(function () {
         return redirect()->to(url('/'.$preferred.$suffix));
     })->name('leaderboard.redirect');
     */
-});
+
+    });
 
 // Route di test
 Route::get('/test-basic', [App\Http\Controllers\SimpleTestController::class, 'test']);
@@ -413,6 +430,45 @@ Route::middleware(['auth'])->prefix('api/user')->group(function () {
 
 // Profili pubblici utenti
 Route::get('/users/{user}/profile', [App\Http\Controllers\UserProfileController::class, 'show'])->name('users.profile.show');
+
+// Editorial System - Admin Routes (requires admin role)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Article Categories Management
+    Route::resource('article-categories', App\Http\Controllers\Admin\ArticleCategoryController::class);
+    
+    // Article Generator (AI-powered) - MUST BE BEFORE resource routes
+    Route::prefix('articles/generator')->name('articles.generator.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'index'])
+             ->name('index');
+        Route::post('/outline', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'generateOutline'])
+             ->name('outline');
+        Route::get('/outline/preview', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'previewOutline'])
+             ->name('outline.preview');
+        Route::post('/outline/modify', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'modifyOutline'])
+             ->name('outline.modify');
+        Route::post('/article', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'generateArticle'])
+             ->name('article');
+        Route::get('/article/preview', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'previewArticle'])
+             ->name('article.preview');
+        Route::get('/article/export', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'exportArticle'])
+             ->name('article.export');
+        Route::delete('/session', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'clearSession'])
+             ->name('session.clear');
+        Route::get('/status', [App\Http\Controllers\Admin\ArticleGeneratorController::class, 'getStatus'])
+             ->name('status');
+    });
+    
+    // Articles Management - AFTER specific routes
+    Route::resource('articles', App\Http\Controllers\Admin\ArticleController::class);
+    Route::post('articles/{article}/translate', [App\Http\Controllers\Admin\ArticleController::class, 'translate'])
+         ->name('articles.translate');
+    Route::post('articles/{article}/duplicate', [App\Http\Controllers\Admin\ArticleController::class, 'duplicate'])
+         ->name('articles.duplicate');
+    Route::get('articles/{article}/preview', [App\Http\Controllers\Admin\ArticleController::class, 'preview'])
+         ->name('articles.preview');
+    Route::post('articles/bulk', [App\Http\Controllers\Admin\ArticleController::class, 'bulk'])
+         ->name('articles.bulk');
+});
 
 // Include auth routes for non-localized fallback
 require __DIR__.'/auth.php';

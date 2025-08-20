@@ -39,7 +39,7 @@
         // $performanceService = app(App\Services\PerformanceService::class);
     @endphp
     
-    @include('partials.meta-tags')
+    {{-- @include('partials.meta-tags') --}}
     
     {{-- Load CSS normally --}}
     @vite(['resources/css/app.css'])
@@ -62,88 +62,92 @@
         }
     </style>
     
+    {{-- Theme initialization - separate scripts for auth/guest to avoid Blade parsing issues --}}
+    @auth
     <script>
         // Theme initialization with database sync for authenticated users
         (function() {
-            @auth
-                // Per utenti autenticati, prova a caricare le preferenze dal database
-                const savedLocalTheme = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                let theme = savedLocalTheme || (prefersDark ? 'dark' : 'light');
-                
-                // Applica tema temporaneo mentre carichi le preferenze
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-                
-                // Carica preferenze dal database in background
-                const preferencesUrl = @if(request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
-                    '{{ route("localized.api.preferences.get", ["locale" => app()->getLocale()]) }}'
-                @else
-                    '{{ route("api.preferences.get") }}'
-                @endif;
-                
-                fetch(preferencesUrl, {
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(preferences => {
-                    if (preferences.theme && preferences.theme !== 'auto') {
-                        // Sincronizza con preferenze database se diverse da localStorage
-                        if (preferences.theme !== savedLocalTheme) {
-                            localStorage.setItem('theme', preferences.theme);
-                            if (preferences.theme === 'dark') {
-                                document.documentElement.classList.add('dark');
-                            } else {
-                                document.documentElement.classList.remove('dark');
-                            }
-                            window.currentTheme = preferences.theme;
-                            
-                            // Aggiorna icone se necessario
-                            setTimeout(() => {
-                                const lightIcon = document.getElementById('theme-icon-light');
-                                const darkIcon = document.getElementById('theme-icon-dark');
-                                if (lightIcon && darkIcon) {
-                                    if (preferences.theme === 'dark') {
-                                        lightIcon.classList.add('hidden');
-                                        darkIcon.classList.remove('hidden');
-                                    } else {
-                                        lightIcon.classList.remove('hidden');
-                                        darkIcon.classList.add('hidden');
-                                    }
-                                }
-                            }, 100);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.warn('Impossibile caricare preferenze dal database:', error);
-                    // Continua con le preferenze locali
-                });
-                
-                window.currentTheme = theme;
-            @else
-                // Per utenti non autenticati, usa solo localStorage e preferenze sistema
-                const savedTheme = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-                
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-                
-                window.currentTheme = theme;
-            @endauth
+            // Per utenti autenticati, prova a caricare le preferenze dal database
+            const savedLocalTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let theme = savedLocalTheme || (prefersDark ? 'dark' : 'light');
             
-            // La funzione toggleTheme è definita più avanti nel file
+            // Applica tema temporaneo mentre carichi le preferenze
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Carica preferenze dal database in background
+            const preferencesUrl = "{{ (request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
+                ? route('localized.api.preferences.get', ['locale' => app()->getLocale()])
+                : route('api.preferences.get') }}";
+            
+            fetch(preferencesUrl, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(preferences => {
+                if (preferences.theme && preferences.theme !== 'auto') {
+                    // Sincronizza con preferenze database se diverse da localStorage
+                    if (preferences.theme !== savedLocalTheme) {
+                        localStorage.setItem('theme', preferences.theme);
+                        if (preferences.theme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                        }
+                        window.currentTheme = preferences.theme;
+                        
+                        // Aggiorna icone se necessario
+                        setTimeout(() => {
+                            const lightIcon = document.getElementById('theme-icon-light');
+                            const darkIcon = document.getElementById('theme-icon-dark');
+                            if (lightIcon && darkIcon) {
+                                if (preferences.theme === 'dark') {
+                                    lightIcon.classList.add('hidden');
+                                    darkIcon.classList.remove('hidden');
+                                } else {
+                                    lightIcon.classList.remove('hidden');
+                                    darkIcon.classList.add('hidden');
+                                }
+                            }
+                        }, 100);
+                    }
+                }
+            })
+            .catch(error => {
+                console.warn('Impossibile caricare preferenze dal database:', error);
+                // Continua con le preferenze locali
+            });
+            
+            window.currentTheme = theme;
         })();
     </script>
+    @endauth
+
+    @guest
+    <script>
+        // Theme initialization for guest users
+        (function() {
+            // Per utenti non autenticati, usa solo localStorage e preferenze sistema
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            window.currentTheme = theme;
+        })();
+    </script>
+    @endguest
 </head>
 <body class="font-sans antialiased bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 min-h-screen">
     @if(session()->has('impersonator_id'))
@@ -179,6 +183,8 @@
                 <nav class="hidden md:flex items-center space-x-4">
                     <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.training') }}</a>
                     <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.analyzer') }}</a>
+                    
+                    {{-- Editorial Categories (ready to enable once views are created) --}}
                 </nav>
                 @endguest
 
@@ -258,8 +264,6 @@
              x-transition:leave-end="transform opacity-0 scale-95"
              @click.away="mobileMenuOpen = false">
             <div class="px-4 pt-2 pb-3 space-y-1">
-                @guest
-                @endguest
                 @auth
                     <a href="{{ route('localized.dashboard', ['locale' => app()->getLocale()]) }}" 
                        class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -285,6 +289,8 @@
                 <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" 
                    class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                    @click="mobileMenuOpen = false">{{ __('app.nav.analyzer') }}</a>
+
+                {{-- Editorial Categories (ready to enable once views are created) --}}
             </div>
             
             <!-- Mobile controls section -->
@@ -444,6 +450,18 @@
     </div>
     
             <script>
+            // Theme configuration (set outside function to avoid Blade parsing issues)
+            @auth
+            window.themeUrl = "{{ (request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
+                ? route('localized.api.preferences.theme', ['locale' => app()->getLocale()])
+                : route('api.preferences.theme') }}";
+            window.isAuthenticated = true;
+            @endauth
+            
+            @guest
+            window.isAuthenticated = false;
+            @endguest
+            
             async function toggleTheme() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const lightIcon = document.getElementById('theme-icon-light');
@@ -468,34 +486,28 @@
                 localStorage.setItem('theme', newTheme);
                 
                 // Se utente autenticato, salva anche nel database
-                @auth
-                const themeUrl = @if(request()->route() && str_starts_with(request()->route()->getName() ?? '', 'localized.'))
-                    '{{ route("localized.api.preferences.theme", ["locale" => app()->getLocale()]) }}'
-                @else
-                    '{{ route("api.preferences.theme") }}'
-                @endif;
-                
-                try {
-                    const response = await fetch(themeUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({ theme: newTheme })
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('Tema salvato:', data.message);
-                    } else {
-                        console.warn('Errore risposta server per salvataggio tema');
+                if (window.isAuthenticated && window.themeUrl) {
+                    try {
+                        const response = await fetch(window.themeUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ theme: newTheme })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Tema salvato:', data.message);
+                        } else {
+                            console.warn('Errore risposta server per salvataggio tema');
+                        }
+                    } catch (error) {
+                        console.warn('Errore salvataggio tema nel database:', error);
+                        // Il tema rimane comunque applicato localmente
                     }
-                } catch (error) {
-                    console.warn('Errore salvataggio tema nel database:', error);
-                    // Il tema rimane comunque applicato localmente
                 }
-                @endauth
             }
             
             // Logout function

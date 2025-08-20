@@ -195,7 +195,10 @@ class FriendshipService
         $excludeIds = array_unique($excludeIds);
 
         // STEP 3: Suggerisci utenti che non hanno NESSUNA relazione con l'utente corrente
+        // e che accettano richieste di amicizia
         return User::whereNotIn('id', $excludeIds)
+            // 🔐 PRIVACY: Solo utenti che accettano richieste di amicizia
+            ->where('friend_requests_enabled', true)
             ->inRandomOrder()
             ->limit($limit)
             ->get();
@@ -209,15 +212,32 @@ class FriendshipService
         // Ottieni gli ID da escludere
         $excludeIds = [$currentUser->id];
         
+        // Escludi amici esistenti
         $friendIds = $currentUser->friends()->pluck('id')->toArray();
         $excludeIds = array_merge($excludeIds, $friendIds);
 
+        // Escludi utenti con richieste pendenti (in entrambe le direzioni)
+        $pendingRequestsIds = Friendship::where(function ($query) use ($currentUser) {
+            $query->where('user_id', $currentUser->id)
+                  ->orWhere('friend_id', $currentUser->id);
+        })->where('status', Friendship::STATUS_PENDING)
+        ->get()
+        ->map(function ($friendship) use ($currentUser) {
+            return $friendship->user_id === $currentUser->id ? $friendship->friend_id : $friendship->user_id;
+        })
+        ->toArray();
+        
+        $excludeIds = array_merge($excludeIds, $pendingRequestsIds);
+
+        // Escludi utenti bloccati
         $blockedIds = Friendship::where(function ($query) use ($currentUser) {
             $query->where('user_id', $currentUser->id)
                   ->orWhere('friend_id', $currentUser->id);
         })->where('status', Friendship::STATUS_BLOCKED)
-        ->pluck('friend_id', 'user_id')
-        ->flatten()
+        ->get()
+        ->map(function ($friendship) use ($currentUser) {
+            return $friendship->user_id === $currentUser->id ? $friendship->friend_id : $friendship->user_id;
+        })
         ->toArray();
         
         $excludeIds = array_merge($excludeIds, $blockedIds);
@@ -227,6 +247,8 @@ class FriendshipService
                 $query->where('name', 'ILIKE', "%{$search}%")
                       ->orWhere('email', 'ILIKE', "%{$search}%");
             })
+            // 🔐 PRIVACY: Solo utenti che accettano richieste di amicizia
+            ->where('friend_requests_enabled', true)
             ->limit($limit)
             ->get();
     }
