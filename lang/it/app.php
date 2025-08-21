@@ -43,6 +43,9 @@ return [
         'settings' => 'Impostazioni',
         'account' => 'Account',
         'privacy' => 'Privacy',
+        'news' => 'News',
+        'techniques' => 'Tecniche',
+        'articles' => 'Articoli',
     ],
     'welcome' => [
         'documentation' => [

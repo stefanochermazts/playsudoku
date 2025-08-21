@@ -43,6 +43,9 @@ return [
         'settings' => 'Settings',
         'account' => 'Account',
         'privacy' => 'Privacy',
+        'news' => 'News',
+        'techniques' => 'Techniques',
+        'articles' => 'Articles',
     ],
     'meta' => [
         'description' => 'Free sudoku online with daily competitive challenges. Advanced sudoku game with leaderboards, smart solver and replay. The best platform to play sudoku puzzles.',

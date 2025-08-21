@@ -184,7 +184,29 @@
                     <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.training') }}</a>
                     <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.analyzer') }}</a>
                     
-                    {{-- Editorial Categories (ready to enable once views are created) --}}
+                    {{-- Editorial Categories --}}
+                    <div class="relative group">
+                        <a href="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap flex items-center">
+                            📚 {{ __('app.nav.articles') }}
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'news']) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                                    📰 {{ __('app.nav.news') }}
+                                </a>
+                                <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'techniques']) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                                    🧩 {{ __('app.nav.techniques') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </nav>
                 @endguest
 
@@ -282,6 +304,30 @@
                        @click="mobileMenuOpen = false">{{ __('app.weekly_board') }}</a>
                 @endauth
                 
+                {{-- Articoli - visibili anche per utenti autenticati --}}
+                @auth
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4 mt-4">
+                    <h3 class="px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{{ __('app.nav.articles') }}</h3>
+                    <div class="mt-2 space-y-1">
+                        <a href="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" 
+                           class="flex items-center px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            📚 {{ __('app.nav.articles') }}
+                        </a>
+                        <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'news']) }}" 
+                           class="flex items-center px-6 py-2 rounded-md text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            📰 {{ __('app.nav.news') }}
+                        </a>
+                        <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'techniques']) }}" 
+                           class="flex items-center px-6 py-2 rounded-md text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            🧩 {{ __('app.nav.techniques') }}
+                        </a>
+                    </div>
+                </div>
+                @endauth
+                
                 {{-- Training e Analyzer - visibili sempre --}}
                 <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" 
                    class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -290,7 +336,27 @@
                    class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                    @click="mobileMenuOpen = false">{{ __('app.nav.analyzer') }}</a>
 
-                {{-- Editorial Categories (ready to enable once views are created) --}}
+                {{-- Editorial Categories --}}
+                <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4 mt-4">
+                    <h3 class="px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{{ __('app.nav.articles') }}</h3>
+                    <div class="mt-2 space-y-1">
+                        <a href="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" 
+                           class="flex items-center px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            📚 {{ __('app.nav.articles') }}
+                        </a>
+                        <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'news']) }}" 
+                           class="flex items-center px-6 py-2 rounded-md text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            📰 {{ __('app.nav.news') }}
+                        </a>
+                        <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => 'techniques']) }}" 
+                           class="flex items-center px-6 py-2 rounded-md text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                           @click="mobileMenuOpen = false">
+                            🧩 {{ __('app.nav.techniques') }}
+                        </a>
+                    </div>
+                </div>
             </div>
             
             <!-- Mobile controls section -->

@@ -43,6 +43,9 @@ return [
         'settings' => 'Configuración',
         'account' => 'Cuenta',
         'privacy' => 'Privacidad',
+        'news' => 'Noticias',
+        'techniques' => 'Técnicas',
+        'articles' => 'Artículos',
     ],
     'meta' => [
         'description' => 'Sudoku gratis en línea con desafíos competitivos diarios. Juego avanzado de sudoku con clasificaciones, solucionador inteligente y repetición. La mejor plataforma para jugar puzzles de sudoku.',

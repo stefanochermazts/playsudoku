@@ -43,6 +43,9 @@ return [
         'settings' => 'Einstellungen',
         'account' => 'Konto',
         'privacy' => 'Datenschutz',
+        'news' => 'Neuigkeiten',
+        'techniques' => 'Techniken',
+        'articles' => 'Artikel',
     ],
     'meta' => [
         'description' => 'Kostenloses Sudoku online mit täglichen Wettkampf-Herausforderungen. Fortgeschrittenes Sudoku-Spiel mit Bestenlisten, intelligentem Löser und Wiederholung. Die beste Plattform zum Spielen von Sudoku-Rätseln.',
