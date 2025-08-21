@@ -1,17 +1,12 @@
-<x-app-layout>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            {{-- Header --}}
-            <div class="mb-8">
+<x-site-layout>
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <!-- Header -->
+        <div class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                            🔍 Dettaglio Consenso #{{ $consent->id }}
-                        </h1>
-                        <p class="mt-2 text-gray-600 dark:text-gray-400">
-                            Informazioni dettagliate sul consenso e audit trail
-                        </p>
+                        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">🔍 Dettaglio Consenso #{{ $consent->id }}</h1>
+                        <p class="text-neutral-600 dark:text-neutral-300 mt-2">Informazioni dettagliate sul consenso e audit trail</p>
                     </div>
                     <div class="flex gap-3">
                         <a href="{{ route('admin.consents.index') }}" 

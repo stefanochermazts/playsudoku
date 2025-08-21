@@ -1,25 +1,24 @@
-@extends('layouts.app')
+<x-site-layout>
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
         
-        {{-- Header --}}
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('admin.articles.index') }}" 
-                       class="inline-flex items-center text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Torna agli articoli
-                    </a>
-                    <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">
-                        🤖 Generatore Articoli AI
-                    </h1>
+            {{-- Header --}}
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('admin.articles.index') }}" 
+                           class="inline-flex items-center text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Torna agli articoli
+                        </a>
+                        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">
+                            🤖 Generatore Articoli AI
+                        </h1>
+                    </div>
                 </div>
-            </div>
             <p class="mt-2 text-neutral-600 dark:text-neutral-300">
                 Crea articoli SEO-ottimizzati di 1000+ parole usando l'intelligenza artificiale
             </p>
@@ -344,7 +343,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <script>
 function articleGenerator() {
@@ -597,4 +595,6 @@ function articleGenerator() {
     }
 }
 </script>
-@endsection
+        </div>
+    </div>
+</x-site-layout>

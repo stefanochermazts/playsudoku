@@ -1,22 +1,21 @@
-@extends('layouts.site')
+<x-site-layout 
+    seo-title="Articoli Sudoku - Guide e Tecniche | PlaySudoku"
+    seo-description="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità."
+    seo-keywords="sudoku, articoli, guide, tecniche, risoluzione, PlaySudoku, news">
+    
+    <x-slot name="head">
+        <!-- Open Graph -->
+        <meta property="og:title" content="Articoli Sudoku - Guide e Tecniche | PlaySudoku">
+        <meta property="og:description" content="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ request()->url() }}">
 
-@section('head')
-<meta name="description" content="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità.">
-<meta name="keywords" content="sudoku, articoli, guide, tecniche, risoluzione, PlaySudoku, news">
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Articoli Sudoku - Guide e Tecniche | PlaySudoku">
+        <meta name="twitter:description" content="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità.">
+    </x-slot>
 
-<!-- Open Graph -->
-<meta property="og:title" content="Articoli Sudoku - Guide e Tecniche | PlaySudoku">
-<meta property="og:description" content="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ request()->url() }}">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Articoli Sudoku - Guide e Tecniche | PlaySudoku">
-<meta name="twitter:description" content="Scopri articoli e guide su Sudoku: tecniche di risoluzione, aggiornamenti PlaySudoku e strategie per migliorare le tue abilità.">
-@endsection
-
-@section('content')
 <div class="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
     
     {{-- Hero Section --}}
@@ -48,7 +47,7 @@
                 
                 {{-- Search & Filters --}}
                 <div class="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-neutral-200/50 dark:border-neutral-700/50 p-6 mb-8">
-                    <form method="GET" action="{{ route('articles.index', ['locale' => app()->getLocale()]) }}" class="flex flex-col sm:flex-row gap-4">
+                    <form method="GET" action="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" class="flex flex-col sm:flex-row gap-4">
                         {{-- Search --}}
                         <div class="flex-1">
                             <input type="text" 
@@ -141,7 +140,7 @@
                             @endif
                         </p>
                         @if(request()->hasAny(['search', 'category']))
-                            <a href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}" 
+                            <a href="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" 
                                class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm transition-colors">
                                 📚 Vedi tutti gli articoli
                             </a>
@@ -159,12 +158,12 @@
                         📂 Categorie
                     </h3>
                     <div class="space-y-2">
-                        <a href="{{ route('articles.index', ['locale' => app()->getLocale()]) }}" 
+                        <a href="{{ route('localized.articles.index', ['locale' => app()->getLocale()]) }}" 
                            class="flex items-center px-3 py-2 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors {{ !request('category') ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : '' }}">
                             📚 Tutti gli articoli
                         </a>
                         @foreach($categories as $category)
-                            <a href="{{ route('articles.category', ['locale' => app()->getLocale(), 'category' => $category->slug]) }}" 
+                            <a href="{{ route('localized.articles.category', ['locale' => app()->getLocale(), 'category' => $category->slug]) }}" 
                                class="flex items-center justify-between px-3 py-2 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors {{ request('category') == $category->slug ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : '' }}">
                                 <span class="flex items-center space-x-2">
                                     <span>{{ $category->icon }}</span>
@@ -195,4 +194,4 @@
         </div>
     </div>
 </div>
-@endsection
+</x-site-layout>

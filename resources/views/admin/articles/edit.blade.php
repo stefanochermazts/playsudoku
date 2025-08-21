@@ -1,6 +1,6 @@
-@extends('layouts.app')
+<x-site-layout>
 
-@section('head')
+    @push('styles')
 <!-- Trix Editor CSS -->
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
 <style>
@@ -35,11 +35,10 @@ trix-toolbar .trix-button-group {
     border-color: #4b5563;
 }
 </style>
-@endsection
+@endpush
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
         
         {{-- Header --}}
         <div class="mb-8">
@@ -346,5 +345,6 @@ document.addEventListener('trix-attachment-add', function(event) {
     }
 });
 </script>
-
-@endsection
+        </div>
+    </div>
+</x-site-layout>

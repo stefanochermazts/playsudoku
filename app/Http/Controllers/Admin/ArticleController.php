@@ -191,6 +191,50 @@ class ArticleController extends Controller
     }
 
     /**
+     * Update the specified article.
+     */
+    public function update(UpdateArticleRequest $request, Article $article): RedirectResponse
+    {
+        $validated = $request->validated();
+        
+        // Update article
+        $article->update([
+            'category_id' => $validated['category_id'],
+            'slug' => $validated['slug'],
+            'status' => $validated['status'],
+            'featured_image' => $validated['featured_image'] ?? null,
+            'tags' => $validated['tags'] ?? [],
+            'published_at' => $validated['status'] === 'published' ? ($validated['published_at'] ?? now()) : null,
+            'reading_time_minutes' => $validated['reading_time_minutes'] ?? null,
+            'featured' => $validated['featured'] ?? false,
+            'auto_translate' => $validated['auto_translate'] ?? false,
+            'updated_by' => Auth::id(),
+        ]);
+
+        // Update Italian translation
+        $italianTranslation = $article->italianTranslation();
+        if ($italianTranslation) {
+            $wordCount = str_word_count(strip_tags($validated['content']));
+            
+            $italianTranslation->update([
+                'title' => $validated['title'],
+                'excerpt' => $validated['excerpt'],
+                'content' => $validated['content'],
+                'word_count' => $wordCount,
+            ]);
+        }
+
+        // Trigger automatic translation if enabled and article is published
+        if ($validated['auto_translate'] && $validated['status'] === 'published') {
+            TranslateArticleJob::dispatch($article);
+        }
+
+        return redirect()
+            ->route('admin.articles.show', $article)
+            ->with('success', 'Articolo aggiornato con successo!');
+    }
+
+    /**
      * Remove the specified article.
      */
     public function destroy(Article $article): RedirectResponse

@@ -1,8 +1,7 @@
-@extends('layouts.app')
+<x-site-layout>
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         
         {{-- Header --}}
         <div class="mb-8">
@@ -296,4 +295,6 @@ document.addEventListener('DOMContentLoaded', function() {
     slugInput.addEventListener('input', updatePreview);
 });
 </script>
-@endsection
+        </div>
+    </div>
+</x-site-layout>

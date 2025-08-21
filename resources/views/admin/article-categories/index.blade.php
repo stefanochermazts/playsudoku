@@ -1,24 +1,17 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {{-- Header --}}
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('admin.dashboard') }}" 
-                       class="inline-flex items-center text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Dashboard Admin
-                    </a>
-                    <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">
-                        🏷️ Gestione Categorie Articoli
-                    </h1>
-                </div>
+<x-site-layout>
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <!-- Header -->
+        <div class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">🏷️ Gestione Categorie Articoli</h1>
+                        <p class="text-neutral-600 dark:text-neutral-300 mt-2">Gestisci le categorie per organizzare gli articoli del sistema editoriale</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white/10 dark:bg-neutral-800/50 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 font-medium rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all">
+                            ← Dashboard Admin
+                        </a>
                 
                 <a href="{{ route('admin.article-categories.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors">
@@ -237,5 +230,4 @@
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

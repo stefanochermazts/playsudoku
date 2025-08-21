@@ -108,7 +108,7 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
             return app(\App\Http\Controllers\LeaderboardController::class)->exportCsv(request(), $challenge);
         })->name('localized.leaderboard.export');
         
-                // Daily Board routes
+                // Daily Board routes (AFTER articles routes to avoid conflicts)
         Route::get('/daily-board', [\App\Http\Controllers\DailyBoardController::class, 'index'])
             ->name('localized.daily-board.index');
         Route::get('/daily-board/archive', [\App\Http\Controllers\DailyBoardController::class, 'archive'])
@@ -167,7 +167,7 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
         // altre rotte protette
     });
     
-    // Editorial System - Frontend Routes (Localized - Public)
+    // Editorial System - Frontend Routes (Localized - Public) - MUST BE BEFORE GENERIC ROUTES
     Route::get('/articles', [App\Http\Controllers\ArticleController::class, 'index'])
          ->name('localized.articles.index');
     
@@ -177,11 +177,13 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
     Route::get('/articles/feed', [App\Http\Controllers\ArticleController::class, 'feed'])
          ->name('localized.articles.feed');
     
-    Route::get('/articles/{category}', [App\Http\Controllers\ArticleController::class, 'category'])
-         ->name('localized.articles.category');
+    Route::get('/articles/{category}', function($locale, $category) {
+        return app(\App\Http\Controllers\ArticleController::class)->category(request(), $category);
+    })->name('localized.articles.category');
     
-    Route::get('/articles/{category}/{article}', [App\Http\Controllers\ArticleController::class, 'show'])
-         ->name('localized.articles.show');
+    Route::get('/articles/{category}/{article}', function($locale, $category, $article) {
+        return app(\App\Http\Controllers\ArticleController::class)->show($category, $article);
+    })->name('localized.articles.show');
     
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';

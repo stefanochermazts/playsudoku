@@ -1,16 +1,24 @@
-<x-app-layout>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            {{-- Header --}}
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    📊 Gestione Consensi GDPR
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                    Panoramica e gestione dei consensi utente per la compliance GDPR
-                </p>
+<x-site-layout>
+    <div class="min-h-screen bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+        <!-- Header -->
+        <div class="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">📊 Gestione Consensi GDPR</h1>
+                        <p class="text-neutral-600 dark:text-neutral-300 mt-2">Panoramica e gestione dei consensi utente per la compliance GDPR</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white/10 dark:bg-neutral-800/50 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 font-medium rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all">
+                            ← Dashboard Admin
+                        </a>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
             {{-- Statistics Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
