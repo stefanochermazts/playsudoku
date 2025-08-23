@@ -46,6 +46,7 @@ return [
         'news' => 'Neuigkeiten',
         'techniques' => 'Techniken',
         'articles' => 'Artikel',
+        'solver_ai' => 'KI-Löser',
     ],
     'meta' => [
         'description' => 'Kostenloses Sudoku online mit täglichen Wettkampf-Herausforderungen. Fortgeschrittenes Sudoku-Spiel mit Bestenlisten, intelligentem Löser und Wiederholung. Die beste Plattform zum Spielen von Sudoku-Rätseln.',

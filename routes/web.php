@@ -185,6 +185,23 @@ Route::group(['prefix' => '{locale}', 'where' => ['locale' => 'en|it|de|es'], 'm
         return app(\App\Http\Controllers\ArticleController::class)->show($category, $article);
     })->name('localized.articles.show');
     
+    // Public Solver AI Routes - SEO-friendly URLs
+    Route::get('/solve', [App\Http\Controllers\PublicSolverController::class, 'index'])
+         ->name('localized.public-solver.index');
+    
+    Route::get('/solve/this-sudoku-puzzle/{hash}', function ($locale, $hash) {
+        return app(\App\Http\Controllers\PublicSolverController::class)->show($hash);
+    })
+         ->where('hash', '[a-f0-9]{64}')
+         ->name('localized.public-solver.show');
+    
+    Route::get('/solve/{difficulty}-sudoku-puzzle/{hash}', function ($locale, $difficulty, $hash) {
+        return app(\App\Http\Controllers\PublicSolverController::class)->show($hash);
+    })
+         ->where('difficulty', 'easy|medium|hard|expert|evil')
+         ->where('hash', '[a-f0-9]{64}')
+         ->name('localized.public-solver.show.seo');
+    
     // Include auth routes with locale prefix
     require __DIR__.'/auth.php';
 });
@@ -313,6 +330,8 @@ Route::get('/robots-dynamic.txt', [App\Http\Controllers\SitemapController::class
 Route::get('/sudoku/demo', [App\Http\Controllers\SudokuDemoController::class, 'index'])->name('sudoku.demo');
 Route::get('/sudoku/play', [App\Http\Controllers\SudokuDemoController::class, 'play'])->name('sudoku.play');
 Route::get('/sudoku/analyzer', [App\Http\Controllers\SudokuDemoController::class, 'analyzer'])->name('sudoku.analyzer');
+
+
 
 // Redirect route area riservata senza locale a route localizzate
 Route::middleware(['localized-auth'])->group(function () {

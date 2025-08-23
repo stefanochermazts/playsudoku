@@ -1,0 +1,226 @@
+---
+description: Blade Template Debugging and Error Resolution
+globs: resources/views/**/*.blade.php
+---
+
+# Blade Template Debugging Guide
+
+## Common Blade Syntax Errors and Solutions
+
+### Error: "unexpected end of file, expecting elseif or else or endif"
+
+This is the most frequent Blade error in this project. Here are the causes and solutions:
+
+#### 1. Blade Directives in HTML Comments
+**❌ WRONG - Causes parser confusion:**
+```blade
+<!-- 
+    Some comment with {{ $variable }} or @if conditions
+    The Blade parser tries to process this!
+-->
+```
+
+**✅ CORRECT - Use PHP comments or remove Blade code:**
+```blade
+{{-- Blade comment that won't be processed --}}
+<!-- Pure HTML comment without Blade syntax -->
+```
+
+#### 2. Blade Directives in JavaScript Strings
+**❌ WRONG - Blade in JS strings:**
+```blade
+<script>
+const message = "Hello @if($condition) World @endif";  // Breaks parser!
+</script>
+```
+
+**✅ CORRECT - Extract to PHP variables:**
+```blade
+@php
+$message = match(app()->getLocale()) {
+    'it' => 'Ciao Mondo',
+    'en' => 'Hello World',
+    default => 'Hello World'
+};
+@endphp
+
+<script>
+const message = @json($message);  // Safe injection
+</script>
+```
+
+#### 3. Inline @if in HTML Attributes
+**❌ WRONG - Inline conditions:**
+```blade
+<div class="@if($condition) active @endif other-class">
+```
+
+**✅ CORRECT - Separate lines:**
+```blade
+@if($condition)
+    <div class="active other-class">
+@else
+    <div class="other-class">
+@endif
+```
+
+#### 4. Unbalanced Blade Directives
+**❌ WRONG - Missing endif:**
+```blade
+@if($condition)
+    <p>Content</p>
+@elseif($other)
+    <p>Other content</p>
+// Missing @endif!
+```
+
+**✅ CORRECT - Always balance:**
+```blade
+@if($condition)
+    <p>Content</p>
+@elseif($other)
+    <p>Other content</p>
+@endif
+```
+
+#### 5. @switch in JSON-LD Structured Data
+**❌ WRONG - Blade in JSON:**
+```blade
+<script type="application/ld+json">
+{
+    "name": "@switch(app()->getLocale()) @case('it') Nome @break @default Name @endswitch"
+}
+</script>
+```
+
+**✅ CORRECT - Use ternary or extract to PHP:**
+```blade
+@php
+$schemaName = match(app()->getLocale()) {
+    'it' => 'Nome Italiano',
+    'en' => 'English Name',
+    'de' => 'Deutscher Name',
+    'es' => 'Nombre Español',
+    default => 'Default Name'
+};
+@endphp
+
+<script type="application/ld+json">
+{
+    "name": @json($schemaName)
+}
+</script>
+```
+
+## Debugging Workflow
+
+### Step 1: Identify the Error Location
+```bash
+# Clear Blade cache first
+php artisan view:clear
+
+# Check exact line number in error message
+# Look for the pattern in the file around that line
+```
+
+### Step 2: Common Fixes by Error Pattern
+
+#### "expecting endif"
+- Check for unbalanced @if/@endif pairs
+- Look for @if inside HTML comments
+- Verify no @if in JavaScript strings
+
+#### "expecting endswitch"
+- Check @switch/@endswitch balance
+- Remove @switch from JSON contexts
+- Use match() expressions instead
+
+#### "unexpected token"
+- Look for Blade syntax in wrong contexts
+- Check for missing semicolons in @php blocks
+- Verify proper quote escaping
+
+### Step 3: Prevention Strategies
+
+#### Use Partials for Complex Logic
+```blade
+{{-- Instead of complex inline conditions --}}
+@include('public-solver.partials.solution-steps', [
+    'steps' => $puzzle->solver_steps,
+    'techniques' => $puzzle->techniques_used
+])
+```
+
+#### Extract Complex Conditions
+```blade
+@php
+$showAdvancedOptions = $user->isAdmin() && $puzzle->difficulty === 'expert';
+$cssClasses = $showAdvancedOptions ? 'advanced-panel visible' : 'advanced-panel hidden';
+@endphp
+
+<div class="{{ $cssClasses }}">
+    {{-- Simple, clean template --}}
+</div>
+```
+
+#### Use @push for Scripts
+```blade
+@push('scripts')
+<script>
+// JavaScript code here
+// No Blade mixing issues
+</script>
+@endpush
+```
+
+## File-Specific Issues
+
+### resources/views/public-solver/show.blade.php
+Common issues:
+- Schema.org JSON-LD with Blade directives
+- Social sharing JavaScript with dynamic content
+- Complex step-by-step display logic
+
+Solutions applied:
+- Extracted localized strings to PHP variables
+- Used @json() for safe JavaScript injection
+- Created separate partials for complex sections
+
+### resources/views/public-solver/index.blade.php
+Common issues:
+- JavaScript grid manipulation with Blade data
+- Dynamic button states
+- CSRF token handling
+
+Solutions:
+- Used data attributes for JavaScript communication
+- Separated PHP logic from JavaScript
+- Proper @csrf directive usage
+
+## Emergency Debugging Commands
+
+```bash
+# Clear all caches
+php artisan view:clear
+php artisan config:clear
+php artisan cache:clear
+
+# Check Blade compilation
+php artisan view:cache
+
+# Validate PHP syntax
+php -l resources/views/path/to/file.blade.php
+
+# Monitor real-time errors
+tail -f storage/logs/laravel.log | grep -i blade
+```
+
+## Best Practices Summary
+
+1. **Never mix Blade with JavaScript strings** - Extract to PHP variables
+2. **Avoid Blade in HTML comments** - Use {{-- --}} for Blade comments
+3. **Always balance directives** - Every @if needs @endif
+4. **Use partials for complexity** - Break down complex templates
+5. **Test after each change** - Clear cache and verify immediately
+6. **Use @json() for data injection** - Safe way to pass PHP data to JavaScript
+7. **Separate concerns** - Keep logic in controllers, display in views

@@ -1,0 +1,81 @@
+---
+description: SEO, Localization and Content Management
+globs: lang/*,resources/views/public-solver/*,docs/seo*.md
+---
+
+# SEO & Localization Strategy
+
+## Multi-Language Support
+- **Languages**: Italian (it), English (en), German (de), Spanish (es)
+- **Translation files**: [lang/](mdc:lang/) directory structure
+- **Default locale**: Italian (user preference)
+
+### Language Files Structure
+```
+lang/
+├── it/app.php (primary)
+├── en/app.php
+├── de/app.php
+└── es/app.php
+```
+
+## SEO Implementation
+
+### Structured Data (Schema.org)
+- **CreativeWork**: For solved puzzles
+- **Game**: Sudoku puzzle classification  
+- **WebApplication**: Main solver interface
+- **BreadcrumbList**: Navigation structure
+- **SearchAction**: Site search functionality
+
+### Meta Tags & Open Graph
+- Dynamic title/description generation
+- Canonical URLs for permanent links
+- Twitter Card support
+- Language-specific meta content
+
+### URL Structure
+```
+/{locale}/solve - Main solver page
+/{locale}/solve/this-sudoku-puzzle/{hash} - Permanent links
+/{locale}/solve/{difficulty}-sudoku-puzzle/{hash} - SEO URLs
+```
+
+## Content Strategy
+Reference: [docs/seo.md](mdc:docs/seo.md), [docs/seo-instructions-solver.md](mdc:docs/seo-instructions-solver.md)
+
+### Programmatic SEO
+- Unique content for each solved puzzle
+- Step-by-step solution explanations
+- Difficulty-based landing pages
+- Technique-specific content
+
+### Link Building
+- Permanent puzzle links for sharing
+- Embeddable widgets (future)
+- Educational content for schools
+- Community challenges
+
+## Route Localization
+File: [routes/web.php](mdc:routes/web.php)
+
+### Pattern
+```php
+Route::prefix('{locale}')->group(function () {
+    Route::get('/solve', function($locale) {
+        return app(PublicSolverController::class)->index();
+    })->name('localized.public-solver.index');
+});
+```
+
+## Translation Best Practices
+- Use `@switch(app()->getLocale())` in views
+- Extract complex translations to PHP variables
+- Avoid Blade directives within JSON-LD
+- Maintain consistency across all languages
+
+## Performance Considerations
+- Cache translated content
+- Lazy load non-critical language assets
+- Optimize images with language-specific alt text
+- Use CDN for static multilingual assets

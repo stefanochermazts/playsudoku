@@ -60,6 +60,9 @@ new class extends Component
                     <x-nav-link :href="route('localized.sudoku.analyzer', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.sudoku.analyzer')" wire:navigate>
                         {{ __('app.nav.analyzer') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('localized.public-solver.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.public-solver.*')" wire:navigate>
+                        🤖 {{ __('app.nav.solver_ai') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('localized.friends.index', ['locale' => app()->getLocale()])" :active="request()->routeIs('localized.friends.*')" wire:navigate>
                         {{ __('app.nav.friends') }}
                     </x-nav-link>

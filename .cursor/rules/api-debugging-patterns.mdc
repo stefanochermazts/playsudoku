@@ -1,0 +1,227 @@
+---
+description: API Debugging and Testing Patterns for Sudoku Solver
+globs: app/Http/Controllers/PublicSolverController.php,routes/api.php,routes/web.php
+---
+
+# API Debugging and Testing Patterns
+
+## Quick Testing Commands
+
+### cURL Testing Templates
+```bash
+# Test immediate solving
+curl -X POST http://localhost:8002/api/public-solver/solve \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"grid": [[8,0,0,0,0,0,0,0,0],[0,0,3,6,0,0,0,0,0],[0,7,0,0,9,0,2,0,0],[0,5,0,0,0,7,0,0,0],[0,0,0,0,4,5,7,0,0],[0,0,0,1,0,0,0,3,0],[0,0,1,0,0,0,0,6,8],[0,0,8,5,0,0,0,1,0],[0,9,0,0,0,0,4,0,0]], "step_by_step": false}'
+
+# Test puzzle generation
+curl -X POST http://localhost:8002/api/public-solver/generate \
+  -H "Content-Type: application/json" \
+  -d '{"difficulty": "expert"}'
+
+# Test permanent link creation
+curl -X POST http://localhost:8002/api/public-solver/submit \
+  -H "Content-Type: application/json" \
+  -d '{"grid": [[8,0,0,0,0,0,0,0,0],[0,0,3,6,0,0,0,0,0],[0,7,0,0,9,0,2,0,0],[0,5,0,0,0,7,0,0,0],[0,0,0,0,4,5,7,0,0],[0,0,0,1,0,0,0,3,0],[0,0,1,0,0,0,0,6,8],[0,0,8,5,0,0,0,1,0],[0,9,0,0,0,0,4,0,0]]}'
+
+# Test statistics
+curl http://localhost:8002/api/public-solver/stats
+```
+
+### Response Analysis Commands
+```bash
+# Extract techniques used
+curl ... | grep -o '"techniques_used":\[[^]]*\]' | sed 's/"techniques_used":\[//' | sed 's/\]//' | tr ',' '\n' | sed 's/"//g' | sort | uniq -c | sort -nr
+
+# Check if solvable
+curl ... | grep -o '"is_solvable":[^,]*'
+
+# Get solving time
+curl ... | grep -o '"solving_time_ms":[^,]*'
+```
+
+## Common API Issues and Solutions
+
+### 1. Route Parameter Issues
+**Problem**: 404 errors on permanent links
+**File**: [routes/web.php](mdc:routes/web.php)
+
+**❌ Wrong - Array syntax doesn't capture parameters:**
+```php
+Route::get('/solve/this-sudoku-puzzle/{hash}', [PublicSolverController::class, 'show']);
+```
+
+**✅ Correct - Closure syntax captures locale:**
+```php
+Route::get('/solve/this-sudoku-puzzle/{hash}', function($locale, $hash) {
+    return app(PublicSolverController::class)->show($hash);
+})->name('localized.public-solver.show');
+```
+
+### 2. CSRF Token Issues
+**Problem**: 419 errors on POST requests
+**Solution**: Always include CSRF token in AJAX requests:
+
+```javascript
+// Get CSRF token
+const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// Include in fetch requests
+fetch('/api/public-solver/solve', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token
+    },
+    body: JSON.stringify(data)
+});
+```
+
+### 3. Rate Limiting
+**File**: [app/Http/Controllers/PublicSolverController.php](mdc:app/Http/Controllers/PublicSolverController.php)
+
+Current limits:
+- Submit: 10 requests per minute
+- Solve: 30 requests per minute
+- Generate: 5 requests per minute
+
+**Testing rate limits:**
+```bash
+# Test multiple submissions
+for i in {1..12}; do
+  echo "Request $i:"
+  curl -X POST http://localhost:8002/api/public-solver/submit \
+    -H "Content-Type: application/json" \
+    -d '{"grid":[[8,0,0,0,0,0,0,0,0],[0,0,3,6,0,0,0,0,0],[0,7,0,0,9,0,2,0,0],[0,5,0,0,0,7,0,0,0],[0,0,0,0,4,5,7,0,0],[0,0,0,1,0,0,0,3,0],[0,0,1,0,0,0,0,6,8],[0,0,8,5,0,0,0,1,0],[0,9,0,0,0,0,4,0,0]]}' \
+    -w "Status: %{http_code}\n\n"
+  sleep 1
+done
+```
+
+## Performance Debugging
+
+### Solver Performance Issues
+**Symptoms**: 
+- Timeouts on complex puzzles
+- High CPU usage
+- Memory exhaustion
+
+**Debugging steps:**
+```bash
+# Monitor solver iterations
+tail -f storage/logs/laravel.log | grep -E "(Applied technique|No technique worked)"
+
+# Check for infinite loops
+tail -f storage/logs/laravel.log | grep "iteration" | tail -20
+
+# Monitor memory usage
+php artisan tinker --execute="
+\$solver = app(\App\Domain\Sudoku\Contracts\SolverInterface::class);
+echo 'Memory before: ' . memory_get_usage() . PHP_EOL;
+// Test solver here
+echo 'Memory after: ' . memory_get_usage() . PHP_EOL;
+"
+```
+
+### Database Performance
+**Check puzzle processing:**
+```bash
+# See puzzle counts by status
+php artisan tinker --execute="
+\App\Models\PublicPuzzle::selectRaw('status, count(*) as count')
+    ->groupBy('status')
+    ->get()
+    ->each(fn(\$r) => print \$r->status . ': ' . \$r->count . \"\n\");
+"
+
+# Check failed jobs
+php artisan queue:failed
+
+# Monitor job processing
+php artisan queue:monitor
+```
+
+## Frontend-Backend Integration
+
+### Grid Data Format
+**Consistent format between frontend and backend:**
+```javascript
+// Frontend grid format (9x9 array)
+const grid = [
+    [8,0,0,0,0,0,0,0,0],  // Row 0
+    [0,0,3,6,0,0,0,0,0],  // Row 1
+    // ... 7 more rows
+];
+
+// Send to API
+fetch('/api/public-solver/solve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ grid: grid, step_by_step: true })
+});
+```
+
+### Response Handling
+```javascript
+// Handle API responses consistently
+async function solvePuzzle(grid) {
+    try {
+        const response = await fetch('/api/public-solver/solve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ grid, step_by_step: true })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        // Always check is_solvable first
+        if (!result.is_solvable) {
+            displayError('Puzzle is not solvable');
+            return;
+        }
+        
+        // Process successful result
+        displaySolution(result);
+        
+    } catch (error) {
+        console.error('Solver error:', error);
+        displayError('Failed to solve puzzle');
+    }
+}
+```
+
+## Debugging Checklist
+
+### API Endpoint Issues
+1. ✅ Check route definition in [routes/api.php](mdc:routes/api.php)
+2. ✅ Verify controller method exists
+3. ✅ Test with cURL first (isolate frontend issues)
+4. ✅ Check Laravel logs for errors
+5. ✅ Verify CSRF token for POST requests
+6. ✅ Check rate limiting
+
+### Solver Issues
+1. ✅ Test with simple puzzle first
+2. ✅ Check technique implementation for errors
+3. ✅ Monitor iteration count and progress
+4. ✅ Verify grid format consistency
+5. ✅ Check memory usage for complex puzzles
+
+### Frontend Issues
+1. ✅ Check browser console for JavaScript errors
+2. ✅ Verify CSRF token in meta tag
+3. ✅ Test API calls with browser dev tools
+4. ✅ Check grid data format before sending
+5. ✅ Verify response handling logic
+
+### Database Issues
+1. ✅ Check PublicPuzzle model for data integrity
+2. ✅ Verify job queue processing
+3. ✅ Monitor failed jobs
+4. ✅ Check solver_steps serialization
+5. ✅ Verify foreign key constraints

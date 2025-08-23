@@ -1,0 +1,57 @@
+---
+globs: app/Models/*.php,database/migrations/*.php
+description: Database Models and Migration Patterns
+---
+
+# Database Models & Migrations
+
+## Key Models
+
+### Core Sudoku Models
+- **PublicPuzzle**: [app/Models/PublicPuzzle.php](mdc:app/Models/PublicPuzzle.php)
+  - Fields: `grid_data`, `solution_data`, `solver_steps`, `techniques_used`
+  - Status: `pending`, `processed`, `failed`
+  - SEO fields: `seo_title`, `seo_description`, `hash`
+
+- **Puzzle**: [app/Models/Puzzle.php](mdc:app/Models/Puzzle.php) - Internal puzzles
+- **Challenge**: [app/Models/Challenge.php](mdc:app/Models/Challenge.php) - User challenges
+- **ChallengeAttempt**: [app/Models/ChallengeAttempt.php](mdc:app/Models/ChallengeAttempt.php)
+
+### User & Social Models
+- **User**: [app/Models/User.php](mdc:app/Models/User.php)
+- **UserProfile**: [app/Models/UserProfile.php](mdc:app/Models/UserProfile.php)
+- **Friendship**: [app/Models/Friendship.php](mdc:app/Models/Friendship.php)
+- **Club**: [app/Models/Club.php](mdc:app/Models/Club.php)
+
+### Content Models
+- **Article**: [app/Models/Article.php](mdc:app/Models/Article.php)
+- **ArticleTranslation**: [app/Models/ArticleTranslation.php](mdc:app/Models/ArticleTranslation.php)
+- **ArticleCategory**: [app/Models/ArticleCategory.php](mdc:app/Models/ArticleCategory.php)
+
+## Migration Patterns
+- Location: [database/migrations/](mdc:database/migrations/)
+- Use descriptive names with timestamps
+- Always include `down()` method for rollbacks
+- Use foreign key constraints where appropriate
+
+## Model Conventions
+- Use Eloquent relationships over raw queries
+- Implement proper accessors/mutators for JSON fields
+- Use model observers for complex business logic
+- Implement proper scopes for common queries
+
+## JSON Field Handling
+```php
+// For solver_steps, techniques_used, etc.
+protected $casts = [
+    'solver_steps' => 'array',
+    'techniques_used' => 'array',
+    'grid_data' => 'array',
+    'solution_data' => 'array',
+];
+```
+
+## Database Schema
+- Main schema: [database/schema/pgsql-schema.sql](mdc:database/schema/pgsql-schema.sql)
+- Use PostgreSQL for production
+- Proper indexing for performance queries

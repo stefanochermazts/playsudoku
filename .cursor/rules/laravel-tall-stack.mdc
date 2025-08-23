@@ -1,0 +1,46 @@
+---
+alwaysApply: true
+description: Laravel TALL Stack Architecture and Best Practices
+---
+
+# Laravel TALL Stack - PlaySudoku Project
+
+## Stack Components
+- **Laravel**: Backend framework with PHP 8.1+
+- **Tailwind CSS**: Utility-first CSS framework
+- **Alpine.js**: Lightweight JavaScript framework
+- **Livewire**: Full-stack framework for Laravel
+
+## Key Architecture Files
+- Main configuration: [composer.json](mdc:composer.json)
+- Laravel config: [config/app.php](mdc:config/app.php)
+- Sudoku domain logic: [app/Domain/Sudoku/](mdc:app/Domain/Sudoku/)
+- Public solver controller: [app/Http/Controllers/PublicSolverController.php](mdc:app/Http/Controllers/PublicSolverController.php)
+- Routes: [routes/web.php](mdc:routes/web.php) and [routes/api.php](mdc:routes/api.php)
+
+## Development Standards
+- Always respond in Italian as per user preference
+- Follow PSR-12 coding standards
+- Use strict typing: `declare(strict_types=1);`
+- Implement proper error handling with Laravel's logging
+- Use Eloquent ORM instead of raw SQL
+- Follow Laravel's directory structure and naming conventions
+
+## Blade Template Rules
+- Avoid inline `@if` statements within HTML attributes
+- Use separate `@if`/`@endif` blocks on their own lines
+- Never mix Blade directives with JavaScript string literals
+- Use `@include()` for complex reusable components
+- Always balance `@if`/`@endif` and `@switch`/`@endswitch`
+
+## Localization
+- Support for 4 languages: it, en, de, es
+- Translation files in [lang/](mdc:lang/) directory
+- Use `@switch(app()->getLocale())` for view-level translations
+- Avoid Blade directives within JSON-LD structured data
+
+## Testing & Debugging
+- Test commands documented in [docs/test-commands.md](mdc:docs/test-commands.md)
+- Blade troubleshooting guide: [docs/blade-syntax-troubleshooting.md](mdc:docs/blade-syntax-troubleshooting.md)
+- Use `php artisan view:clear` when debugging Blade issues
+- Test on port 8002: `http://localhost:8002`

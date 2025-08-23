@@ -6,9 +6,7 @@
 
     {{-- Favicon --}}
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.svg') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.svg') }}" sizes="180x180">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
     {{-- Resource Hints per Performance --}}
@@ -41,10 +39,8 @@
     
     {{-- @include('partials.meta-tags') --}}
     
-    {{-- Load CSS normally --}}
-    @vite(['resources/css/app.css'])
-    
-    @vite(['resources/js/app.js'])
+    {{-- Load CSS and JS in single Vite call --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     
     <!-- Analytics -->
@@ -182,7 +178,8 @@
                 @guest
                 <nav class="hidden md:flex items-center space-x-4">
                     <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.training') }}</a>
-                    <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">{{ __('app.nav.analyzer') }}</a>
+
+                    <a href="{{ route('localized.public-solver.index', ['locale' => app()->getLocale()]) }}" class="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium whitespace-nowrap">🤖 {{ __('app.nav.solver_ai') }}</a>
                     
                     {{-- Editorial Categories --}}
                     <div class="relative group">
@@ -328,13 +325,14 @@
                 </div>
                 @endauth
                 
-                {{-- Training e Analyzer - visibili sempre --}}
+                {{-- Training, Analyzer e Solver AI - visibili sempre --}}
                 <a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" 
                    class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                    @click="mobileMenuOpen = false">{{ __('app.nav.training') }}</a>
-                <a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" 
+
+                <a href="{{ route('localized.public-solver.index', ['locale' => app()->getLocale()]) }}" 
                    class="block px-3 py-2 rounded-md text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                   @click="mobileMenuOpen = false">{{ __('app.nav.analyzer') }}</a>
+                   @click="mobileMenuOpen = false">🤖 {{ __('app.nav.solver_ai') }}</a>
 
                 {{-- Editorial Categories --}}
                 <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4 mt-4">
@@ -462,10 +460,10 @@
                     <h4 class="font-semibold mb-4">{{ __('app.footer.game') }}</h4>
                     <ul class="space-y-2 text-neutral-300">
                         <li><a href="{{ route('localized.sudoku.training', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.training') }}</a></li>
-                        <li><a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.analyzer') }}</a></li>
+
                         <li><a href="{{ route('localized.daily-board.index', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.daily_challenges') }}</a></li>
                         <li><a href="{{ route('localized.weekly-board.index', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.leaderboards') }}</a></li>
-                        <li><a href="{{ route('localized.sudoku.analyzer', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">{{ __('app.footer.solver') }}</a></li>
+                        <li><a href="{{ route('localized.public-solver.index', ['locale' => app()->getLocale()]) }}" class="hover:text-primary-400 transition-colors">🤖 {{ __('app.nav.solver_ai') }}</a></li>
                     </ul>
                 </div>
                 <div>

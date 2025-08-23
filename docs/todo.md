@@ -459,3 +459,115 @@ Deliverable: sistema gamification (prima iterazione) con badge e stagioni base, 
 
 ---
 
+### Fase 21 — SEO Programmatico & Content Generation (Grey SEO + Vibe Coding)
+- [x] **Sudoku Solver AI Public**: 
+  - [x] Endpoint pubblico `/solve/{puzzle_hash}` per risolvere schemi user-generated
+  - [x] Landing page SEO `/solve/this-sudoku-puzzle/{hash}` con meta dinamici e spiegazione step-by-step
+  - [x] Schema.org/CreativeWork per ogni puzzle risolto, breadcrumb dinamici ✅
+  - [x] Database `public_puzzles` con hash unici, status, SEO metadata, view count
+  - [x] Job asincrono `ProcessPublicPuzzleJob` per generazione contenuti e sitemap update
+
+**✅ COMPLETATO (Backend)** - Note implementazione:
+- **Database**: Migration `public_puzzles` con 20+ campi per SEO, analytics, solver results, tracking utenti ✅
+- **Model PublicPuzzle**: Completo con factory methods, scope queries, URL generators, SEO automation, analytics tracking ✅
+- **PublicSolverController**: 6 endpoint (index, show, submit, solve, share, stats) con rate limiting, meta SEO multilingua, cache ✅
+- **API Routes**: `/api/public-solver/*` per submit/solve/share/stats con validation e security ✅
+- **Landing Routes**: `/{locale}/solve/*` con URL SEO-friendly e pattern matching hash SHA-256 ✅
+- **ProcessPublicPuzzleJob**: Job asincrono completo con solver integration, SEO generation, cache invalidation ✅
+- **Rate Limiting**: 10 submit/5min, 5 solve API/min, queue 'solver' dedicata per performance ✅
+- **Error Handling**: Try-catch completo, logging dettagliato, retry logic, status tracking ✅
+- **Cache Strategy**: Stats pubbliche, puzzle popolari, invalidazione automatica post-processing ✅
+- **Integration**: SolverInterface, DifficultyRater, MetaService per funzionalità complete ✅
+
+**✅ COMPLETATO (Frontend)** - Note implementazione:
+- **View Index**: Landing page completa con griglia interattiva 9×9, validazione JS real-time, puzzle popolari showcase ✅
+- **View Show**: Pagina puzzle specifico con griglia originale/soluzione, analisi tecniche, breadcrumb navigation ✅  
+- **Schema.org JSON-LD**: WebApplication per index, CreativeWork per puzzle con metadata completi (difficulty, techniques, stats) ✅
+- **Multi-language**: 4 lingue (IT/EN/DE/ES) per tutti i testi UI, breadcrumb, notifiche ✅
+- **Interactive Grid**: Input validation, example puzzles, clear/solve buttons, error highlighting ✅
+- **Social Sharing**: Copy link, Twitter, WhatsApp con tracking automatico share count ✅
+- **Responsive Design**: Tailwind CSS, dark mode support, mobile-friendly layout ✅
+- **AJAX Integration**: API calls per solve/submit/share con loading states e error handling ✅
+- **Analytics Ready**: View count display, share tracking, permanent URL generation ✅
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader friendly ✅
+
+**✅ COMPLETATO (Navigation & Testing)** - Note implementazione:
+- **Menu Desktop**: Link "🤖 Solver AI" aggiunto in layout site per guest users ✅
+- **Menu Mobile**: Link aggiunto in sezione mobile con Alpine.js transitions ✅
+- **Menu Authenticated**: Link integrato in Livewire navigation per utenti loggati ✅
+- **Traduzioni Complete**: 4 lingue (IT/EN/DE/ES) con nav.solver_ai tradotto ✅
+- **Documentation**: `docs/seo-instructions-solver.md` con guida step-by-step completa ✅
+- **Testing Commands**: `docs/test-commands.md` con cURL tests e database checks ✅
+- **Route Active States**: Pattern matching per highlighting menu attivo su public-solver.* ✅
+
+**🎯 DELIVERABLE RAGGIUNTO**: Sistema completo Sudoku Solver AI Public con backend + frontend + navigation + documentation, SEO ottimizzato, pronto per programmatic content scaling e testing immediato
+
+- [ ] **Daily/Weekly Sudoku Permalinks in guest area for boards that are expired in reserved area**:
+  - [ ] Sistema route SEO-friendly `/sudoku/{date}/{difficulty}` (es. `/sudoku/2025-01-15/easy`)
+  - [ ] Controller `DailySudokuController` con meta tag personalizzati per data/difficoltà
+  - [ ] Archive page `/sudoku/archive/{year}/{month}` con calendar view
+  - [ ] Scheduler Laravel per auto-generazione daily puzzles con seed deterministici
+  - [ ] Canonical URLs e structured data per ogni daily puzzle
+
+- [ ] **Printable PDF Generator**:
+  - [ ] Service `PdfGeneratorService` con DomPDF/Snappy per export puzzle stampabili
+  - [ ] Landing pages `/printable-sudoku/{difficulty}` con download form e SEO content
+  - [ ] Batch generation comando `sudoku:generate-printable-batch` per create PDF sets
+  - [ ] Watermark PlaySudoku.club sui PDF per link earning
+  - [ ] Analytics tracking downloads e referral sources
+
+- [ ] **Leaderboard Pubbliche SEO**:
+  - [ ] Route pubbliche `/leaderboard/global/{period}` e `/leaderboard/country/{country}`
+  - [ ] Meta tags dinamici con top player names e statistics
+  - [ ] Long-tail SEO pages `/best-sudoku-players-italy-2025`, `/fastest-sudoku-solver-germany`
+  - [ ] Structured data schema.org/ItemList per rankings
+  - [ ] Cache aggressivo con refresh notturno e sitemap auto-update
+
+- [ ] **Widget Embeddable & Link Earning**:
+  - [ ] Mini Sudoku widget HTML/JS con embed code generator
+  - [ ] Landing page `/embed` con preview widget e integration instructions
+  - [ ] Tracking backlinks via referral analytics e automated link discovery
+  - [ ] Widget CDN hosting con CORS headers e performance optimization
+  - [ ] Email outreach automation per siti educativi/blog
+
+- [ ] **Sitemap Dinamica & Google Pinging**:
+  - [ ] Service `SitemapManagerService` per generazione sitemap programmatica
+  - [ ] Scheduler auto-update sitemap.xml ogni 6h con nuovi puzzle/leaderboard
+  - [ ] Google/Bing ping automation via SearchConsole API e IndexNow protocol  
+  - [ ] Comando `sudoku:ping-search-engines` per submission forzata URL
+  - [ ] Database tracking submission status e retry logic
+
+- [ ] **Content Seed Pages**:
+  - [ ] Guide autorevoli `/complete-sudoku-guide`, `/sudoku-techniques-explained`
+  - [ ] Internal linking strategy da seed pages verso puzzle/challenges
+  - [ ] PDF downloadabili, infografiche, tool gratuiti per link earning
+  - [ ] Topic clusters con hub architecture per domain authority
+  - [ ] User-generated content integration (best puzzle submissions)
+
+- [ ] **Fresh Content Automation**:
+  - [ ] "Puzzle of the Day" con auto-posting social media scheduler
+  - [ ] Weekly featured solver spotlight e player interviews
+  - [ ] Comando `sudoku:generate-fresh-content` per automated content creation
+  - [ ] Time-based URL generation con infinite content scaling
+  - [ ] Social media cross-posting automation (Twitter/Facebook APIs)
+
+- [ ] **Structured Data Massiccio**:
+  - [ ] Schema.org/Game per ogni puzzle con difficulty, completion time, rating
+  - [ ] Schema.org/WebSite con SearchAction per instant puzzle search
+  - [ ] BreadcrumbList per navigation, Person schema per top players
+  - [ ] Rich snippets optimization per SERP visibility
+  - [ ] Testing Google Rich Results e Search Console validation
+
+- [ ] **SEO Tools Dashboard**:
+  - [ ] Admin panel `/admin/seo` con crawl status, indexing stats, ranking tracking
+  - [ ] Internal SEO crawler per "Discovered – not indexed" detection
+  - [ ] SearchConsole API integration per automated resubmission
+  - [ ] Content gap analysis e keyword opportunity tracking  
+  - [ ] Performance monitoring Core Web Vitals e pagespeed insights
+
+**Deliverable**: Ecosistema SEO automatizzato con migliaia di pagine indicizzabili, link earning semi-automatico, fresh content pipeline e tooling interno per scaling contenuti programmatici.
+
+**Note Vibe Coding**: Ogni feature è progettata per scaling automatico - una volta implementata, genera contenuto e SEO value in modo continuativo con intervento umano minimale.
+
+---
+

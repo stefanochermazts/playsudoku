@@ -1,0 +1,91 @@
+---
+globs: resources/views/*.blade.php,resources/views/**/*.blade.php
+description: Blade Template Syntax and Error Prevention
+---
+
+# Blade Template Best Practices
+
+## Critical Syntax Rules
+
+### ❌ NEVER Do This
+```blade
+{{-- BAD: Inline @if in HTML attributes --}}
+<div class="@if($condition) active @endif">
+
+{{-- BAD: Blade directives in JavaScript strings --}}
+<script>
+const message = '@switch($locale) @case("it") Ciao @endswitch';
+</script>
+
+{{-- BAD: Blade comments containing @push/@endpush --}}
+{{-- 
+@push('head')
+<meta name="test">
+@endpush
+--}}
+```
+
+### ✅ ALWAYS Do This
+```blade
+{{-- GOOD: Separate @if blocks --}}
+@if($condition)
+    <div class="active">
+@else
+    <div class="inactive">
+@endif
+
+{{-- GOOD: Extract localized strings to PHP variables --}}
+@php
+    $message = match(app()->getLocale()) {
+        'it' => 'Ciao',
+        'de' => 'Hallo',
+        default => 'Hello'
+    };
+@endphp
+<script>
+const message = @json($message);
+</script>
+
+{{-- GOOD: Use HTML comments for large blocks --}}
+<!-- 
+<meta name="test">
+-->
+```
+
+## Common Error Patterns
+
+### "Unexpected end of file, expecting endif"
+- **Cause**: Unbalanced `@if`/`@endif` or `@switch`/`@endswitch`
+- **Solution**: Check all conditional blocks are properly closed
+- **Debug**: Use `grep -n "@\(if\|endif\|switch\|endswitch\)" file.blade.php`
+
+### Blade Compilation Errors
+- **Clear cache**: `php artisan view:clear`
+- **Check compiled**: `storage/framework/views/*.php`
+- **Use partials**: `@include('partials.component')` for complex logic
+
+## File Structure
+- **Layouts**: [resources/views/layouts/](mdc:resources/views/layouts/)
+- **Components**: [resources/views/components/](mdc:resources/views/components/)
+- **Partials**: Use for reusable complex blocks
+- **Troubleshooting**: [docs/blade-syntax-troubleshooting.md](mdc:docs/blade-syntax-troubleshooting.md)
+
+## Localization in Views
+```blade
+{{-- Use @switch for multi-language content --}}
+@switch(app()->getLocale())
+    @case('it')
+        Contenuto italiano
+        @break
+    @case('de')
+        Deutscher Inhalt
+        @break
+    @default
+        English content
+@endswitch
+```
+
+## Schema.org & JSON-LD
+- Extract complex logic to PHP variables before JSON blocks
+- Use ternary operators instead of `@switch` within JSON
+- Test JSON validity after Blade compilation

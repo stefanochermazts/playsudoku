@@ -46,6 +46,7 @@ return [
         'news' => 'News',
         'techniques' => 'Techniques',
         'articles' => 'Articles',
+        'solver_ai' => 'AI Solver',
     ],
     'meta' => [
         'description' => 'Free sudoku online with daily competitive challenges. Advanced sudoku game with leaderboards, smart solver and replay. The best platform to play sudoku puzzles.',

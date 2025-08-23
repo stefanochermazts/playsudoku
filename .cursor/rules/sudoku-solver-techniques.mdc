@@ -1,0 +1,156 @@
+---
+description: Sudoku Solver Techniques Implementation and Debugging
+globs: app/Domain/Sudoku/Solver.php,app/Domain/Sudoku/DifficultyRater.php
+---
+
+# Sudoku Solver Techniques - Implementation Guide
+
+## Core Solver Architecture
+
+### Technique Order and Priority
+The solver implements 30+ techniques in [app/Domain/Sudoku/Solver.php](mdc:app/Domain/Sudoku/Solver.php):
+
+```php
+private const TECHNIQUES = [
+    'naked_singles',      // Priority 1 - Most basic
+    'hidden_singles',     // Priority 2 - Basic elimination
+    'locked_candidates_pointing',  // Priority 3 - Box-line interaction
+    'locked_candidates_claiming',  // Priority 4 - Line-box interaction
+    // ... up to 30 advanced techniques
+    'trial_and_error',    // Priority 30 - Most complex
+];
+```
+
+### Critical Implementation Rules
+
+#### 1. Grid Method Usage
+**NEVER use `$grid->getCandidates($row, $col)`** - This method doesn't exist!
+
+✅ **Correct**: `$grid->getCell($row, $col)->candidates`
+❌ **Wrong**: `$grid->getCandidates($row, $col)`
+
+#### 2. Candidate Access Patterns
+```php
+// ✅ Correct patterns
+$cell = $grid->getCell($row, $col);
+$candidates = $cell->candidates;
+$count = $cell->candidates->count();
+$contains = $cell->candidates->contains($value);
+$array = $cell->candidates->toArray();
+
+// ❌ Common mistakes to avoid
+$grid->getCandidates($row, $col);  // Method doesn't exist
+$grid->isEmpty($row, $col);        // Use $cell->value === null instead
+```
+
+#### 3. Technique Implementation Structure
+Every technique method must return:
+```php
+return [
+    'grid' => $updatedGrid,  // Modified grid or null if no changes
+    'step' => [              // Detailed explanation
+        'technique' => 'technique_name',
+        'description' => 'Human readable explanation',
+        'cells_affected' => [...],
+        'values_eliminated' => [...],
+        'reasoning' => 'Why this technique applies'
+    ]
+];
+```
+
+## Solver Logic Flow
+
+### Main Solve Method
+The solver uses a stable iteration approach:
+1. Try each technique in priority order
+2. Apply first technique that makes progress
+3. Update candidates after each change
+4. Continue until solved or max iterations reached
+5. Fall back to backtracking only after all logical techniques exhausted
+
+### Anti-Loop Protection
+```php
+$maxNoProgressIterations = 50;  // High threshold to try all techniques
+$noProgressCount = 0;
+$previousGridHash = $this->getGridHash($currentGrid);
+```
+
+### Error Handling
+All technique methods are wrapped in try-catch:
+```php
+try {
+    $result = $this->$methodName($gridWithCandidates);
+} catch (\Exception $e) {
+    logger()->warning("Technique $technique failed: " . $e->getMessage());
+    continue; // Try next technique
+}
+```
+
+## Common Debugging Issues
+
+### 1. Infinite Loops
+**Symptom**: Solver hangs or times out
+**Cause**: Technique keeps finding same pattern
+**Solution**: Implement proper grid hashing and progress detection
+
+### 2. Method Not Found Errors
+**Symptom**: `Call to undefined method getCandidates()`
+**Cause**: Using non-existent Grid methods
+**Solution**: Always use `getCell()->candidates` pattern
+
+### 3. Technique Not Applied
+**Symptom**: Advanced techniques never used
+**Cause**: Earlier techniques solve puzzle completely
+**Solution**: This is correct behavior - solver is efficient!
+
+## Performance Optimization
+
+### Technique Efficiency
+- Basic techniques (naked/hidden singles) solve 80% of puzzles
+- Advanced techniques only needed for expert-level puzzles
+- Solver automatically chooses most efficient path
+
+### Candidate Updates
+- Call `updateCandidates()` after each grid modification
+- Candidates are recalculated based on current grid state
+- Essential for technique accuracy
+
+## Testing Strategies
+
+### Technique Verification
+```bash
+# Test specific difficulty levels
+curl -X POST /api/public-solver/generate -d '{"difficulty": "expert"}'
+
+# Verify technique usage in logs
+tail -f storage/logs/laravel.log | grep "Applied technique"
+```
+
+### Common Test Patterns
+- Easy puzzles: Use only basic techniques
+- Medium puzzles: Require intersection techniques
+- Hard puzzles: Need pairs/triples
+- Expert puzzles: Require advanced techniques like wings, chains
+- Crazy puzzles: May need trial and error
+
+## Difficulty Rating Integration
+
+Update [app/Domain/Sudoku/DifficultyRater.php](mdc:app/Domain/Sudoku/DifficultyRater.php) when adding techniques:
+
+```php
+private array $weights = [
+    'naked_singles' => 1,
+    'hidden_singles' => 2,
+    'locked_candidates_pointing' => 5,
+    // ... add new techniques with appropriate weights
+    'trial_and_error' => 100,  // Highest difficulty
+];
+```
+
+## Best Practices
+
+1. **Always test technique isolation**: Temporarily disable other techniques to verify specific technique works
+2. **Log technique applications**: Use `logger()->debug()` to track which techniques are applied
+3. **Validate grid state**: Ensure grid remains valid after each technique application
+4. **Handle edge cases**: Empty grids, invalid puzzles, unsolvable states
+5. **Performance monitoring**: Track solving time and iteration counts

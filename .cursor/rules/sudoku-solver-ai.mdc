@@ -1,0 +1,81 @@
+---
+description: Sudoku Solver AI Public System Architecture
+globs: app/Domain/Sudoku/*,app/Http/Controllers/PublicSolverController.php,resources/views/public-solver/*
+---
+
+# Sudoku Solver AI Public System
+
+## Core Components
+
+### Domain Logic
+- **Grid**: [app/Domain/Sudoku/Grid.php](mdc:app/Domain/Sudoku/Grid.php) - Sudoku grid representation
+- **Solver**: [app/Domain/Sudoku/Solver.php](mdc:app/Domain/Sudoku/Solver.php) - Step-by-step solving with techniques
+- **Generator**: [app/Domain/Sudoku/Generator.php](mdc:app/Domain/Sudoku/Generator.php) - Puzzle generation by difficulty
+- **Contracts**: Interface definitions in [app/Domain/Sudoku/Contracts/](mdc:app/Domain/Sudoku/Contracts/)
+
+### Controller & Routes
+- **Controller**: [app/Http/Controllers/PublicSolverController.php](mdc:app/Http/Controllers/PublicSolverController.php)
+- **API Routes**: [routes/api.php](mdc:routes/api.php) - `/api/public-solver/*`
+- **Web Routes**: [routes/web.php](mdc:routes/web.php) - Localized `/solve` pages
+
+### Database Model
+- **PublicPuzzle**: [app/Models/PublicPuzzle.php](mdc:app/Models/PublicPuzzle.php)
+- Key fields: `solver_steps`, `techniques_used`, `solution_data`, `is_solvable`
+- Processing job: [app/Jobs/ProcessPublicPuzzleJob.php](mdc:app/Jobs/ProcessPublicPuzzleJob.php)
+
+### Views & Frontend
+- **Main solver**: [resources/views/public-solver/index.blade.php](mdc:resources/views/public-solver/index.blade.php)
+- **Permanent links**: [resources/views/public-solver/show.blade.php](mdc:resources/views/public-solver/show.blade.php)
+- **Step display**: [resources/views/public-solver/partials/solution-steps.blade.php](mdc:resources/views/public-solver/partials/solution-steps.blade.php)
+
+## API Endpoints
+- `POST /api/public-solver/solve` - Immediate solving with step-by-step
+- `POST /api/public-solver/submit` - Create permanent link
+- `POST /api/public-solver/generate` - Generate puzzle by difficulty
+- `GET /api/public-solver/stats` - System statistics
+
+## Key Features
+- **Step-by-step solving**: Detailed technique explanations saved in database
+- **Permanent links**: SEO-optimized URLs for each solved puzzle
+- **Multi-language**: Full localization support
+- **Difficulty generation**: Easy, Medium, Hard, Expert, Crazy levels
+- **Schema.org integration**: Structured data for SEO
+
+## Solver Implementation Details
+
+### 30+ Solving Techniques
+The solver implements a comprehensive set of logical techniques:
+- **Basic**: naked_singles, hidden_singles (solve 80% of puzzles)
+- **Intersection**: locked_candidates_pointing, locked_candidates_claiming
+- **Pairs/Triples**: naked_pairs, hidden_pairs, naked_triples, hidden_triples
+- **Quads**: naked_quads, hidden_quads
+- **Fish**: x_wing, swordfish, jellyfish
+- **Wings**: xy_wing, xyz_wing, w_wing
+- **Chains**: simple_chains, xy_chains, remote_pairs
+- **Coloring**: coloring, multi_coloring
+- **Advanced**: sue_de_coq, uniqueness_test, bug_plus_one
+- **Expert**: skyscraper, two_string_kite, empty_rectangle
+- **Last Resort**: forcing_chains, nishio, trial_and_error
+
+### Performance Characteristics
+- **Easy puzzles**: Solved with basic techniques only
+- **Medium puzzles**: Require intersection techniques
+- **Hard puzzles**: Need pairs/triples techniques
+- **Expert puzzles**: Use advanced techniques like wings and chains
+- **Crazy puzzles**: May require trial and error
+
+### Critical Implementation Notes
+- **NEVER use `$grid->getCandidates()`** - Use `$grid->getCell($row, $col)->candidates`
+- **Always use try-catch** around technique methods to prevent crashes
+- **Solver uses first applicable technique** - this is correct and efficient behavior
+- **High iteration limit (50)** ensures all logical techniques are tried before backtracking
+- **Grid hashing prevents infinite loops** in complex puzzles
+
+## Development Notes
+- Save detailed solver steps in database during processing
+- Use partials for complex Blade components to avoid syntax errors
+- Test permanent links: `/solve/this-sudoku-puzzle/{hash}`
+- Queue processing for heavy operations
+- Rate limiting on API endpoints
+- Monitor technique usage with `tail -f storage/logs/laravel.log | grep "Applied technique"`
+- Use cURL for isolated API testing before frontend debugging

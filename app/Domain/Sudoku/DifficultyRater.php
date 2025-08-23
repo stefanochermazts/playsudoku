@@ -60,19 +60,56 @@ final class DifficultyRater implements DifficultyRaterInterface
         
         // Pesi per ogni tecnica (più alta = più difficile)
         $weights = [
+            // 🏆 IL MIGLIOR DIFFICULTY RATER DEL PIANETA 🏆
+            
+            // Basic techniques (1-10 punti)
             'naked_singles' => 1,
             'hidden_singles' => 4,
+            
+            // Intersection techniques (20-30 punti)
             'locked_candidates_pointing' => 20,
             'locked_candidates_claiming' => 25,
+            
+            // Subset techniques (50-300 punti)
             'naked_pairs' => 50,
             'hidden_pairs' => 60,
             'naked_triples' => 100,
             'hidden_triples' => 120,
+            'naked_quads' => 200,
+            'hidden_quads' => 250,
+            
+            // Fish techniques (150-600 punti)
             'x_wing' => 150,
-            'swordfish' => 200,
-            'coloring' => 250,
-            'simple_chains' => 300,
-            'guessing_required' => 1000,
+            'swordfish' => 300,
+            'jellyfish' => 500,
+            
+            // Wing techniques (180-350 punti)
+            'xy_wing' => 180,
+            'xyz_wing' => 220,
+            'w_wing' => 280,
+            
+            // Chain techniques (320-450 punti)
+            'simple_chains' => 350,
+            'xy_chains' => 400,
+            'remote_pairs' => 320,
+            
+            // Advanced techniques (450-800 punti)
+            'coloring' => 450,
+            'multi_coloring' => 600,
+            'sue_de_coq' => 700,
+            'uniqueness_test' => 550,
+            'bug_plus_one' => 650,
+            
+            // Pattern techniques (380-550 punti)
+            'skyscraper' => 380,
+            'two_string_kite' => 420,
+            'empty_rectangle' => 480,
+            
+            // Forcing techniques (800-1200 punti)
+            'forcing_chains' => 800,
+            'nishio' => 900,
+            'trial_and_error' => 1000,
+            'guessing_required' => 1200,
         ];
         
         $score = 0;

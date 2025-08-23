@@ -1,0 +1,309 @@
+---
+description: Performance Optimization Patterns and Solutions
+globs: resources/views/layouts/site.blade.php,app/Domain/Sudoku/Solver.php,app/Http/Controllers/*
+---
+
+# Performance Optimization Guide
+
+## Frontend Performance Issues and Solutions
+
+### Multiple HTTP Requests Problem
+**Issue**: Page loads trigger 5-6 HTTP requests instead of 1-2
+**Files**: [resources/views/layouts/site.blade.php](mdc:resources/views/layouts/site.blade.php)
+
+#### Common Causes and Fixes:
+
+**1. Duplicate Asset Loading**
+**❌ Wrong - Multiple @vite calls:**
+```blade
+@vite(['resources/css/app.css'])
+@vite(['resources/js/app.js'])
+```
+
+**✅ Correct - Single @vite call:**
+```blade
+@vite(['resources/css/app.css', 'resources/js/app.js'])
+```
+
+**2. Duplicate Favicon Links**
+**❌ Wrong - Multiple favicon declarations:**
+```blade
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Later in the file... -->
+<link rel="icon" href="/favicon.ico">  <!-- Duplicate! -->
+```
+
+**✅ Correct - Single favicon declaration:**
+```blade
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+```
+
+**3. Redundant Route References**
+Remove unused route references that trigger additional requests:
+```blade
+{{-- Remove old analyzer routes --}}
+{{-- <a href="{{ route('localized.sudoku.analyzer', app()->getLocale()) }}"> --}}
+
+{{-- Use new solver routes --}}
+<a href="{{ route('localized.public-solver.index', app()->getLocale()) }}">
+```
+
+### JavaScript Performance Optimization
+
+#### Efficient Event Handling
+**❌ Wrong - Inline event handlers:**
+```blade
+<button onclick="longRunningFunction()">Click me</button>
+```
+
+**✅ Correct - Async event handling:**
+```javascript
+async function handleClick(event) {
+    const button = event.target;
+    button.disabled = true;
+    
+    try {
+        await longRunningFunction();
+    } finally {
+        button.disabled = false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('myButton').addEventListener('click', handleClick);
+});
+```
+
+#### Error Suppression for Browser Extensions
+**Issue**: Browser extensions cause "message channel closed" errors
+**Solution**: Global error handlers in [resources/views/public-solver/show.blade.php](mdc:resources/views/public-solver/show.blade.php)
+
+```javascript
+// Suppress extension-related errors
+window.addEventListener('error', function(event) {
+    if (event.message && event.message.includes('message channel closed')) {
+        event.preventDefault();
+        return true;
+    }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.message && 
+        event.reason.message.includes('message channel closed')) {
+        event.preventDefault();
+    }
+});
+```
+
+## Backend Performance Optimization
+
+### Solver Performance
+**File**: [app/Domain/Sudoku/Solver.php](mdc:app/Domain/Sudoku/Solver.php)
+
+#### Iteration Limits and Loop Prevention
+```php
+public function solve(Grid $grid): array
+{
+    $maxIterations = 100;           // Prevent infinite loops
+    $maxNoProgressIterations = 50;  // Try all techniques before backtracking
+    $noProgressCount = 0;
+    
+    // Grid hashing to detect loops
+    $previousGridHash = null;
+    
+    while (!$currentGrid->isComplete() && $iteration < $maxIterations) {
+        $currentGridHash = $this->getGridHash($currentGrid);
+        
+        if ($currentGridHash === $previousGridHash) {
+            $noProgressCount++;
+            if ($noProgressCount >= $maxNoProgressIterations) {
+                // Only then use backtracking
+                return $this->solveWithBacktrack($currentGrid);
+            }
+        } else {
+            $noProgressCount = 0;  // Reset on progress
+        }
+        
+        // Continue with technique application...
+    }
+}
+```
+
+#### Technique Error Handling
+**Prevent single technique failures from crashing entire solver:**
+```php
+foreach (self::TECHNIQUES as $technique) {
+    try {
+        $result = $this->$methodName($gridWithCandidates);
+        if ($result['grid'] !== null) {
+            return $result;
+        }
+    } catch (\Exception $e) {
+        // Log but continue with next technique
+        logger()->warning("Technique $technique failed: " . $e->getMessage());
+        continue;
+    }
+}
+```
+
+### Database Performance
+
+#### Efficient Puzzle Processing
+**File**: [app/Http/Controllers/PublicSolverController.php](mdc:app/Http/Controllers/PublicSolverController.php)
+
+**Lazy Loading for Permanent Links:**
+```php
+public function show(string $hash)
+{
+    $puzzle = PublicPuzzle::where('hash', $hash)->firstOrFail();
+    
+    // Only re-process if solver_steps are missing
+    if ($puzzle->status === 'pending' || empty($puzzle->solver_steps)) {
+        try {
+            $grid = Grid::fromArray($puzzle->grid_data);
+            $result = $this->solver->solve($grid);
+            $puzzle->markAsProcessed($result);
+            $puzzle->refresh();
+        } catch (\Exception $e) {
+            logger()->error('Failed to process puzzle on-the-fly', [
+                'hash' => $hash, 
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    return view('public-solver.show', compact('puzzle'));
+}
+```
+
+#### Queue Optimization
+**Use queues for heavy operations:**
+```php
+// In controller - dispatch to queue
+ProcessPublicPuzzleJob::dispatch($puzzle);
+
+// Return immediate response
+return response()->json([
+    'success' => true,
+    'permanent_link' => route('localized.public-solver.show', [
+        'locale' => app()->getLocale(),
+        'hash' => $puzzle->hash
+    ])
+]);
+```
+
+### Memory Management
+
+#### Grid Processing
+**Avoid memory leaks in long-running solver operations:**
+```php
+public function solve(Grid $grid): array
+{
+    // Clear previous state
+    $this->clearInternalCache();
+    
+    try {
+        // Solving logic...
+        return $result;
+    } finally {
+        // Always cleanup
+        $this->clearInternalCache();
+        if (function_exists('gc_collect_cycles')) {
+            gc_collect_cycles();
+        }
+    }
+}
+```
+
+## Monitoring and Debugging Performance
+
+### Real-time Performance Monitoring
+```bash
+# Monitor solver performance
+tail -f storage/logs/laravel.log | grep -E "(Applied technique|solving_time_ms)"
+
+# Check memory usage
+php artisan tinker --execute="
+echo 'Memory limit: ' . ini_get('memory_limit') . PHP_EOL;
+echo 'Current usage: ' . round(memory_get_usage(true)/1024/1024, 2) . 'MB' . PHP_EOL;
+"
+
+# Monitor HTTP requests
+tail -f /path/to/access.log | grep -E "(solve|submit|generate)"
+```
+
+### Performance Testing Commands
+```bash
+# Test solver with different difficulties
+for difficulty in easy medium hard expert crazy; do
+    echo "Testing $difficulty..."
+    time curl -X POST http://localhost:8002/api/public-solver/generate \
+        -H "Content-Type: application/json" \
+        -d "{\"difficulty\": \"$difficulty\"}"
+done
+
+# Stress test API endpoints
+ab -n 100 -c 10 -H "Content-Type: application/json" \
+   -p puzzle.json http://localhost:8002/api/public-solver/solve
+```
+
+## Caching Strategies
+
+### View Caching
+```bash
+# Cache compiled views for production
+php artisan view:cache
+
+# Clear when debugging
+php artisan view:clear
+```
+
+### Application Caching
+**In controllers, cache expensive operations:**
+```php
+public function stats()
+{
+    return Cache::remember('public_solver_stats', 300, function () {
+        return [
+            'total_puzzles' => PublicPuzzle::count(),
+            'solved_puzzles' => PublicPuzzle::where('is_solvable', true)->count(),
+            'avg_solving_time' => PublicPuzzle::avg('solving_time_ms'),
+            'popular_techniques' => $this->getPopularTechniques()
+        ];
+    });
+}
+```
+
+## Production Optimization Checklist
+
+### Frontend
+- ✅ Single @vite directive for assets
+- ✅ Remove duplicate favicon links
+- ✅ Minimize inline JavaScript
+- ✅ Use async/await for API calls
+- ✅ Implement proper error handling
+- ✅ Add loading states for user feedback
+
+### Backend
+- ✅ Implement solver iteration limits
+- ✅ Add technique error handling
+- ✅ Use queues for heavy operations
+- ✅ Cache expensive database queries
+- ✅ Monitor memory usage
+- ✅ Log performance metrics
+
+### Database
+- ✅ Index frequently queried columns
+- ✅ Use lazy loading for relationships
+- ✅ Implement proper pagination
+- ✅ Monitor slow queries
+- ✅ Regular database maintenance
+
+### Infrastructure
+- ✅ Enable opcache for PHP
+- ✅ Use Redis for caching
+- ✅ Configure proper queue workers
+- ✅ Set up log rotation
+- ✅ Monitor disk space and memory

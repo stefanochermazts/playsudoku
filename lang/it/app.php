@@ -46,6 +46,7 @@ return [
         'news' => 'News',
         'techniques' => 'Tecniche',
         'articles' => 'Articoli',
+        'solver_ai' => 'Solver AI',
     ],
     'welcome' => [
         'documentation' => [

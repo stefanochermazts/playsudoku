@@ -1,0 +1,361 @@
+---
+description: JavaScript Integration and Social Sharing Implementation
+globs: resources/views/public-solver/*.blade.php,resources/js/*
+---
+
+# JavaScript Integration Guide
+
+## Social Sharing Implementation
+
+### Common JavaScript Errors and Solutions
+
+#### 1. "Cannot read properties of undefined (reading 'target')"
+**Problem**: Event object not properly passed to functions
+**File**: [resources/views/public-solver/show.blade.php](mdc:resources/views/public-solver/show.blade.php)
+
+**❌ Wrong - Event not accessible:**
+```javascript
+function copyToClipboard() {
+    const button = event.target;  // event is undefined!
+}
+```
+
+**✅ Correct - Pass button element directly:**
+```javascript
+function copyToClipboard(buttonElement) {
+    // Use passed element instead of event.target
+    const url = window.location.href;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showCopySuccess(buttonElement);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(url, buttonElement);
+    }
+}
+
+// In HTML
+<button onclick="copyToClipboard(this)">Copy Link</button>
+```
+
+#### 2. Browser Extension "Message Channel Closed" Errors
+**Problem**: Browser extensions interfere with page scripts
+**Solution**: Global error suppression
+
+```javascript
+// Suppress extension-related errors
+window.addEventListener('error', function(event) {
+    if (event.message && event.message.includes('message channel closed')) {
+        event.preventDefault();
+        return true;
+    }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.message && 
+        event.reason.message.includes('message channel closed')) {
+        event.preventDefault();
+    }
+});
+```
+
+#### 3. Performance Violations
+**Problem**: Click handlers taking too long (>150ms)
+**Solution**: Async operations and user feedback
+
+```javascript
+async function shareToTwitter(puzzleTitle, puzzleUrl) {
+    try {
+        // Show loading state
+        const button = document.querySelector('[onclick*="shareToTwitter"]');
+        button.disabled = true;
+        button.textContent = 'Sharing...';
+        
+        const text = encodeURIComponent(`${puzzleTitle} - Solved with AI!`);
+        const url = encodeURIComponent(puzzleUrl);
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        
+        // Non-blocking window open
+        window.open(twitterUrl, '_blank', 'width=550,height=420');
+        
+    } catch (error) {
+        console.error('Twitter sharing failed:', error);
+    } finally {
+        // Restore button state
+        button.disabled = false;
+        button.textContent = 'Share on Twitter';
+    }
+}
+```
+
+## Data Injection from PHP to JavaScript
+
+### Safe Data Passing with @json()
+**❌ Wrong - Direct Blade in JavaScript:**
+```blade
+<script>
+const message = "{{ $puzzle->title }}";  // XSS risk!
+const locale = "@switch(app()->getLocale()) @case('it') it @break @default en @endswitch";  // Parser error!
+</script>
+```
+
+**✅ Correct - Extract to PHP variables:**
+```blade
+@php
+$jsData = [
+    'title' => $puzzle->seo_title,
+    'url' => request()->url(),
+    'locale' => app()->getLocale(),
+    'messages' => [
+        'copy_success' => match(app()->getLocale()) {
+            'it' => 'Link copiato!',
+            'en' => 'Link copied!',
+            'de' => 'Link kopiert!',
+            'es' => '¡Enlace copiado!',
+            default => 'Link copied!'
+        },
+        'copy_error' => match(app()->getLocale()) {
+            'it' => 'Errore nella copia',
+            'en' => 'Copy failed',
+            'de' => 'Kopieren fehlgeschlagen',
+            'es' => 'Error al copiar',
+            default => 'Copy failed'
+        }
+    ]
+];
+@endphp
+
+<script>
+const puzzleData = @json($jsData);
+const { title, url, locale, messages } = puzzleData;
+
+function copyToClipboard(buttonElement) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url)
+            .then(() => showMessage(messages.copy_success, 'success'))
+            .catch(() => showMessage(messages.copy_error, 'error'));
+    }
+}
+</script>
+```
+
+## CSRF Token Handling
+
+### Meta Tag Setup
+**In layout file:**
+```blade
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
+
+### JavaScript Usage
+```javascript
+// Get CSRF token
+function getCsrfToken() {
+    const token = document.querySelector('meta[name="csrf-token"]');
+    return token ? token.getAttribute('content') : null;
+}
+
+// Use in fetch requests
+async function submitPuzzle(gridData) {
+    const token = getCsrfToken();
+    if (!token) {
+        throw new Error('CSRF token not found');
+    }
+    
+    const response = await fetch('/api/public-solver/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ grid: gridData })
+    });
+    
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return response.json();
+}
+```
+
+## Loading States and User Feedback
+
+### Button Loading States
+```javascript
+function showButtonLoading(button, originalText) {
+    button.disabled = true;
+    button.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Loading...
+    `;
+}
+
+function hideButtonLoading(button, originalText) {
+    button.disabled = false;
+    button.innerHTML = originalText;
+}
+
+// Usage
+async function loadByDifficulty(difficulty, button) {
+    const originalText = button.innerHTML;
+    showButtonLoading(button, originalText);
+    
+    try {
+        const response = await fetch('/api/public-solver/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify({ difficulty })
+        });
+        
+        const result = await response.json();
+        populateGrid(result.grid);
+        
+    } catch (error) {
+        console.error('Failed to load puzzle:', error);
+        showMessage('Failed to load puzzle', 'error');
+    } finally {
+        hideButtonLoading(button, originalText);
+    }
+}
+```
+
+## Error Handling Best Practices
+
+### Comprehensive Error Handling
+```javascript
+async function solvePuzzle(gridData) {
+    try {
+        // Validate input
+        if (!gridData || !Array.isArray(gridData)) {
+            throw new Error('Invalid grid data');
+        }
+        
+        // Make API call
+        const response = await fetch('/api/public-solver/solve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify({ 
+                grid: gridData, 
+                step_by_step: true 
+            })
+        });
+        
+        // Handle HTTP errors
+        if (!response.ok) {
+            if (response.status === 429) {
+                throw new Error('Too many requests. Please wait a moment.');
+            } else if (response.status === 422) {
+                const errorData = await response.json();
+                throw new Error(`Validation error: ${errorData.message}`);
+            } else {
+                throw new Error(`Server error: ${response.status}`);
+            }
+        }
+        
+        const result = await response.json();
+        
+        // Handle business logic errors
+        if (!result.is_solvable) {
+            throw new Error('This puzzle cannot be solved logically');
+        }
+        
+        // Success
+        displaySolution(result);
+        
+    } catch (error) {
+        console.error('Solve error:', error);
+        
+        // User-friendly error messages
+        const userMessage = error.message.includes('Too many requests') 
+            ? error.message 
+            : 'Failed to solve puzzle. Please try again.';
+            
+        showMessage(userMessage, 'error');
+    }
+}
+```
+
+## Browser Compatibility
+
+### Clipboard API Fallback
+```javascript
+function copyToClipboard(text, buttonElement) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // Modern browsers
+        return navigator.clipboard.writeText(text)
+            .then(() => showCopySuccess(buttonElement))
+            .catch(() => fallbackCopyToClipboard(text, buttonElement));
+    } else {
+        // Fallback for older browsers
+        return fallbackCopyToClipboard(text, buttonElement);
+    }
+}
+
+function fallbackCopyToClipboard(text, buttonElement) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess(buttonElement);
+        } else {
+            throw new Error('Copy command failed');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showMessage('Copy not supported in this browser', 'error');
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+```
+
+## Testing JavaScript Integration
+
+### Console Testing Commands
+```javascript
+// Test CSRF token
+console.log('CSRF Token:', getCsrfToken());
+
+// Test API connectivity
+fetch('/api/public-solver/stats')
+    .then(r => r.json())
+    .then(console.log);
+
+// Test grid validation
+const testGrid = Array(9).fill().map(() => Array(9).fill(0));
+console.log('Test grid valid:', validateGrid(testGrid));
+
+// Test social sharing
+shareToTwitter('Test Puzzle', window.location.href);
+```
+
+### Debugging Checklist
+1. ✅ Check browser console for JavaScript errors
+2. ✅ Verify CSRF token is present in meta tag
+3. ✅ Test API endpoints with browser dev tools
+4. ✅ Validate JSON data format
+5. ✅ Check network tab for failed requests
+6. ✅ Test error handling with invalid data
+7. ✅ Verify loading states work correctly
+8. ✅ Test social sharing in different browsers

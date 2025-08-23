@@ -1,0 +1,83 @@
+---
+description: Testing, Debugging and Development Workflow
+---
+
+# Testing & Debugging Guide
+
+## Development Environment
+- **Local URL**: `http://localhost:8002`
+- **Test Port**: Always use port 8002 for testing
+- **Language**: Always respond in Italian per user preference
+
+## Quick Test Commands
+Reference: [docs/test-commands.md](mdc:docs/test-commands.md)
+
+### API Testing with cURL
+```bash
+# Test solver API
+curl -X POST http://localhost:8002/api/public-solver/solve \
+  -H "Content-Type: application/json" \
+  -d '{"grid": [[8,0,0,...]], "step_by_step": true}'
+
+# Test permanent link creation
+curl -X POST http://localhost:8002/api/public-solver/submit \
+  -H "Content-Type: application/json" \
+  -d '{"grid": [[8,0,0,...]]}'
+```
+
+### Laravel Artisan Commands
+```bash
+# Clear caches when debugging
+php artisan view:clear
+php artisan cache:clear
+php artisan route:clear
+
+# Queue management
+php artisan queue:work --queue=solver
+php artisan queue:failed
+
+# Database inspection
+php artisan tinker
+```
+
+## Debugging Blade Issues
+Guide: [docs/blade-syntax-troubleshooting.md](mdc:docs/blade-syntax-troubleshooting.md)
+
+### Common Blade Errors
+1. **"Unexpected end of file, expecting endif"**
+   - Check balanced `@if`/`@endif`, `@switch`/`@endswitch`
+   - Remove inline Blade directives from HTML attributes
+   - Clear view cache: `php artisan view:clear`
+
+2. **Compilation Errors**
+   - Check compiled views: `storage/framework/views/*.php`
+   - Look for Blade directives in JavaScript strings
+   - Use `@include()` for complex components
+
+### Error Log Monitoring
+```bash
+# Clear and monitor logs
+rm storage/logs/laravel.log
+tail -f storage/logs/laravel.log
+
+# Test specific endpoint and check logs
+curl -s http://localhost:8002/it/solve/puzzle-hash > /dev/null
+cat storage/logs/laravel.log
+```
+
+## Testing Workflow
+1. **Unit Tests**: `vendor/bin/phpunit`
+2. **Feature Tests**: Focus on API endpoints
+3. **Browser Tests**: Laravel Dusk for UI testing
+4. **Manual Testing**: Use cURL for API, browser for UI
+
+## Performance Monitoring
+- Use Laravel's built-in query logging
+- Monitor queue job processing
+- Check cache hit rates
+- Profile Sudoku solving algorithms
+
+## Documentation
+- **Project TODO**: [docs/todo.md](mdc:docs/todo.md)
+- **SEO Instructions**: [docs/seo-instructions-solver.md](mdc:docs/seo-instructions-solver.md)
+- **Deployment**: [docs/deploy.md](mdc:docs/deploy.md)
